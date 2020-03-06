@@ -8,5 +8,5 @@ Disallow: /css/
 Disallow: /fonts/
 Disallow: /vendors/
 Disallow: /fancybox/
-Sitemap: http://gaoteng17.xyz/sitemap.xml
-Sitemap: http://gaoteng17.xyz/baidusitemap.xml
+Sitemap: http://got17.cn/sitemap.xml
+Sitemap: http://got17.cn/baidusitemap.xml
