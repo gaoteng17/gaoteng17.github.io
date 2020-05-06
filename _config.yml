@@ -86,7 +86,9 @@ theme: next
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
   type: git
-  repo: git@github.com:gaoteng17/gaoteng17.github.io.git
+  repository:
+    github: git@github.com:gaoteng17/gaoteng17.github.io.git
+    coding: git@e.coding.net:gaoteng17/gaoteng17.git
   branch: master
 
 # Search
