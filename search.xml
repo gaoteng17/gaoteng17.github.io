@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>【git加速clone项目+切换远程https/ssh方式】</title>
+      <link href="/1092/"/>
+      <url>/1092/</url>
+      
+        <content type="html"><![CDATA[<p>由于众所周知的原因github上clone项目极慢，时不时还一半就断开连接，这里提供使用国内镜像站的解决方法，完成之后修改remote路径以实现modify和push等操作。</p><p>还有一个问题，使用git提交文件push到github，每次都要输入用户名和密码，操作起来很麻烦，其原因是在clone 项目的时候，使用了默认的https方式，而不是ssh方式。</p><a id="more"></a><h1 id="加速clone"><a href="#加速clone" class="headerlink" title="加速clone"></a>加速clone</h1><p>目前已知Github国内镜像网站有<code>github.com.cnpmjs.org</code>和<code>git.sdut.me</code>。你可以根据你对这两个网站的访问速度快慢，选择其中一个即可。</p><p>接下来只需要在clone某个项目的时候将<code>github.com</code>替换为<code>github.com.cnpmjs.org</code>即可。如下例：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/user/project</span><br></pre></td></tr></table></figure><p>替换为</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://github.com.cnpmjs.org/user/project</span><br></pre></td></tr></table></figure><p>或者</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">git clone https://git.sdut.me/user/project</span><br></pre></td></tr></table></figure><p>之后修改仓库push url：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git remote -v <span class="comment">#查看当前远程url</span></span><br><span class="line"></span><br><span class="line">&gt;origin https://github.com.cnpmjs.org/user/project (fetch)</span><br><span class="line">&gt;origin https://github.com.cnpmjs.org/user/project (push)</span><br></pre></td></tr></table></figure><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#修改远程push url</span></span><br><span class="line">git remote <span class="built_in">set</span>-url --push origin  https://github.com/user/project</span><br></pre></td></tr></table></figure><p>再次查看url已经变化，之后即可正常push。</p><h1 id="切换远程https-ssh方式"><a href="#切换远程https-ssh方式" class="headerlink" title="切换远程https/ssh方式"></a>切换远程https/ssh方式</h1><p>到本地项目文件夹子，打开git bash：</p><ol><li><p>查看clone地址：<code>git remote -v</code></p></li><li><p>移除https的方式，换成ssh方式：<code>git remote rm origin</code></p></li><li><p>添加新的git方式：<code>git remote add origin git@github.com:user/project</code></p></li><li><p>查看push方式是否修改成功：<code>git remote -v</code></p></li><li><p>重新push一下：<code>git push origin master</code></p></li></ol>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> git </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>【解决hexo插入图片后本地路径与部署路径不同的问题】</title>
       <link href="/1091/"/>
       <url>/1091/</url>
@@ -315,6 +334,29 @@
     
     
     <entry>
+      <title>【网络安全2x02】上传漏洞靶场upload-labs（Pass05-12）</title>
+      <link href="/1075/"/>
+      <url>/1075/</url>
+      
+        <content type="html"><![CDATA[<p>官方README.md：</p><p>upload-labs是一个使用php语言编写的，专门收集渗透测试和CTF中遇到的各种上传漏洞的靶场。旨在帮助大家对上传漏洞有一个全面的了解。目前一共20关，每一关都包含着不同上传方式。</p><p>本文记录Pass05-12。Pass05-10都是常见的改后缀绕过验证，Pass11-12是两种00截断绕过方式。</p><a id="more"></a><h1 id="Pass05"><a href="#Pass05" class="headerlink" title="Pass05"></a>Pass05</h1><p>大小写绕过。<code>.pHp</code>、<code>.Php</code>、<code>PHp</code>啥的都行。</p><p><img src="/1075/1.PNG" alt></p><h1 id="Pass06"><a href="#Pass06" class="headerlink" title="Pass06"></a>Pass06</h1><p>空格绕过，没有对首尾空格过滤，<code>1.php</code>即可。</p><p><img src="/1075/2.PNG" alt></p><h1 id="Pass07"><a href="#Pass07" class="headerlink" title="Pass07"></a>Pass07</h1><p>点绕过，没有末尾的点过滤，<code>1.php.</code>即可。</p><p><img src="/1075/3.PNG" alt></p><h1 id="Pass08"><a href="#Pass08" class="headerlink" title="Pass08"></a>Pass08</h1><p><code>::$DATA</code>绕过（win），没有对<code>::$DATA</code>过滤，<code>1.php::$DATA</code>即可。</p><p><img src="/1075/4.PNG" alt></p><h1 id="Pass09"><a href="#Pass09" class="headerlink" title="Pass09"></a>Pass09</h1><p>点空格点过滤，<code>1.php. .</code>即可。</p><p><img src="/1075/5.PNG" alt></p><h1 id="Pass10"><a href="#Pass10" class="headerlink" title="Pass10"></a>Pass10</h1><p>双写绕过，<code>1.phphpp</code>、<code>1.pphphp</code>均可。</p><p><img src="/1075/6.PNG" alt></p><h1 id="Pass11"><a href="#Pass11" class="headerlink" title="Pass11"></a>Pass11</h1><p>GET报文%00截断，修改文件后缀<code>.jpg</code>绕过文件后缀检测，修改保存目录为<code>../upload/1.php%00</code>，后面加截断使文件保存为<code>.php</code>格式。</p><p><img src="/1075/7.PNG" alt></p><h1 id="Pass12"><a href="#Pass12" class="headerlink" title="Pass12"></a>Pass12</h1><p>GET报文0x00截断，修改文件后缀<code>.jpg</code>绕过文件后缀检测，修改保存目录为<code>../upload/1.php%00</code>，<strong>选中<code>%00</code>右键转<code>URL-Decode</code>，或者点击<code>Hex</code>直接在16进制中修改</strong>，使文件保存为<code>.php</code>格式。</p><p><img src="/1075/8.PNG" alt></p><p><img src="/1075/9.PNG" alt></p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 网络安全 </tag>
+            
+            <tag> burpsuite </tag>
+            
+            <tag> upload-labs </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>【网络安全2x03】上传漏洞靶场upload-labs（Pass13-16）</title>
       <link href="/1076/"/>
       <url>/1076/</url>
@@ -332,29 +374,6 @@
             <tag> upload-labs </tag>
             
             <tag> 010Editor </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
-      <title>【网络安全2x02】上传漏洞靶场upload-labs（Pass05-12）</title>
-      <link href="/1075/"/>
-      <url>/1075/</url>
-      
-        <content type="html"><![CDATA[<p>官方README.md：</p><p>upload-labs是一个使用php语言编写的，专门收集渗透测试和CTF中遇到的各种上传漏洞的靶场。旨在帮助大家对上传漏洞有一个全面的了解。目前一共20关，每一关都包含着不同上传方式。</p><p>本文记录Pass05-12。Pass05-10都是常见的改后缀绕过验证，Pass11-12是两种00截断绕过方式。</p><a id="more"></a><h1 id="Pass05"><a href="#Pass05" class="headerlink" title="Pass05"></a>Pass05</h1><p>大小写绕过。<code>.pHp</code>、<code>.Php</code>、<code>PHp</code>啥的都行。</p><p><img src="/1075/1.PNG" alt></p><h1 id="Pass06"><a href="#Pass06" class="headerlink" title="Pass06"></a>Pass06</h1><p>空格绕过，没有对首尾空格过滤，<code>1.php</code>即可。</p><p><img src="/1075/2.PNG" alt></p><h1 id="Pass07"><a href="#Pass07" class="headerlink" title="Pass07"></a>Pass07</h1><p>点绕过，没有末尾的点过滤，<code>1.php.</code>即可。</p><p><img src="/1075/3.PNG" alt></p><h1 id="Pass08"><a href="#Pass08" class="headerlink" title="Pass08"></a>Pass08</h1><p><code>::$DATA</code>绕过（win），没有对<code>::$DATA</code>过滤，<code>1.php::$DATA</code>即可。</p><p><img src="/1075/4.PNG" alt></p><h1 id="Pass09"><a href="#Pass09" class="headerlink" title="Pass09"></a>Pass09</h1><p>点空格点过滤，<code>1.php. .</code>即可。</p><p><img src="/1075/5.PNG" alt></p><h1 id="Pass10"><a href="#Pass10" class="headerlink" title="Pass10"></a>Pass10</h1><p>双写绕过，<code>1.phphpp</code>、<code>1.pphphp</code>均可。</p><p><img src="/1075/6.PNG" alt></p><h1 id="Pass11"><a href="#Pass11" class="headerlink" title="Pass11"></a>Pass11</h1><p>GET报文%00截断，修改文件后缀<code>.jpg</code>绕过文件后缀检测，修改保存目录为<code>../upload/1.php%00</code>，后面加截断使文件保存为<code>.php</code>格式。</p><p><img src="/1075/7.PNG" alt></p><h1 id="Pass12"><a href="#Pass12" class="headerlink" title="Pass12"></a>Pass12</h1><p>GET报文0x00截断，修改文件后缀<code>.jpg</code>绕过文件后缀检测，修改保存目录为<code>../upload/1.php%00</code>，<strong>选中<code>%00</code>右键转<code>URL-Decode</code>，或者点击<code>Hex</code>直接在16进制中修改</strong>，使文件保存为<code>.php</code>格式。</p><p><img src="/1075/8.PNG" alt></p><p><img src="/1075/9.PNG" alt></p>]]></content>
-      
-      
-      
-        <tags>
-            
-            <tag> 网络安全 </tag>
-            
-            <tag> burpsuite </tag>
-            
-            <tag> upload-labs </tag>
             
         </tags>
       
@@ -1378,29 +1397,6 @@
     
     
     <entry>
-      <title>【信息网络学习day11 H3C设备配置静态路由】</title>
-      <link href="/1029/"/>
-      <url>/1029/</url>
-      
-        <content type="html"><![CDATA[<p>在网络中，路由器负责将数据报文在逻辑网段间进行转发，其中路由是指导路由器如何进行数据报文发送的路径信息。</p><p>每台路由器都有路由表，路由存储在路由表中。</p><p>由手工配置的静态路由，无开销，配置简单，需人工维护，适合简单拓扑结构的网络。</p><p>在H3C模拟器上进行静态路由的配置，系统版本v7。</p><a id="more"></a><h1 id="静态路由"><a href="#静态路由" class="headerlink" title="静态路由"></a>静态路由</h1><h2 id="拓扑"><a href="#拓扑" class="headerlink" title="拓扑"></a>拓扑</h2><p>按照下图拓扑连接，并配置各端口IP地址：</p><p><img src="/1029/1.PNG" alt></p><p>一般在拓扑网络内部配置<strong>静态路由</strong>，在网络边界为了省事配置<strong>默认路由</strong>，即目的网段为<strong>0.0.0.0/0</strong>的静态路由。</p><h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>在<code>R1</code>、<code>R2</code>上配置默认路由，指向下一跳IP地址：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R1]ip route-static 0.0.0.0 0 12.0.0.2</span><br><span class="line">[R3]ip route-static 0.0.0.0 0 23.0.0.1</span><br></pre></td></tr></table></figure><p>在<code>R2</code>上配置非直连的两个网段<strong>10.0.0.0/24</strong>、<strong>30.0.0.0/24</strong>的静态路由，前者指向下一跳IP地址，<strong><em>后者可以指定下一跳IP地址或者出接口</em></strong>，这里按照出接口配置：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R2]ip route-static 10.0.0.0 24 12.0.0.1</span><br><span class="line">[R2]ip route-static 30.0.0.0 24 s1/0</span><br></pre></td></tr></table></figure><h1 id="路由备份与负载分担"><a href="#路由备份与负载分担" class="headerlink" title="路由备份与负载分担"></a>路由备份与负载分担</h1><ol><li>路由备份：</li></ol><ul><li>到相同目的地址的下一跳和优先级都不同</li><li>优先级高的为主，低的为备</li></ul><ol start="2"><li>负载分担：</li></ol><ul><li>到相同目的地址的下一跳不同，但优先级相同</li><li>到目的地的流量将均匀分布</li></ul><h2 id="拓扑-1"><a href="#拓扑-1" class="headerlink" title="拓扑"></a>拓扑</h2><p>按照下图拓扑连接，并配置各端口IP地址：</p><p><img src="/1029/2.PNG" alt></p><h2 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h2><p>在<code>RTA</code>上配置到<code>RTB</code>的lo0端口的两条静态路由：</p><p>优先级一致时为负载分担：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[RTA]ip route-static 2.2.2.2 32 10.0.0.2 preference 60</span><br><span class="line">[RTA]ip route-static 2.2.2.2 32 20.0.0.2 preference 60</span><br></pre></td></tr></table></figure><p>优先级不一致时为路由备份：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[RTA]ip route-static 2.2.2.2 32 10.0.0.2 preference 50 //主</span><br><span class="line">[RTA]ip route-static 2.2.2.2 32 20.0.0.2 preference 100 //备</span><br></pre></td></tr></table></figure><h1 id="黑洞路由"><a href="#黑洞路由" class="headerlink" title="黑洞路由"></a>黑洞路由</h1><p>正确的应用黑洞路由可以消除环路。</p><h2 id="拓扑-2"><a href="#拓扑-2" class="headerlink" title="拓扑"></a>拓扑</h2><p>按照下图拓扑连接，并配置各端口IP地址：</p><p><img src="/1029/3.PNG" alt></p><p>当<strong>10.0.0.0/16</strong>网段中掩码24位的子网段很多时（图中只放了两个示例），配置多条静态路由显然很麻烦。这时可在<code>R3</code>上配置一条默认路由作为出口路由，同时搭配一条黑洞路由，避免子网段间访问出现环路。</p><h2 id="配置-2"><a href="#配置-2" class="headerlink" title="配置"></a>配置</h2><p><code>R4</code>上配置到静态路由：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[R4]ip route-static 10.0.0.0 16 20.0.0.1</span><br></pre></td></tr></table></figure><p><code>R1</code>、<code>R2</code>上配置缺省路由指向<code>R3</code>：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R1]ip route-static 0.0.0.0 0 10.0.0.2</span><br><span class="line">[R2]ip route-static 0.0.0.0 0 10.0.1.2</span><br></pre></td></tr></table></figure><p><code>R3</code>上配置出口缺省路由搭配内部网段黑洞路由：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R3]ip route-static 0.0.0.0 0 20.0.0.2</span><br><span class="line">[R3]ip route-static 10.0.0.0 16 NULL 0</span><br></pre></td></tr></table></figure><h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># 若不配置黑洞路由，例如当R2与R3断路后，R1到R2的包会按照缺省路由发往R4，R4又会发回R3，造成环路</span><br><span class="line"></span><br><span class="line">[R1]tracert 10.0.1.1</span><br><span class="line">traceroute to 10.0.1.1 (10.0.1.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  10.0.0.2 (10.0.0.2)  1.000 ms  0.000 ms  1.000 ms</span><br><span class="line"> 2  20.0.0.2 (20.0.0.2)  1.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 3  20.0.0.1 (20.0.0.1)  1.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 4  20.0.0.2 (20.0.0.2)  1.000 ms  0.000 ms  2.000 ms</span><br><span class="line"> 5  20.0.0.1 (20.0.0.1)  0.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 6  20.0.0.2 (20.0.0.2)  1.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 7  20.0.0.1 (20.0.0.1)  2.000 ms  3.000 ms  2.000 ms</span><br><span class="line"> 8  20.0.0.2 (20.0.0.2)  2.000 ms  2.000 ms *</span><br><span class="line"> 9</span><br><span class="line"></span><br><span class="line"># 若配置黑洞路由，当R2与R3断路后，R1到R2的包会直接丢弃</span><br><span class="line"></span><br><span class="line">[R1]tracert 10.0.1.1</span><br><span class="line">traceroute to 10.0.1.1 (10.0.1.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  10.0.0.2 (10.0.0.2)  1.000 ms  1.000 ms  0.000 ms</span><br><span class="line"> 2</span><br></pre></td></tr></table></figure><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol><li>H3C X00050001 第21章 IP路由原理</li><li>H3C X00050002 第22章 直连路由和静态路由</li></ol>]]></content>
-      
-      
-      
-        <tags>
-            
-            <tag> 信息网络 </tag>
-            
-            <tag> H3C </tag>
-            
-            <tag> 静态路由 </tag>
-            
-        </tags>
-      
-    </entry>
-    
-    
-    
-    <entry>
       <title>【信息网络学习day11 H3C设备配置vlan间路由】</title>
       <link href="/1028/"/>
       <url>/1028/</url>
@@ -1416,6 +1412,29 @@
             <tag> H3C </tag>
             
             <tag> 单臂路由 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
+      <title>【信息网络学习day11 H3C设备配置静态路由】</title>
+      <link href="/1029/"/>
+      <url>/1029/</url>
+      
+        <content type="html"><![CDATA[<p>在网络中，路由器负责将数据报文在逻辑网段间进行转发，其中路由是指导路由器如何进行数据报文发送的路径信息。</p><p>每台路由器都有路由表，路由存储在路由表中。</p><p>由手工配置的静态路由，无开销，配置简单，需人工维护，适合简单拓扑结构的网络。</p><p>在H3C模拟器上进行静态路由的配置，系统版本v7。</p><a id="more"></a><h1 id="静态路由"><a href="#静态路由" class="headerlink" title="静态路由"></a>静态路由</h1><h2 id="拓扑"><a href="#拓扑" class="headerlink" title="拓扑"></a>拓扑</h2><p>按照下图拓扑连接，并配置各端口IP地址：</p><p><img src="/1029/1.PNG" alt></p><p>一般在拓扑网络内部配置<strong>静态路由</strong>，在网络边界为了省事配置<strong>默认路由</strong>，即目的网段为<strong>0.0.0.0/0</strong>的静态路由。</p><h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>在<code>R1</code>、<code>R2</code>上配置默认路由，指向下一跳IP地址：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R1]ip route-static 0.0.0.0 0 12.0.0.2</span><br><span class="line">[R3]ip route-static 0.0.0.0 0 23.0.0.1</span><br></pre></td></tr></table></figure><p>在<code>R2</code>上配置非直连的两个网段<strong>10.0.0.0/24</strong>、<strong>30.0.0.0/24</strong>的静态路由，前者指向下一跳IP地址，<strong><em>后者可以指定下一跳IP地址或者出接口</em></strong>，这里按照出接口配置：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R2]ip route-static 10.0.0.0 24 12.0.0.1</span><br><span class="line">[R2]ip route-static 30.0.0.0 24 s1/0</span><br></pre></td></tr></table></figure><h1 id="路由备份与负载分担"><a href="#路由备份与负载分担" class="headerlink" title="路由备份与负载分担"></a>路由备份与负载分担</h1><ol><li>路由备份：</li></ol><ul><li>到相同目的地址的下一跳和优先级都不同</li><li>优先级高的为主，低的为备</li></ul><ol start="2"><li>负载分担：</li></ol><ul><li>到相同目的地址的下一跳不同，但优先级相同</li><li>到目的地的流量将均匀分布</li></ul><h2 id="拓扑-1"><a href="#拓扑-1" class="headerlink" title="拓扑"></a>拓扑</h2><p>按照下图拓扑连接，并配置各端口IP地址：</p><p><img src="/1029/2.PNG" alt></p><h2 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h2><p>在<code>RTA</code>上配置到<code>RTB</code>的lo0端口的两条静态路由：</p><p>优先级一致时为负载分担：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[RTA]ip route-static 2.2.2.2 32 10.0.0.2 preference 60</span><br><span class="line">[RTA]ip route-static 2.2.2.2 32 20.0.0.2 preference 60</span><br></pre></td></tr></table></figure><p>优先级不一致时为路由备份：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[RTA]ip route-static 2.2.2.2 32 10.0.0.2 preference 50 //主</span><br><span class="line">[RTA]ip route-static 2.2.2.2 32 20.0.0.2 preference 100 //备</span><br></pre></td></tr></table></figure><h1 id="黑洞路由"><a href="#黑洞路由" class="headerlink" title="黑洞路由"></a>黑洞路由</h1><p>正确的应用黑洞路由可以消除环路。</p><h2 id="拓扑-2"><a href="#拓扑-2" class="headerlink" title="拓扑"></a>拓扑</h2><p>按照下图拓扑连接，并配置各端口IP地址：</p><p><img src="/1029/3.PNG" alt></p><p>当<strong>10.0.0.0/16</strong>网段中掩码24位的子网段很多时（图中只放了两个示例），配置多条静态路由显然很麻烦。这时可在<code>R3</code>上配置一条默认路由作为出口路由，同时搭配一条黑洞路由，避免子网段间访问出现环路。</p><h2 id="配置-2"><a href="#配置-2" class="headerlink" title="配置"></a>配置</h2><p><code>R4</code>上配置到静态路由：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">[R4]ip route-static 10.0.0.0 16 20.0.0.1</span><br></pre></td></tr></table></figure><p><code>R1</code>、<code>R2</code>上配置缺省路由指向<code>R3</code>：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R1]ip route-static 0.0.0.0 0 10.0.0.2</span><br><span class="line">[R2]ip route-static 0.0.0.0 0 10.0.1.2</span><br></pre></td></tr></table></figure><p><code>R3</code>上配置出口缺省路由搭配内部网段黑洞路由：</p><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[R3]ip route-static 0.0.0.0 0 20.0.0.2</span><br><span class="line">[R3]ip route-static 10.0.0.0 16 NULL 0</span><br></pre></td></tr></table></figure><h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"># 若不配置黑洞路由，例如当R2与R3断路后，R1到R2的包会按照缺省路由发往R4，R4又会发回R3，造成环路</span><br><span class="line"></span><br><span class="line">[R1]tracert 10.0.1.1</span><br><span class="line">traceroute to 10.0.1.1 (10.0.1.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  10.0.0.2 (10.0.0.2)  1.000 ms  0.000 ms  1.000 ms</span><br><span class="line"> 2  20.0.0.2 (20.0.0.2)  1.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 3  20.0.0.1 (20.0.0.1)  1.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 4  20.0.0.2 (20.0.0.2)  1.000 ms  0.000 ms  2.000 ms</span><br><span class="line"> 5  20.0.0.1 (20.0.0.1)  0.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 6  20.0.0.2 (20.0.0.2)  1.000 ms  1.000 ms  1.000 ms</span><br><span class="line"> 7  20.0.0.1 (20.0.0.1)  2.000 ms  3.000 ms  2.000 ms</span><br><span class="line"> 8  20.0.0.2 (20.0.0.2)  2.000 ms  2.000 ms *</span><br><span class="line"> 9</span><br><span class="line"></span><br><span class="line"># 若配置黑洞路由，当R2与R3断路后，R1到R2的包会直接丢弃</span><br><span class="line"></span><br><span class="line">[R1]tracert 10.0.1.1</span><br><span class="line">traceroute to 10.0.1.1 (10.0.1.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  10.0.0.2 (10.0.0.2)  1.000 ms  1.000 ms  0.000 ms</span><br><span class="line"> 2</span><br></pre></td></tr></table></figure><h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol><li>H3C X00050001 第21章 IP路由原理</li><li>H3C X00050002 第22章 直连路由和静态路由</li></ol>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 信息网络 </tag>
+            
+            <tag> H3C </tag>
+            
+            <tag> 静态路由 </tag>
             
         </tags>
       
