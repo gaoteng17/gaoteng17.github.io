@@ -651,9 +651,9 @@
             
             <tag> 网络安全 </tag>
             
-            <tag> metasploit </tag>
-            
             <tag> john </tag>
+            
+            <tag> metasploit </tag>
             
             <tag> wpscan </tag>
             
@@ -889,9 +889,9 @@
             
             <tag> dirb </tag>
             
-            <tag> metasploit </tag>
-            
             <tag> nikto </tag>
+            
+            <tag> metasploit </tag>
             
         </tags>
       
@@ -1913,9 +1913,9 @@
       
         <tags>
             
-            <tag> backpropagation </tag>
-            
             <tag> deep learning </tag>
+            
+            <tag> backpropagation </tag>
             
         </tags>
       
@@ -1934,9 +1934,9 @@
       
         <tags>
             
-            <tag> deep learning </tag>
-            
             <tag> caffe </tag>
+            
+            <tag> deep learning </tag>
             
             <tag> android </tag>
             
@@ -1957,9 +1957,9 @@
       
         <tags>
             
-            <tag> deep learning </tag>
-            
             <tag> caffe </tag>
+            
+            <tag> deep learning </tag>
             
             <tag> opencv </tag>
             
