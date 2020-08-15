@@ -1,0 +1,1336 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+
+
+  <meta name="keywords" content="网络安全,nmap,dirb,john,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，登录后代码审计，利用溢出提权，最终获取flag。 本篇使用工具netdiscover、nmap、dirb、ssh2john。">
+<meta name="keywords" content="网络安全,nmap,dirb,john">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全0x01】SSH私钥泄露">
+<meta property="og:url" content="http://got17.cn/1051/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，登录后代码审计，利用溢出提权，最终获取flag。 本篇使用工具netdiscover、nmap、dirb、ssh2john。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://got17.cn/1051/1.PNG">
+<meta property="og:image" content="http://got17.cn/1051/2.PNG">
+<meta property="og:image" content="http://got17.cn/1051/3.PNG">
+<meta property="og:image" content="http://got17.cn/1051/4.PNG">
+<meta property="og:image" content="http://got17.cn/1051/5.PNG">
+<meta property="og:image" content="http://got17.cn/1051/6.PNG">
+<meta property="og:image" content="http://got17.cn/1051/7.PNG">
+<meta property="og:image" content="http://got17.cn/1051/8.PNG">
+<meta property="og:image" content="http://got17.cn/1051/9.PNG">
+<meta property="og:image" content="http://got17.cn/1051/10.PNG">
+<meta property="og:image" content="http://got17.cn/1051/11.PNG">
+<meta property="og:image" content="http://got17.cn/1051/12.PNG">
+<meta property="og:image" content="http://got17.cn/1051/13.PNG">
+<meta property="og:image" content="http://got17.cn/1051/14.PNG">
+<meta property="og:image" content="http://got17.cn/1051/15.PNG">
+<meta property="og:updated_time" content="2020-08-15T10:42:12.629Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【网络安全0x01】SSH私钥泄露">
+<meta name="twitter:description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，登录后代码审计，利用溢出提权，最终获取flag。 本篇使用工具netdiscover、nmap、dirb、ssh2john。">
+<meta name="twitter:image" content="http://got17.cn/1051/1.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://got17.cn/1051/">
+
+
+
+
+
+  <title>【网络安全0x01】SSH私钥泄露 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gaoteng's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1051/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gaoteng17">
+      <meta itemprop="description" content="About Life, Work and Code.">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">【网络安全0x01】SSH私钥泄露</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-12T18:43:08+08:00">
+                2020-05-12
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，登录后代码审计，利用溢出提权，最终获取flag。</p>
+<p>本篇使用工具netdiscover、nmap、dirb、ssh2john。</p>
+<a id="more"></a>
+
+<h1 id="渗透记录"><a href="#渗透记录" class="headerlink" title="渗透记录"></a>渗透记录</h1><ol>
+<li>首先使用netdiscover扫描网段，找到靶机ip地址：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netdiscover -r 192.168.1.0/24</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/1.PNG" alt></p>
+<ol start="2">
+<li>使用nmap扫描靶机ip地址，找出开放端口：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV 192.168.1.113</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/2.PNG" alt></p>
+<p>可以看到31337端口开启了http服务，大于1024的端口一般是用户可自行支配的端口，属于敏感端口。</p>
+<ol start="3">
+<li>访问31337端口的http服务，查看页面和源码均没有什么有用的信息：</li>
+</ol>
+<p><img src="/1051/3.PNG" alt></p>
+<ol start="4">
+<li>使用dirb挖掘网站目录：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dirb http://192.168.1.113:31337/</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/4.PNG" alt></p>
+<p>其中<code>robots.txt</code>提供给搜索引擎爬虫，告知网站中哪些资源不可爬取，一般这里会有敏感信息。</p>
+<p>另外一个<code>/.ssh</code>也很有意思，有可能会有SSH秘钥。</p>
+<ol start="5">
+<li>访问<code>robots.txt</code>，看到一个不被允许访问的敏感目录<code>/taxes</code>，访问得到第一个flag：</li>
+</ol>
+<p><img src="/1051/5.PNG" alt></p>
+<p><img src="/1051/6.PNG" alt></p>
+<ol start="6">
+<li>再回过头访问<code>/.ssh</code>目录，可以看到SSH秘钥对，将私钥和公钥都下载到本地：</li>
+</ol>
+<p><img src="/1051/7.PNG" alt></p>
+<p><img src="/1051/8.PNG" alt></p>
+<ol start="7">
+<li>修改私钥<code>id_rsa</code>权限为600，即只允许root用户的读写操作，否则ssh登录会因为权限太多被拒绝：</li>
+</ol>
+<p><img src="/1051/9.PNG" alt></p>
+<ol start="8">
+<li>使用ssh2john对私钥进行破解：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python /usr/share/john/ssh2john.py id_rsa &gt; crack</span><br><span class="line">zcat /usr/share/wordlists/rockyou.txt.gz | john crack</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/10.PNG" alt></p>
+<p>可以看到已破解出passphrase是starwars。</p>
+<ol start="9">
+<li>cat公钥得到用户名，配合私钥以及破解出来的密码，ssh登录靶机：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@gaoteng17:~/Desktop<span class="comment"># cat id_rsa.pub</span></span><br><span class="line">root@gaoteng17:~/Desktop<span class="comment"># ssh -i id_rsa simon@192.168.1.113</span></span><br><span class="line">Enter passphrase <span class="keyword">for</span> key <span class="string">'id_rsa'</span>:starwars</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/11.PNG" alt></p>
+<ol start="10">
+<li>切换到<code>/root</code>目录下，查看敏感文件，找到flag，但是权限不够：</li>
+</ol>
+<p><img src="/1051/12.PNG" alt></p>
+<ol start="11">
+<li>查看<code>/root</code>目录下的<code>read_message.c</code>文件，得到第2个flag：</li>
+</ol>
+<p><img src="/1051/13.PNG" alt></p>
+<p>审计代码，发现有溢出漏洞。</p>
+<ol start="12">
+<li>查找有权限执行的文件，这步其实没怎么搞明白：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find / -perm -4000 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p>/是从根目录开始查找，最后的2&gt;/dev/null是将stderr信息转向到这个特殊null文件中，这样屏幕不会被权限不够这些错误信息刷屏从而找不到有用信息，0对应stdin，1对应stdout，但是中间的-perm -4000参数没怎么搞明白，网上也没搜到，以后再补充吧。</p>
+<p><img src="/1051/14.PNG" alt></p>
+<ol start="13">
+<li>利用代码的溢出，输20位以Simon打头的字符，后面接上<code>/bin/sh</code>，实现提权，获得最后一个flag：</li>
+</ol>
+<p><img src="/1051/15.PNG" alt></p>
+<p>这个也没怎么搞明白，为什么后面接<code>/bin/sh</code>就能提权，也没搜到，以后再补充吧。</p>
+<h1 id="命令总结"><a href="#命令总结" class="headerlink" title="命令总结"></a>命令总结</h1><h2 id="netdiscover"><a href="#netdiscover" class="headerlink" title="netdiscover"></a>netdiscover</h2><p>专用的二层发现工具。拥有主动和被动发现两种方式。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-i:网卡</td>
+<td>选择你监控的网卡。比如eth0</td>
+</tr>
+<tr>
+<td>-r:range</td>
+<td>指定IP段。比如192.168.0.0/24</td>
+</tr>
+<tr>
+<td>-l:filename</td>
+<td>从文件读取range列表</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>被动模式。默默的侦听指定的网卡以发现别的二层主机</td>
+</tr>
+<tr>
+<td>-t</td>
+<td>ARP包发送间隔。单位毫秒。这个可以用来规避检测系统的告警。</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>发包数量</td>
+</tr>
+</tbody></table>
+<p>举例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">netdiscover  -i eth0 -r 192.168.43.0/24   主动发现：-i指定所要侦听的网卡，-r指定ip段。</span><br><span class="line">netdiscover -p                            被动发现</span><br></pre></td></tr></table></figure>
+
+<h2 id="nmap"><a href="#nmap" class="headerlink" title="nmap"></a>nmap</h2><p>十条nmap常用的扫描命令:</p>
+<ol>
+<li>获取远程主机的系统类型及开放端口</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nmap -sS -P0 -sV -O &lt;target&gt;</span><br><span class="line">这里的 &lt; target &gt; 可以是单一 IP, 或主机名，或域名，或子网</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>-sS TCP SYN 扫描 (又称半开放,或隐身扫描)</li>
+<li>-P0 允许你关闭 ICMP pings.</li>
+<li>-sV 打开系统版本检测</li>
+<li>-O 尝试识别远程操作系统</li>
+</ul>
+<p>其它选项:</p>
+<ul>
+<li>-A 同时打开操作系统指纹和版本检测</li>
+<li>-v 详细输出扫描情况.</li>
+</ul>
+<ol start="2">
+<li>列出开放了指定端口的主机列表</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sT -p 80 -oG – 192.168.1.* | grep open</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>在网络寻找所有在线主机</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sP 192.168.0.*</span><br></pre></td></tr></table></figure>
+
+<p>或者也可用以下命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nmap -sP 192.168.0.0/24</span><br><span class="line">指定 subnet</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>Ping 指定范围内的 IP 地址</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sP 192.168.1.100-254</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>在某段子网上查找未占用的 IP</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -T4 -sP 192.168.2.0/24 &amp;&amp; egrep “00:00:00:00:00:00″ /proc/net/arp</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>在局域网上扫找 Conficker 蠕虫病毒</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -PN -T4 -p139,445 -n -v –script=smb-check-vulns –script-args safe=1 192.168.0.1-254</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>扫描网络上的恶意接入点 （rogue APs）.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nmap -A -p1-85,113,443,8080-8100 -T4 –min-hostgroup 50 –max-rtt-timeout</span><br><span class="line">2000 –initial-rtt-timeout 300 –max-retries 3 –host-timeout 20m</span><br><span class="line">–max-scan-delay 1000 -oA wapscan 10.0.0.0/8</span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>使用诱饵扫描方法来扫描主机端口</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nmap -sS 192.168.0.10 -D 192.168.0.2</span><br></pre></td></tr></table></figure>
+
+<ol start="9">
+<li>为一个子网列出反向DNS记录</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -R -sL 209.85.229.99/27 | awk ‘&#123;<span class="keyword">if</span>(<span class="variable">$3</span>==”not”)<span class="built_in">print</span>”(“<span class="variable">$2</span>″) no PTR”;<span class="keyword">else</span> <span class="built_in">print</span><span class="variable">$3</span>″ is “<span class="variable">$2</span>&#125;’ | grep ‘(‘</span><br></pre></td></tr></table></figure>
+
+<ol start="10">
+<li>显示网络上共有多少台 Linux 及 Win 设备?</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo nmap -F -O 192.168.0.1-255 | grep “Running: ” &gt; /tmp/os; <span class="built_in">echo</span> “$(cat /tmp/os | grep Linux \</span><br><span class="line">| wc -l) Linux device(s)”; <span class="built_in">echo</span> “$(cat /tmp/os | grep Windows | wc -l) Window(s) device”</span><br></pre></td></tr></table></figure>
+
+<h2 id="dirb"><a href="#dirb" class="headerlink" title="dirb"></a>dirb</h2><p>dirb是一个类似windows下御剑这些目录扫描工具，下面是几个常用的参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>设置ua</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>设置cookie带cookie扫描</td>
+</tr>
+<tr>
+<td>-N</td>
+<td>忽略某些响应码</td>
+</tr>
+<tr>
+<td>-o</td>
+<td>输出结果</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>使用代理</td>
+</tr>
+<tr>
+<td>-X</td>
+<td>在每个测试目录上附加后缀</td>
+</tr>
+<tr>
+<td>-z</td>
+<td>设置毫秒延迟</td>
+</tr>
+</tbody></table>
+<p>举例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">一、正常扫描</span><br><span class="line">dirb 目标 字典路径</span><br><span class="line"></span><br><span class="line">二、设置 ua 和 cookie</span><br><span class="line">dirb 目标 字典路径 -a <span class="string">"ua"</span>  -c <span class="string">"cookie"</span></span><br><span class="line"></span><br><span class="line">三、使用代理和输出结果</span><br><span class="line">dirb 目标 字典路径 -p ip:port -o result.txt</span><br><span class="line"></span><br><span class="line">四、设置附加后缀</span><br><span class="line">dirb dirb 目标 字典路径 -X <span class="built_in">test</span>(这样每个被测试的字典都附加了<span class="built_in">test</span>)</span><br><span class="line"></span><br><span class="line">五、设置毫秒延迟</span><br><span class="line">如果目标存在一些安全程序爬扫描太快被屏蔽的话可以设置-z参数单位是毫秒</span><br><span class="line">dirb dirb 目标 字典路径 -z 1000 (1秒)</span><br><span class="line">现在只能1秒访问一次了</span><br></pre></td></tr></table></figure>
+
+<h2 id="ssh2john"><a href="#ssh2john" class="headerlink" title="ssh2john"></a>ssh2john</h2><p>John the Ripper可以破解在RSA加密中创建的SSH私钥。</p>
+<p>首先利用自带的ssh2john工具改变SSH私钥的格式变成john能处理的格式，然后跑字典进行破解：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">chmod 600 id_rsa</span><br><span class="line">ssh2john id_rsa &gt; crack</span><br><span class="line">john --wordlist=/usr/share/wordlists/rockyou.txt crack</span><br><span class="line">john crack --show</span><br><span class="line"></span><br><span class="line">字典是gz包的话：</span><br><span class="line">zcat /usr/share/wordlists/rockyou.txt.gz | john crack</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://www.bilibili.com/video/BV1SJ411h7VW" target="_blank" rel="noopener">2020发布 CTF基础入门/CTF教程零基础 渗透测试/web安全/CTF夺旗【整套教程】</a></li>
+<li><a href="https://blog.csdn.net/qq_30247635/article/details/86257968" target="_blank" rel="noopener">Netdiscover使用</a></li>
+<li><a href="https://www.linuxprobe.com/10-nmap.html" target="_blank" rel="noopener">十条nmap常用的扫描命令</a></li>
+<li><a href="https://zhuanlan.zhihu.com/p/26549845" target="_blank" rel="noopener">(每日一工具)dirb目录扫描工具</a></li>
+<li><a href="https://www.cnblogs.com/zlgxzswjy/p/10081873.html" target="_blank" rel="noopener">SSH passphrase的破解</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/网络安全/" rel="tag"><i class="fa fa-tag"></i> 网络安全</a>
+          
+            <a href="/tags/nmap/" rel="tag"><i class="fa fa-tag"></i> nmap</a>
+          
+            <a href="/tags/dirb/" rel="tag"><i class="fa fa-tag"></i> dirb</a>
+          
+            <a href="/tags/john/" rel="tag"><i class="fa fa-tag"></i> john</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/1050/" rel="next" title="【磁盘mbr转gpt后缺少esp分区导致win10无法引导的解决方案】">
+                <i class="fa fa-chevron-left"></i> 【磁盘mbr转gpt后缺少esp分区导致win10无法引导的解决方案】
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/1052/" rel="prev" title="【网络安全0x02】SSH服务器夺旗">
+                【网络安全0x02】SSH服务器夺旗 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+    
+    <div id="gitalk-container">
+    </div>
+  
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="gaoteng17">
+            
+              <p class="site-author-name" itemprop="name">gaoteng17</p>
+              <p class="site-description motion-element" itemprop="description">About Life, Work and Code.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">79</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/gaoteng17" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:gaoteng17@gmail.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://weibo.com/u/5544866728" target="_blank" title="Weibo">
+                    
+                      <i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#渗透记录"><span class="nav-number">1.</span> <span class="nav-text">渗透记录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#命令总结"><span class="nav-number">2.</span> <span class="nav-text">命令总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#netdiscover"><span class="nav-number">2.1.</span> <span class="nav-text">netdiscover</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nmap"><span class="nav-number">2.2.</span> <span class="nav-text">nmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dirb"><span class="nav-number">2.3.</span> <span class="nav-text">dirb</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ssh2john"><span class="nav-number">2.4.</span> <span class="nav-text">ssh2john</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+  <div class="footer-custom">Welcome to my <a target="_blank" href="https://github.com/gaoteng17">GitHub Page</a></div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+   
+
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID:  '96531982aa814e82e033', 
+          clientSecret: '9d64fd0a7523408d110bfc9839658aaa2a0ee62e',
+          id: window.location.pathname,
+          repo: 'Blog_Comments', 
+          owner: 'gaoteng17', 
+          admin: 'gaoteng17', 
+          distractionFreeMode: 'true',
+        })
+        gitalk.render('gitalk-container')
+    </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

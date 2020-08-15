@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+
+
+  <meta name="keywords" content="python,lzw,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="LZW 压缩技术由以色列人 Lempel 和 Ziv 共同提出，美国人 Welch 将其从概念发展到实用阶段。LZW使用字典库查找方案。它读入待压缩的数据并与一个字典库（库开始是空的）中的字符串对比，如有匹配的字符串，则输出该字符串数据在字典库中的位置索引，否则将该字符串插入字典中。LZW广泛应用于无损数据压缩，包括无损图像压缩领域，包括 GIF、TIFF、PNG 等格式图像文件。 本篇文章使用P">
+<meta name="keywords" content="python,lzw">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lzw编解码实现">
+<meta property="og:url" content="http://got17.cn/1001/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="LZW 压缩技术由以色列人 Lempel 和 Ziv 共同提出，美国人 Welch 将其从概念发展到实用阶段。LZW使用字典库查找方案。它读入待压缩的数据并与一个字典库（库开始是空的）中的字符串对比，如有匹配的字符串，则输出该字符串数据在字典库中的位置索引，否则将该字符串插入字典中。LZW广泛应用于无损数据压缩，包括无损图像压缩领域，包括 GIF、TIFF、PNG 等格式图像文件。 本篇文章使用P">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-06-26T11:13:44.256Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="lzw编解码实现">
+<meta name="twitter:description" content="LZW 压缩技术由以色列人 Lempel 和 Ziv 共同提出，美国人 Welch 将其从概念发展到实用阶段。LZW使用字典库查找方案。它读入待压缩的数据并与一个字典库（库开始是空的）中的字符串对比，如有匹配的字符串，则输出该字符串数据在字典库中的位置索引，否则将该字符串插入字典中。LZW广泛应用于无损数据压缩，包括无损图像压缩领域，包括 GIF、TIFF、PNG 等格式图像文件。 本篇文章使用P">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://got17.cn/1001/">
+
+
+
+
+
+  <title>lzw编解码实现 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gaoteng's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1001/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gaoteng17">
+      <meta itemprop="description" content="About Life, Work and Code.">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">lzw编解码实现</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2017-07-04T21:51:45+08:00">
+                2017-07-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>LZW 压缩技术由以色列人 Lempel 和 Ziv 共同提出，美国人 Welch 将其从概念发展到实用阶段。LZW使用字典库查找方案。它读入待压缩的数据并与一个字典库（库开始是空的）中的字符串对比，如有匹配的字符串，则输出该字符串数据在字典库中的位置索引，否则将该字符串插入字典中。LZW广泛应用于<strong>无损数据压缩</strong>，包括无损图像压缩领域，包括 GIF、TIFF、PNG 等格式图像文件。</p>
+<p>本篇文章使用Python3.6工具、win10(64bit)环境，实现LZW的编码及解码流程，并测试编解码效果。除此之外，提出一些改进的想法，并作简单分析与思考。</p>
+<a id="more"></a>
+
+<h1 id="算法思想"><a href="#算法思想" class="headerlink" title="算法思想"></a>算法思想</h1><h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>LZW的编码思想如以下流程所示：</p>
+<ol>
+<li>初始化编码字典，其中含有所有可能出现的单字符。</li>
+<li>从字典中查找匹配当前字符串前缀的最长字符串W。</li>
+<li>将W的字典下标作为编码输出并从当前字符串中删去W。 </li>
+<li>将W和W在当前字符串中的后续字符合并添加到编码字典中。</li>
+<li>重复步骤2。</li>
+</ol>
+<p>举例如下：</p>
+<p><strong>输入数据流</strong></p>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>字符</td>
+<td>A</td>
+<td>B</td>
+<td>B</td>
+<td>A</td>
+<td>B</td>
+<td>A</td>
+<td>B</td>
+<td>A</td>
+<td>C</td>
+</tr>
+</tbody></table>
+<p><strong>编码过程</strong></p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>位置</th>
+<th>索引</th>
+<th>字典</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+<td>1</td>
+<td>A</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>2</td>
+<td>B</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>3</td>
+<td>C</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>AB</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>5</td>
+<td>BB</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>6</td>
+<td>BA</td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>7</td>
+<td>ABA</td>
+<td>4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>6</td>
+<td>8</td>
+<td>ABAC</td>
+<td>7</td>
+</tr>
+<tr>
+<td>6</td>
+<td></td>
+<td></td>
+<td></td>
+<td>3</td>
+</tr>
+</tbody></table>
+<h2 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h2><p>LZW的解码思想如以下流程所示：</p>
+<ol>
+<li>初始化解码字典，其中含有所有可能出现的下标(对应编码字典)。</li>
+<li>从字典中查找匹配当前待解码字符的下标W。</li>
+<li>将P和W对应字符串首字符合并添加到解码字典中。</li>
+<li>将W在解码字典中对应的字符串作为解码输出并把输出存为旧字符串P。 </li>
+<li>重复步骤2。</li>
+</ol>
+<p>举例如下：</p>
+<p><strong>输入数据流</strong></p>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>字符</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>4</td>
+<td>7</td>
+<td>3</td>
+</tr>
+</tbody></table>
+<p><strong>解码过程</strong></p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>数据</th>
+<th>旧字符串</th>
+<th>输出</th>
+<th>索引</th>
+<th>字典</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>A</td>
+<td>1</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>B</td>
+<td>2</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>C</td>
+<td>3</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td></td>
+<td>A</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>A</td>
+<td>B</td>
+<td>AB</td>
+<td>4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>B</td>
+<td>B</td>
+<td>BB</td>
+<td>5</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>B</td>
+<td>AB</td>
+<td>BA</td>
+<td>6</td>
+</tr>
+<tr>
+<td>5</td>
+<td>7</td>
+<td>AB</td>
+<td>ABA</td>
+<td>ABA</td>
+<td>7</td>
+</tr>
+<tr>
+<td>6</td>
+<td>3</td>
+<td>ABA</td>
+<td>C</td>
+<td>ABAC</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h2 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h2><p>待编码原文本存在text.txt中；将lzw编码后的文本存到compress.txt中；之后再次通过lzw解码的文本存到decompress.txt中：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> struct <span class="keyword">import</span> *</span><br><span class="line">f1 = open(<span class="string">"text.txt"</span>, <span class="string">"r"</span>)         <span class="comment">#待编码文本</span></span><br><span class="line">f2 = open(<span class="string">"compress.txt"</span>, <span class="string">"wb"</span>)    <span class="comment">#编码后文本</span></span><br><span class="line">f3 = open(<span class="string">"decompress.txt"</span>, <span class="string">"w"</span>)   <span class="comment">#解码后文本</span></span><br><span class="line"></span><br><span class="line">Input = f1.read()                  <span class="comment">#读取文本</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#lzw编码与解码部分</span></span><br><span class="line">compressed_string = lzw_compress(Input)</span><br><span class="line">decompressed_string = lzw_decompress(compressed_string)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> compressed_string:        <span class="comment">#将编码文本写入f2</span></span><br><span class="line">	f2.write(pack(<span class="string">"H"</span>, i))	  <span class="comment">#二进制写入以获得更大压缩比</span></span><br><span class="line">f3.write(decompressed_string)      <span class="comment">#将解码文本写入f3</span></span><br><span class="line"></span><br><span class="line">f1.close()                         <span class="comment">#关闭文件，下同</span></span><br><span class="line">f2.close()</span><br><span class="line">f3.close()</span><br></pre></td></tr></table></figure>
+
+<h2 id="编码部分"><a href="#编码部分" class="headerlink" title="编码部分"></a>编码部分</h2><p>首先建立编码字典，其中含有所有可能出现的单字符：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设ASCII码0~255均为初始化字符，编码中添加字符串下标从256开始</span></span><br><span class="line">dictionary = &#123;chr(i) : i <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">pos = <span class="number">256</span></span><br><span class="line">p = <span class="string">''</span>                   <span class="comment">#初始化前缀串与编码结果集</span></span><br><span class="line">result = []</span><br></pre></td></tr></table></figure>
+
+<p>然后依次对字符串进行编码，动态更改编码字典：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> string:            <span class="comment">#遍历待编码文本</span></span><br><span class="line">	pc = p + c				<span class="comment">#取当前串为前缀串加后一字符</span></span><br><span class="line">	<span class="keyword">if</span> pc <span class="keyword">in</span> dictionary:	<span class="comment">#如果当前串在编码字典中</span></span><br><span class="line">		p = pc				<span class="comment">#更新前缀串为当前串</span></span><br><span class="line">	<span class="keyword">else</span>:					<span class="comment">#否则前缀串下标对应码字输出</span></span><br><span class="line">		result.append(dictionary[p])</span><br><span class="line">		dictionary[pc] = pos<span class="comment">#将当前串存到编码字典最后</span></span><br><span class="line">		pos += <span class="number">1</span>			<span class="comment">#编码字典位置指针加一</span></span><br><span class="line">		p = c				<span class="comment">#更新前缀串为当前遍历字符</span></span><br></pre></td></tr></table></figure>
+
+<p>最后返回编码结果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> p :						<span class="comment">#保证最后一个字符串编码完成</span></span><br><span class="line">	result.append(dictionary[p])</span><br><span class="line"><span class="keyword">return</span> result				<span class="comment">#返回编码结果</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="解码部分"><a href="#解码部分" class="headerlink" title="解码部分"></a>解码部分</h2><p>首先建立解码字典，其中含有所有可能出现的单字符：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设ASCII码0~255均为初始化字符，解码中添加字符串下标从256开始</span></span><br><span class="line">dictionary = &#123;i : chr(i) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">pos = <span class="number">256</span></span><br><span class="line">result = []						<span class="comment">#初始化解码结果集</span></span><br><span class="line">p = array.pop(<span class="number">0</span>)				<span class="comment">#取首字符初始化前缀串</span></span><br><span class="line">result.append(dictionary[p])	<span class="comment">#首字符解码输出</span></span><br></pre></td></tr></table></figure>
+
+<p>然后依次对字符串进行解码，动态更改解码字典：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> array:              <span class="comment">#遍历待解码文本</span></span><br><span class="line">	<span class="keyword">if</span> c <span class="keyword">in</span> dictionary:      <span class="comment">#如果遍历字符在解码字典中</span></span><br><span class="line">		entry = dictionary[c]<span class="comment">#将该遍历字符赋给当前串</span></span><br><span class="line"><span class="comment">#如果遍历字符不在字典中且与字典下表指针相同（即将加入解码字典）</span></span><br><span class="line">	<span class="keyword">elif</span> c == pos:			 <span class="comment">#将前缀串加首字符赋给当前串</span></span><br><span class="line">		entry = dictionary[p] + dictionary[p][<span class="number">0</span>]</span><br><span class="line">	<span class="keyword">else</span>:					 <span class="comment">#否则编码有误，抛出异常</span></span><br><span class="line">		<span class="keyword">raise</span> ValueError(<span class="string">'Compressed Error : %s'</span> % c)</span><br><span class="line">	result.append(entry)	 <span class="comment">#将当前串作为解码输出</span></span><br><span class="line">	<span class="comment">#将前缀串下标对应字符串加当前串首字符合并加入解码字典</span></span><br><span class="line">	dictionary[pos] = dictionary[p] + entry[<span class="number">0</span>]</span><br><span class="line">	pos += <span class="number">1</span>				 <span class="comment">#解码字典位置指针加一</span></span><br><span class="line">	p = c					 <span class="comment">#更新前缀串为当前遍历字符</span></span><br></pre></td></tr></table></figure>
+
+<p>最后返回解码结果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#结果存在list类中，可转换成字符串格式返回，即和原文本相同格式</span></span><br><span class="line"><span class="keyword">return</span> <span class="string">''</span>.join(result)</span><br></pre></td></tr></table></figure>
+
+<h1 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h1><p>本文使用了17.8KB的《I have a dream》与635KB的《Wuthering Heights》作为测试文本对上一章节的LZW编码进行测试，测试结果如下表：</p>
+<table>
+<thead>
+<tr>
+<th>文件名称</th>
+<th>大小</th>
+<th>字符数</th>
+<th>编码码字</th>
+<th>编码大小</th>
+<th>压缩比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>《I have a dream》</td>
+<td>17.8K</td>
+<td>18138</td>
+<td>5674</td>
+<td>9.0K</td>
+<td>50.6%</td>
+</tr>
+<tr>
+<td>《Wuthering Heights》</td>
+<td>635K</td>
+<td>645611</td>
+<td>143912</td>
+<td>281.0K</td>
+<td>44.3%</td>
+</tr>
+</tbody></table>
+<p>由此表可以看出，LZW编码存在<strong>文本量越大，编码压缩效果越好</strong>的特性。</p>
+<h1 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h1><p>在第3章实现了LZW的编码和解码后，自然对LZW压缩算法产生一些思考。通过网络查询，发现了以下几种提高LZW压缩率的改进途径：</p>
+<ol>
+<li>混合使用LZ77和LZ78。即在发现标记匹配结束后，不立即结束匹配，而是再在一个滑动窗口中寻找是否有更好的匹配，如果有就以{位置，匹配长度}组的形式写入输出流中，并把该字符串逐个增加为标记。</li>
+<li>使用固定长度字节的编码，即设定编码字典的长度，当编码字典满了之后清空字典。</li>
+<li>实时检测压缩率，当压缩率下降到一定阈值时，清空编码字典。</li>
+</ol>
+<p>这些途径都各有优缺。</p>
+<p>第一种途径可以很大地提高压缩比。但滑动窗口的选择是个复杂的问题。而且匹配长字符串会增加很多标记，使字典增加过快。</p>
+<p>第二种途径压缩速度快，压缩效率较高，该方法也广为使用。</p>
+<p>第三种途径在一般情况下应该有不错效果，但在源文件的统计规律发生较大变化大情况下，等发现字典不合适后再重建可能就来不及了。如果和其它的方法结合使用可能更好。</p>
+<p>综合各点，可以看出，在不特别考虑速度的情况下，LZW的编码压缩率主要集中于<strong>码字长度</strong>与<strong>码字个数</strong>上。</p>
+<p>结合第二种途径分析，我觉得可以在清空字典这一环节上加以改进。比如并不完全清空字典，只清空掉使用率低的码字。但这种方法实现复杂，会增加很大开销。因此采用比较折中的方法，即清空时只清空一半，保留一半原编码字典。</p>
+<p>针对此方法，修改LZW编码部分关键代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> string:</span><br><span class="line">	pc = p + c</span><br><span class="line">	<span class="keyword">if</span> pc <span class="keyword">in</span> dictionary <span class="keyword">and</span> dictionary[pc]&lt;pos: </span><br><span class="line">		p = pc				<span class="comment">#避免访问到字典已清空部分</span></span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		result.append(dictionary[p])</span><br><span class="line">		dictionary[pc] = pos</span><br><span class="line">		pos += <span class="number">1</span></span><br><span class="line">		p = c</span><br><span class="line">	<span class="keyword">if</span> pos == <span class="number">65536</span>:        <span class="comment">#设定编码字典长度16位</span></span><br><span class="line">		pos = pos&gt;&gt;<span class="number">1</span>		<span class="comment">#超过长度时清空一半字典</span></span><br></pre></td></tr></table></figure>
+
+<p>使用《Wuthering Heights》测试此方法压缩效果并与原LZW压缩算法对比如下表：</p>
+<table>
+<thead>
+<tr>
+<th>压缩方法</th>
+<th>码字个数</th>
+<th>码字长度</th>
+<th>编码大小</th>
+<th>压缩比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>不清空字典编码</td>
+<td>125909</td>
+<td>3(17bit)</td>
+<td>368.9K</td>
+<td>50.6%</td>
+</tr>
+<tr>
+<td>全清空字典编码</td>
+<td>143912</td>
+<td>2(16bit)</td>
+<td>281.0K</td>
+<td>44.3%</td>
+</tr>
+<tr>
+<td>半清空字典编码</td>
+<td>129694</td>
+<td>2(16bit)</td>
+<td>253.3K</td>
+<td>39.9%</td>
+</tr>
+</tbody></table>
+<p>可以看到，该方法针对全清空字典方案压缩率有小幅度提升。但同时也承认，在极端情况下，即<strong>未清空部分字典出现频率极低（甚至只出现一次）的情况下，只清空一半的方式反而不会得到太好的压缩效率。</strong></p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a><em>附录</em></h1><p>此处给出第3章节LZW编解码部分完整代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lzw_compress</span><span class="params">(string)</span>:</span></span><br><span class="line">	<span class="comment">#设ASCII码0~255均为初始化字符，编码中添加字符串下标从256开始</span></span><br><span class="line">	dictionary = &#123;chr(i) : i <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">	pos = <span class="number">256</span></span><br><span class="line">	p = <span class="string">''</span>                   <span class="comment">#初始化前缀串与编码结果集</span></span><br><span class="line">	result = []</span><br><span class="line">	<span class="keyword">for</span> c <span class="keyword">in</span> string:            <span class="comment">#遍历待编码文本</span></span><br><span class="line">		pc = p + c				<span class="comment">#取当前串为前缀串加后一字符</span></span><br><span class="line">		<span class="keyword">if</span> pc <span class="keyword">in</span> dictionary:	<span class="comment">#如果当前串在编码字典中</span></span><br><span class="line">			p = pc				<span class="comment">#更新前缀串为当前串</span></span><br><span class="line">		<span class="keyword">else</span>:					<span class="comment">#否则前缀串下标对应码字输出</span></span><br><span class="line">			result.append(dictionary[p])</span><br><span class="line">			dictionary[pc] = pos<span class="comment">#将当前串存到编码字典最后</span></span><br><span class="line">			pos += <span class="number">1</span>			<span class="comment">#编码字典位置指针加一</span></span><br><span class="line">			p = c				<span class="comment">#更新前缀串为当前遍历字符</span></span><br><span class="line">	<span class="keyword">if</span> p :						<span class="comment">#保证最后一个字符串编码完成</span></span><br><span class="line">		result.append(dictionary[p])</span><br><span class="line">	<span class="keyword">return</span> result				<span class="comment">#返回编码结果</span></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">lzw_decompress</span><span class="params">(array)</span>:</span></span><br><span class="line"><span class="comment">#设ASCII码0~255均为初始化字符，解码中添加字符串下标从256开始</span></span><br><span class="line">	dictionary = &#123;i : chr(i) <span class="keyword">for</span> i <span class="keyword">in</span> range(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">	pos = <span class="number">256</span></span><br><span class="line">	result = []						<span class="comment">#初始化解码结果集</span></span><br><span class="line">	p = array.pop(<span class="number">0</span>)				<span class="comment">#取首字符初始化前缀串</span></span><br><span class="line">	result.append(dictionary[p])	<span class="comment">#首字符解码输出</span></span><br><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> array:              <span class="comment">#遍历待解码文本</span></span><br><span class="line">		<span class="keyword">if</span> c <span class="keyword">in</span> dictionary:      <span class="comment">#如果遍历字符在解码字典中</span></span><br><span class="line">			entry = dictionary[c]<span class="comment">#将该遍历字符赋给当前串</span></span><br><span class="line">	<span class="comment">#如果遍历字符不在字典中且与字典下表指针相同（即将加入解码字典）</span></span><br><span class="line">		<span class="keyword">elif</span> c == pos:			 <span class="comment">#将前缀串加首字符赋给当前串</span></span><br><span class="line">			entry = dictionary[p] + dictionary[p][<span class="number">0</span>]</span><br><span class="line">		<span class="keyword">else</span>:					 <span class="comment">#否则编码有误，抛出异常</span></span><br><span class="line">			<span class="keyword">raise</span> ValueError(<span class="string">'Compressed Error : %s'</span> % c)</span><br><span class="line">		result.append(entry)	 <span class="comment">#将当前串作为解码输出</span></span><br><span class="line">		<span class="comment">#将前缀串下标对应字符串加当前串首字符合并加入解码字典</span></span><br><span class="line">		dictionary[pos] = dictionary[p] + entry[<span class="number">0</span>]</span><br><span class="line">		pos += <span class="number">1</span>				 <span class="comment">#解码字典位置指针加一</span></span><br><span class="line">		p = c					 <span class="comment">#更新前缀串为当前遍历字符</span></span><br><span class="line">	<span class="comment">#结果存在list类中，可转换成字符串格式返回，即和原文本相同格式</span></span><br><span class="line">	<span class="keyword">return</span> <span class="string">''</span>.join(result)</span><br></pre></td></tr></table></figure>
+
+<p>由于篇幅问题，LZW改进部分只在第5章节给出了核心代码，如需查阅<strong>改进部分完整代码</strong>及<strong>测试文本</strong>《I have a dream》、《Wuthering Heights》，请访问我的github页面：<a href="https://github.com/gaoteng17/lzw" target="_blank" rel="noopener">https://github.com/gaoteng17/lzw</a></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/python/" rel="tag"><i class="fa fa-tag"></i> python</a>
+          
+            <a href="/tags/lzw/" rel="tag"><i class="fa fa-tag"></i> lzw</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/1002/" rel="prev" title="h264编码器实现">
+                h264编码器实现 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+    
+    <div id="gitalk-container">
+    </div>
+  
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="gaoteng17">
+            
+              <p class="site-author-name" itemprop="name">gaoteng17</p>
+              <p class="site-description motion-element" itemprop="description">About Life, Work and Code.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">79</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/gaoteng17" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:gaoteng17@gmail.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://weibo.com/u/5544866728" target="_blank" title="Weibo">
+                    
+                      <i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#算法思想"><span class="nav-number">1.</span> <span class="nav-text">算法思想</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#编码"><span class="nav-number">1.1.</span> <span class="nav-text">编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解码"><span class="nav-number">1.2.</span> <span class="nav-text">解码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#实现"><span class="nav-number">2.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#文件操作"><span class="nav-number">2.1.</span> <span class="nav-text">文件操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#编码部分"><span class="nav-number">2.2.</span> <span class="nav-text">编码部分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#解码部分"><span class="nav-number">2.3.</span> <span class="nav-text">解码部分</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#结果"><span class="nav-number">3.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#思考"><span class="nav-number">4.</span> <span class="nav-text">思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#附录"><span class="nav-number">5.</span> <span class="nav-text">附录</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+  <div class="footer-custom">Welcome to my <a target="_blank" href="https://github.com/gaoteng17">GitHub Page</a></div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+   
+
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID:  '96531982aa814e82e033', 
+          clientSecret: '9d64fd0a7523408d110bfc9839658aaa2a0ee62e',
+          id: window.location.pathname,
+          repo: 'Blog_Comments', 
+          owner: 'gaoteng17', 
+          admin: 'gaoteng17', 
+          distractionFreeMode: 'true',
+        })
+        gitalk.render('gitalk-container')
+    </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>

