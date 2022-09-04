@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="之前搭在台湾机房的服务器莫名其妙被迁移到了香港，囧。。。 因为香港的服务器有个致命的问题，PAC模式下有较高几率无法正常访问谷歌。。。 因此只能重新搭建一个台湾机房的服务器，本文使用了teddysun的一键搭建命令，这里感谢这位大佬的全自动脚本，节省了大量的时间精力，10分钟畅游youtube！">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Google Cloud Platform上一键搭建SSR &amp; BBR加速教程">
+<meta property="og:url" content="http://got17.cn/1009/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="之前搭在台湾机房的服务器莫名其妙被迁移到了香港，囧。。。 因为香港的服务器有个致命的问题，PAC模式下有较高几率无法正常访问谷歌。。。 因此只能重新搭建一个台湾机房的服务器，本文使用了teddysun的一键搭建命令，这里感谢这位大佬的全自动脚本，节省了大量的时间精力，10分钟畅游youtube！">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1009/1.PNG">
+<meta property="og:image" content="http://got17.cn/1009/2.PNG">
+<meta property="og:image" content="http://got17.cn/1009/3.PNG">
+<meta property="og:image" content="http://got17.cn/1009/4.PNG">
+<meta property="og:image" content="http://got17.cn/1009/5.PNG">
+<meta property="og:image" content="http://got17.cn/1009/6.PNG">
+<meta property="og:image" content="http://got17.cn/1009/7.PNG">
+<meta property="og:image" content="http://got17.cn/1009/8.PNG">
+<meta property="og:image" content="http://got17.cn/1009/9.PNG">
+<meta property="og:image" content="http://got17.cn/1009/10.jpg">
+<meta property="article:published_time" content="2019-05-06T12:35:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.228Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="SSR">
+<meta property="article:tag" content="VPS">
+<meta property="article:tag" content="GCP">
+<meta property="article:tag" content="梯子">
+<meta property="article:tag" content="翻墙">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1009/1.PNG">
+
+
+<link rel="canonical" href="http://got17.cn/1009/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1009/","path":"1009/","title":"Google Cloud Platform上一键搭建SSR & BBR加速教程"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Google Cloud Platform上一键搭建SSR & BBR加速教程 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#GCP%E8%B4%A6%E5%8F%B7%E7%94%B3%E8%AF%B7"><span class="nav-number">1.</span> <span class="nav-text">GCP账号申请</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BF%AE%E6%94%B9%E9%98%B2%E7%81%AB%E5%A2%99%E8%A7%84%E5%88%99"><span class="nav-number">2.</span> <span class="nav-text">修改防火墙规则</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAVM%E5%AE%9E%E4%BE%8B"><span class="nav-number">3.</span> <span class="nav-text">创建VM实例</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%89%E8%A3%85BBR%E8%84%9A%E6%9C%AC"><span class="nav-number">4.</span> <span class="nav-text">安装BBR脚本</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%B8%80%E9%94%AE%E5%AE%89%E8%A3%85SSR"><span class="nav-number">5.</span> <span class="nav-text">一键安装SSR</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%90%8E%E8%AE%B0"><span class="nav-number">6.</span> <span class="nav-text">后记</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1009/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Google Cloud Platform上一键搭建SSR & BBR加速教程 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Google Cloud Platform上一键搭建SSR & BBR加速教程
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-05-06 20:35:08" itemprop="dateCreated datePublished" datetime="2019-05-06T20:35:08+08:00">2019-05-06</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>之前搭在台湾机房的服务器莫名其妙被迁移到了香港，囧。。。</p>
+<p>因为香港的服务器有个致命的问题，PAC模式下有较高几率无法正常访问谷歌。。。</p>
+<p>因此只能重新搭建一个台湾机房的服务器，本文使用了teddysun的一键搭建命令，这里感谢这位大佬的全自动脚本，节省了大量的时间精力，10分钟畅游youtube！</p>
+<span id="more"></span>
+
+<h1 id="GCP账号申请"><a href="#GCP账号申请" class="headerlink" title="GCP账号申请"></a>GCP账号申请</h1><p>官网(<a target="_blank" rel="noopener" href="https://cloud.google.com/free/">https://cloud.google.com/free/</a>) 注册即可，注意地区现在不能选择中国大陆了，原因似乎是大量大陆ip注册新账号薅谷歌赠金羊毛，逼着谷歌关掉大陆地区的申请。</p>
+<p>不过也没关系，地区选择香港，绑定paypal，按要求把身份证照片上传，一般一天之内审核就会通过。</p>
+<h1 id="修改防火墙规则"><a href="#修改防火墙规则" class="headerlink" title="修改防火墙规则"></a>修改防火墙规则</h1><p>访问<a target="_blank" rel="noopener" href="https://console.cloud.google.com/networking/firewalls/list">https://console.cloud.google.com/networking/firewalls/list</a> ，选择创建防火墙规则，按图中设置将所有ip、端口均放行即可。</p>
+<p><img src="/1009/1.PNG"></p>
+<h1 id="创建VM实例"><a href="#创建VM实例" class="headerlink" title="创建VM实例"></a>创建VM实例</h1><p>访问 <a target="_blank" rel="noopener" href="https://console.cloud.google.com/compute/instances">https://console.cloud.google.com/compute/instances</a> ,选择创建实例，按图填写设置。</p>
+<p><img src="/1009/2.PNG"></p>
+<ul>
+<li>名称随便填</li>
+<li>区域选台湾，地区据说是asia-east1-c更快，我没测试选了默认</li>
+<li>机器类型选微型够用，有0.6G内存和1.7G内存可选，一般0.6G就够用了</li>
+<li>启动磁盘选CentOS 7</li>
+<li>防火墙允许HTTP、HTTPS流量，不过前面做了防火墙全局设置，这个不勾也没关系</li>
+</ul>
+<h1 id="安装BBR脚本"><a href="#安装BBR脚本" class="headerlink" title="安装BBR脚本"></a>安装BBR脚本</h1><p>实例创建好之后选择SSH连接，首先切换root用户：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo -i</span><br></pre></td></tr></table></figure>
+
+<p>依次运行以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">yum install -y wget</span><br><span class="line"></span><br><span class="line">wget --no-check-certificate https://github.com/teddysun/across/raw/master/bbr.sh</span><br><span class="line"></span><br><span class="line"><span class="built_in">chmod</span> +x bbr.sh</span><br><span class="line"></span><br><span class="line">./bbr.sh</span><br></pre></td></tr></table></figure>
+
+<p>安装完成后，脚本会提示需要重启VPS，输入 y 并回车后重启。</p>
+<p>重启完成后，验证是否成功安装最新内核并开启 TCP BBR，输入以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">uname</span> -r</span><br></pre></td></tr></table></figure>
+
+<p>查看内核版本，含有版本号（2019.5.6版本号为<code>5.0.13-1.el7.elrepo.x86_64</code>）就成功了。</p>
+<p>输入下面的命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sysctl net.ipv4.tcp_available_congestion_control</span><br></pre></td></tr></table></figure>
+
+<p>返回值一般为：<code> net.ipv4.tcp_available_congestion_control = cubic reno bbr</code></p>
+<h1 id="一键安装SSR"><a href="#一键安装SSR" class="headerlink" title="一键安装SSR"></a>一键安装SSR</h1><p>依次运行以下命令：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget --no-check-certificate -O shadowsocks-all.sh https://raw.githubusercontent.com/teddysun/shadowsocks_install/master/shadowsocks-all.sh</span><br><span class="line"></span><br><span class="line"><span class="built_in">chmod</span> +x shadowsocks-all.sh</span><br><span class="line"></span><br><span class="line">./shadowsocks-all.sh 2&gt;&amp;1 | <span class="built_in">tee</span> shadowsocks-all.log</span><br></pre></td></tr></table></figure>
+
+<p>出现提示信息，选择要安装的版本。推荐选<code>ShadowsocksR</code>，输入<code>2</code>， 回车</p>
+<p><img src="/1009/3.PNG"></p>
+<p>设置密码</p>
+<p><img src="/1009/4.PNG"></p>
+<p>设置端口，可选范围1-65535，建议4位以上， 注意避免常用端口22，80，443等</p>
+<p><img src="/1009/5.PNG"></p>
+<p>选择加密方式，一般默认<code>aes-256-cfb</code>即可</p>
+<p><img src="/1009/6.PNG"></p>
+<p>选择协议，同样默认<code>origin</code>即可</p>
+<p><img src="/1009/7.PNG"></p>
+<p>选择混淆方式，依旧默认<code>plain</code></p>
+<p><img src="/1009/8.PNG"></p>
+<p>然后按任意键开始安装</p>
+<p><img src="/1009/9.PNG"></p>
+<p>安装完成后提示成功，同时显示SSR的IP、端口、密码等相关配置</p>
+<p><img src="/1009/10.jpg"></p>
+<p>之后使用PC或手机端按照配置连接即可。</p>
+<h1 id="后记"><a href="#后记" class="headerlink" title="后记"></a>后记</h1><p>Google云服务平台对新用户赠送300美元(香港地区是2,354.99港币)，可以免费使用1年，而搭建一台只是用来翻墙的VPS实际上每个月花销都不到20港币，这个赠金都足以新建很多台VPS了。这个活动似乎长期有效，只是新用户注册流程相比以前更严格一些。</p>
+<p>同时GCP还有<code>速度快</code>、<code>低延迟</code>的优势，毕竟台湾机房就在厦门正对面的台湾省彰化县，TTL值要远低于Vultr、Linode等服务商。</p>
+<p>综合来看，如果GCP羊毛每年都能稳定薅的话，那这个性价比就太高了。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/SSR/" rel="tag"># SSR</a>
+              <a href="/tags/VPS/" rel="tag"># VPS</a>
+              <a href="/tags/GCP/" rel="tag"># GCP</a>
+              <a href="/tags/%E6%A2%AF%E5%AD%90/" rel="tag"># 梯子</a>
+              <a href="/tags/%E7%BF%BB%E5%A2%99/" rel="tag"># 翻墙</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1008/" rel="prev" title="考无忧模拟考试题库软件的分析破解">
+                  <i class="fa fa-chevron-left"></i> 考无忧模拟考试题库软件的分析破解
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1010/" rel="next" title="【网络安全0x00】Kali Linux启动盘制作及物理机安装">
+                  【网络安全0x00】Kali Linux启动盘制作及物理机安装 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"9e0452855cc0ffa0648d66c1f9adfbf1"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

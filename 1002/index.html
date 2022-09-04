@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="FFmpeg是一个开源的多媒体库，使用非常广泛。FFmpeg在Linux平台下开发，但它同样也可以在其它操作系统环境中编译运行。 本文使用FFmpeg + MinGW(MSYS)  + Yasm + VS2017 的技术路线来完成FFmpeg在Windows 10(64bit)下的编译，并参考相关学习文档，使用c++语言编写一个简单的编码程序，通过调用FFmpeg库中开源.h及.dll文件，实现y">
+<meta property="og:type" content="article">
+<meta property="og:title" content="h264编码器实现">
+<meta property="og:url" content="http://got17.cn/1002/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="FFmpeg是一个开源的多媒体库，使用非常广泛。FFmpeg在Linux平台下开发，但它同样也可以在其它操作系统环境中编译运行。 本文使用FFmpeg + MinGW(MSYS)  + Yasm + VS2017 的技术路线来完成FFmpeg在Windows 10(64bit)下的编译，并参考相关学习文档，使用c++语言编写一个简单的编码程序，通过调用FFmpeg库中开源.h及.dll文件，实现y">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1002/h264_encoder.png">
+<meta property="og:image" content="http://got17.cn/1002/h264_ffplay.png">
+<meta property="og:image" content="http://got17.cn/1002/h264_parser.png">
+<meta property="article:published_time" content="2017-07-09T04:09:36.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.182Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="ffmpeg">
+<meta property="article:tag" content="h264">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1002/h264_encoder.png">
+
+
+<link rel="canonical" href="http://got17.cn/1002/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1002/","path":"1002/","title":"h264编码器实现"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>h264编码器实现 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%9B%B8%E5%85%B3%E5%B7%A5%E5%85%B7"><span class="nav-number">1.1.</span> <span class="nav-text">相关工具</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#FFmpeg"><span class="nav-number">1.1.1.</span> <span class="nav-text">FFmpeg</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#MinGW"><span class="nav-number">1.1.2.</span> <span class="nav-text">MinGW</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Yasm"><span class="nav-number">1.1.3.</span> <span class="nav-text">Yasm</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#VS2017"><span class="nav-number">1.1.4.</span> <span class="nav-text">VS2017</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#H-264"><span class="nav-number">1.2.</span> <span class="nav-text">H.264</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81%E6%B5%81%E7%A8%8B"><span class="nav-number">1.3.</span> <span class="nav-text">编码流程</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A8%8B%E5%BA%8F%E5%AE%89%E8%A3%85%E5%8F%8A%E7%8E%AF%E5%A2%83%E9%85%8D%E7%BD%AE"><span class="nav-number">2.1.</span> <span class="nav-text">程序安装及环境配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81%E5%87%BD%E6%95%B0"><span class="nav-number">2.2.</span> <span class="nav-text">编码函数</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A0%81%E6%B5%81%E8%A7%A3%E6%9E%90"><span class="nav-number">2.3.</span> <span class="nav-text">码流解析</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">3.</span> <span class="nav-text">结果</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81"><span class="nav-number">3.1.</span> <span class="nav-text">编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%A0%81%E6%B5%81%E8%A7%A3%E6%9E%90-1"><span class="nav-number">3.2.</span> <span class="nav-text">码流解析</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E8%AF%AD"><span class="nav-number">4.</span> <span class="nav-text">结语</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">5.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1002/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="h264编码器实现 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          h264编码器实现
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-09 12:09:36" itemprop="dateCreated datePublished" datetime="2017-07-09T12:09:36+08:00">2017-07-09</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>FFmpeg是一个开源的多媒体库，使用非常广泛。FFmpeg在Linux平台下开发，但它同样也可以在其它操作系统环境中编译运行。</p>
+<p>本文使用FFmpeg + MinGW(MSYS)  + Yasm + VS2017 的技术路线来完成FFmpeg在Windows 10(64bit)下的编译，并参考相关学习文档，使用c++语言编写一个简单的编码程序，通过调用FFmpeg库中开源.h及.dll文件，实现yuv格式视频文件的h.264编码。</p>
+<span id="more"></span>
+
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><h2 id="相关工具"><a href="#相关工具" class="headerlink" title="相关工具"></a>相关工具</h2><h3 id="FFmpeg"><a href="#FFmpeg" class="headerlink" title="FFmpeg"></a>FFmpeg</h3><p>FFmpeg是一套可以用来记录、转换数字音频、视频，并能将其转化为流的开源计算机程序。</p>
+<p>FFmpeg库主要由以下几个部分组成：</p>
+<ul>
+<li>libavformat：用于各种音视频封装格式的生成和解析，包括获取解码所需信息以生成解码上下文结构和读取音视频帧等功能；</li>
+<li>__libavcodec__：用于各种类型声音&#x2F;图像编解码；</li>
+<li>libavutil：包含一些公共的工具函数；</li>
+<li>libswscale：用于视频场景比例缩放、色彩映射转换；</li>
+<li>libpostproc：用于后期效果处理；</li>
+<li>_ffmpeg_：该项目提供的一个工具，可用于格式转换、解码或电视卡即时编码等；</li>
+<li>_ffsever_：一个 HTTP 多媒体即时广播串流服务器；</li>
+<li>_ffplay_：是一个简单的播放器，使用ffmpeg 库解析和解码，通过SDL显示；</li>
+</ul>
+<p>本文主要使用了libavcodec库中相关源码实现h.264视频编码。</p>
+<h3 id="MinGW"><a href="#MinGW" class="headerlink" title="MinGW"></a>MinGW</h3><p>MinGW，是Minimalist GNUfor Windows的缩写。它是一个可自由使用和自由发布的Windows特定头文件和使用GNU工具集导入库的集合，允许用户在GNU&#x2F;Linux和Windows平台生成本地的Windows程序而不需要第三方C运行时（C Runtime）库。</p>
+<p>MSYS，即Minimal GNU（POSIX）system on Windows，是一个小型的GNU环境，包括基本的bash，make等等。是Windows下最优秀的GNU环境。</p>
+<p>本文主要利用了MingW中的MSYS模块来完成FFmpeg的编译。</p>
+<h3 id="Yasm"><a href="#Yasm" class="headerlink" title="Yasm"></a>Yasm</h3><p>Yasm是一款汇编语言编译程序，是一个完全重写的NASM汇编，具有编译器程序跨平台和模块化的特性。目前，它支持x86和AMD64指令集。</p>
+<p>本文使用Yasm以达到在x86&#x2F;x64平台下汇编代码加速的作用，来给予FFmpeg支持。</p>
+<h3 id="VS2017"><a href="#VS2017" class="headerlink" title="VS2017"></a>VS2017</h3><p>Microsoft Visual Studio（简称VS）是美国微软公司的开发工具包系列产品。VS是一个基本完整的开发工具集，它包括了整个软件生命周期中所需要的大部分工具，目前最新版本为 Visual Studio 2017。</p>
+<p>本文使用VS的开发环境，主要利用它的 lib.exe 生成 *.lib 文件。</p>
+<h2 id="H-264"><a href="#H-264" class="headerlink" title="H.264"></a>H.264</h2><p>H.264，是由ITU-T视频编码专家组（VCEG）和ISO&#x2F;IEC动态图像专家组（MPEG）联合组成的联合视频组（JVT，Joint Video Team）提出的高度压缩数字视频编解码器标准。</p>
+<p>H.264主要有以下几点优势：</p>
+<ol>
+<li>低码率（Low Bit Rate）：和MPEG2和MPEG4 ASP等压缩技术相比，在同等图像质量下，采用H.264技术压缩后的数据量只有MPEG2的1&#x2F;8，MPEG4的1&#x2F;3。</li>
+<li>高质量的图像：H.264能提供连续、流畅的高质量图像（DVD质量）。</li>
+<li>容错能力强：H.264提供了解决在不稳定网络环境下容易发生的丢包等错误的必要工具。</li>
+<li>网络适应性强：H.264提供了网络抽象层（Network Abstraction Layer），使得H.264的文件能容易地在不同网络上传输（例如互联网，CDMA，GPRS，WCDMA，CDMA2000等）。</li>
+</ol>
+<p>本文主要实现了视频的h.264编码，并对编码后的h.264文件进行码流解析。</p>
+<h2 id="编码流程"><a href="#编码流程" class="headerlink" title="编码流程"></a>编码流程</h2><p>使用FFmpeg编码视频的流程大致如下图所示：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">st=&gt;start: begin</span><br><span class="line">e=&gt;end: close</span><br><span class="line">con=&gt;condition: Read Raw Data?</span><br><span class="line">op1=&gt;operation: av_register_all()</span><br><span class="line">op2=&gt;operation: avformat_alloc_output_context2()</span><br><span class="line">op3=&gt;operation: avio_open()</span><br><span class="line">op4=&gt;operation: av_new_stream()</span><br><span class="line">op5=&gt;operation: avcodec_open2()</span><br><span class="line">op6=&gt;operation: avformat_write_header()</span><br><span class="line">op7=&gt;operation: flush_encoder()</span><br><span class="line">op8=&gt;operation: av_write_trailer()</span><br><span class="line">op9=&gt;operation: av_write_frame()</span><br><span class="line">op10=&gt;operation: avcodec_encode_video2()</span><br><span class="line"></span><br><span class="line">st-&gt;op1-&gt;op2-&gt;op3-&gt;op4-&gt;op5-&gt;op6-&gt;con(no)-&gt;op7-&gt;op8-&gt;e</span><br><span class="line">con(yes,right)-&gt;op10-&gt;op9(right)-&gt;con</span><br></pre></td></tr></table></figure>
+
+<p>其中各个函数的作用如下：</p>
+<ul>
+<li>av_register_all()：注册FFmpeg所有编解码器。</li>
+<li>avformat_alloc_output_context2()：初始化输出码流的AVFormatContext。</li>
+<li>avio_open()：打开输出文件。</li>
+<li>av_new_stream()：创建输出码流的AVStream。</li>
+<li>avcodec_find_encoder()：查找编码器。</li>
+<li>avcodec_open2()：打开编码器。</li>
+<li>avformat_write_header()：写文件头。</li>
+<li>__avcodec_encode_video2()__：编码一帧视频。即将AVFrame（存储YUV像素数据）编码为AVPacket（存储H.264等格式的码流数据）。</li>
+<li>av_write_frame()：将编码后的视频码流写入文件。</li>
+<li>flush_encoder()：用于输出编码器中剩余的AVPacket。</li>
+<li>av_write_trailer()：写文件尾。</li>
+</ul>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h2 id="程序安装及环境配置"><a href="#程序安装及环境配置" class="headerlink" title="程序安装及环境配置"></a>程序安装及环境配置</h2><p>前期工作大致为以下几步：</p>
+<ol>
+<li>下载yasm，地址：<a target="_blank" rel="noopener" href="http://yasm.tortall.net/Download.html">http://yasm.tortall.net/Download.html</a> 。改名为yasm.exe放到___C:\MinGW\msys\1.0\bin___文件夹下。</li>
+<li>下载MinGW，并选择安装相应的项，即MSYS Basic System 。</li>
+<li>安装Visual Studio 2017，使用默认路径。</li>
+<li>打开___C:\MinGW\msys\1.0\msys.bat___文件，在文件头部加上：<code>call “C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvars32.bat” </code>即设置开发环境，从而使用它的 lib.exe 生成 *.lib 文件。 </li>
+<li>运行__msys.bat__, 程序根据我当前的用户名，在目录___C:\MinGW\msys\1.0\home___下建一个工作目录即___C:\MinGW\msys\1.0\home\gaoteng17___。</li>
+<li>访问FFmpeg的Github页面，将代码打包下载并解压至我的MinGW工作目录下。</li>
+<li>运行__msys.bat__,输入<code>cd FFmpeg</code>，进入FFmpeg目录；输入<code>./configure ./configure --disable-debug --enable-static --enable-swscale --disable-avformat --disable-avfilter --enable-pthreads  --enable-runtime-cpudetect --disable-w32threads --disable-ffprobe --enable-version3 --disable-everything --enable-decoder=h264 --enable-decoder=mpeg4 --disable-ffmpeg --enable-parser=h264 --enable-parser=mpeg4video --enable-parser=mpegvideo make make install</code><br> 成功后，编译生成的文件保存在 <em><strong>C:\MinGW\msys\1.0\local\bin</strong></em>,头文件保存在 ___C:\MinGW\msys\1.0\local\include___。</li>
+</ol>
+<p>至此，FFmpeg已编译完毕，前期工作完成。</p>
+<h2 id="编码函数"><a href="#编码函数" class="headerlink" title="编码函数"></a>编码函数</h2><p>编码部分的代码在这里给出，并在关键部分添加了简单注释：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * h.264 video encoder</span></span><br><span class="line"><span class="comment"> * based on FFmpeg</span></span><br><span class="line"><span class="comment"> * learned from https://github.com/leixiaohua1020/</span></span><br><span class="line"><span class="comment"> * It can encode YUV data to H.264 bitstream. </span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> __STDC_CONSTANT_MACROS</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> _WIN32</span></span><br><span class="line"><span class="comment">//Windows</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;libavutil/opt.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;libavcodec/avcodec.h&quot;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&quot;libavformat/avformat.h&quot;</span></span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">else</span></span></span><br><span class="line"><span class="comment">//Linux...</span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line"><span class="keyword">extern</span> <span class="string">&quot;C&quot;</span></span><br><span class="line">&#123;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;libavutil/opt.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;libavcodec/avcodec.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;libavformat/avformat.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">ifdef</span> __cplusplus</span></span><br><span class="line">&#125;;</span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">endif</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">/*调用flush_encoder()将编码器中剩余的视频帧输出*/</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">flush_encoder</span><span class="params">(AVFormatContext *fmt_ctx,<span class="type">unsigned</span> <span class="type">int</span> stream_index)</span></span>&#123;</span><br><span class="line">	<span class="type">int</span> ret;</span><br><span class="line">	<span class="type">int</span> got_frame;</span><br><span class="line">	AVPacket enc_pkt;</span><br><span class="line">	<span class="keyword">if</span> (!(fmt_ctx-&gt;streams[stream_index]-&gt;codec-&gt;codec-&gt;capabilities &amp;</span><br><span class="line">		CODEC_CAP_DELAY))</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">while</span> (<span class="number">1</span>) &#123;</span><br><span class="line">		enc_pkt.data = <span class="literal">NULL</span>;</span><br><span class="line">		enc_pkt.size = <span class="number">0</span>;</span><br><span class="line">		<span class="built_in">av_init_packet</span>(&amp;enc_pkt);</span><br><span class="line">		ret = <span class="built_in">avcodec_encode_video2</span> (fmt_ctx-&gt;streams[stream_index]-&gt;codec, &amp;enc_pkt,</span><br><span class="line">			<span class="literal">NULL</span>, &amp;got_frame);</span><br><span class="line">		<span class="built_in">av_frame_free</span>(<span class="literal">NULL</span>);</span><br><span class="line">		<span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">if</span> (!got_frame)&#123;</span><br><span class="line">			ret=<span class="number">0</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;Flush Encoder: 成功编码！ 当前帧：\t大小:%5d\n&quot;</span>,enc_pkt.size);</span><br><span class="line">		ret = <span class="built_in">av_write_frame</span>(fmt_ctx, &amp;enc_pkt);</span><br><span class="line">		<span class="keyword">if</span> (ret &lt; <span class="number">0</span>)</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> ret;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">(<span class="type">int</span> argc, <span class="type">char</span>* argv[])</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	AVFormatContext* pFormatCtx;</span><br><span class="line">	AVOutputFormat* fmt;</span><br><span class="line">	AVStream* video_st;</span><br><span class="line">	AVCodecContext* pCodecCtx;</span><br><span class="line">	AVCodec* pCodec;</span><br><span class="line">	AVPacket pkt;</span><br><span class="line">	<span class="type">uint8_t</span>* picture_buf;</span><br><span class="line">	AVFrame* pFrame;</span><br><span class="line">	<span class="type">int</span> picture_size;</span><br><span class="line">	<span class="type">int</span> y_size;</span><br><span class="line">	<span class="type">int</span> framecnt=<span class="number">0</span>;</span><br><span class="line">	FILE *in_file = <span class="built_in">fopen</span>(<span class="string">&quot;../ds_480x272.yuv&quot;</span>, <span class="string">&quot;rb&quot;</span>);   <span class="comment">//YUV文件路径</span></span><br><span class="line">	<span class="type">int</span> in_w=<span class="number">480</span>,in_h=<span class="number">272</span>;                              <span class="comment">//定义输入文件宽度与高度</span></span><br><span class="line">	<span class="type">int</span> framenum=<span class="number">100</span>;                                   <span class="comment">//定义编码帧数</span></span><br><span class="line">	<span class="type">const</span> <span class="type">char</span>* out_file = <span class="string">&quot;ds.h264&quot;</span>;	                <span class="comment">//输出h264文件 </span></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*注册FFmpeg编解码器*/</span></span><br><span class="line">	<span class="built_in">av_register_all</span>();</span><br><span class="line">	</span><br><span class="line">	<span class="comment">/*初始化输出码流的AVFormatContext*/</span></span><br><span class="line">	pFormatCtx = <span class="built_in">avformat_alloc_context</span>();</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*从所编译的ffmpeg库支持的muxer中查找与文件名有关联的Container类型*/</span></span><br><span class="line">	fmt = <span class="built_in">av_guess_format</span>(<span class="literal">NULL</span>, out_file, <span class="literal">NULL</span>);</span><br><span class="line">	pFormatCtx-&gt;oformat = fmt;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	<span class="comment">/*打开输出文件路径*/</span></span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">avio_open</span>(&amp;pFormatCtx-&gt;pb,out_file, AVIO_FLAG_READ_WRITE) &lt; <span class="number">0</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;无法打开输出文件! \n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">/*创建输出码流的AVStream*/</span></span><br><span class="line">	video_st = <span class="built_in">avformat_new_stream</span>(pFormatCtx, <span class="number">0</span>);</span><br><span class="line">	<span class="comment">//video_st-&gt;time_base.num = 1; </span></span><br><span class="line">	<span class="comment">//video_st-&gt;time_base.den = 25;  </span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (video_st==<span class="literal">NULL</span>)&#123;</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//设定相关参数</span></span><br><span class="line">	pCodecCtx = video_st-&gt;codec;                   <span class="comment">//编解码器</span></span><br><span class="line">	pCodecCtx-&gt;codec_id = fmt-&gt;video_codec;        <span class="comment">//编解码器id</span></span><br><span class="line">	pCodecCtx-&gt;codec_type = AVMEDIA_TYPE_VIDEO;    <span class="comment">//编解码器类型</span></span><br><span class="line">	pCodecCtx-&gt;pix_fmt = AV_PIX_FMT_YUV420P;       <span class="comment">//帧格式</span></span><br><span class="line">	pCodecCtx-&gt;width = in_w;                       <span class="comment">//宽度</span></span><br><span class="line">	pCodecCtx-&gt;height = in_h;                      <span class="comment">//高度</span></span><br><span class="line">	pCodecCtx-&gt;bit_rate = <span class="number">400000</span>;                  <span class="comment">//比特率</span></span><br><span class="line">	pCodecCtx-&gt;gop_size=<span class="number">250</span>;                       <span class="comment">//连续的画面组大小</span></span><br><span class="line"></span><br><span class="line">	pCodecCtx-&gt;time_base.num = <span class="number">1</span>;                  <span class="comment">//time_base分子</span></span><br><span class="line">	pCodecCtx-&gt;time_base.den = <span class="number">25</span>;                 <span class="comment">//time_base分母</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//H264</span></span><br><span class="line">	<span class="comment">//pCodecCtx-&gt;me_range = 16;                    //运动侦测的半径</span></span><br><span class="line">	<span class="comment">//pCodecCtx-&gt;max_qdiff = 4;                    //最大量化因子变化量</span></span><br><span class="line">	<span class="comment">//pCodecCtx-&gt;qcompress = 0.6;                  //量化器压缩比率</span></span><br><span class="line">	pCodecCtx-&gt;qmin = <span class="number">10</span>;                          <span class="comment">//最小质量</span></span><br><span class="line">	pCodecCtx-&gt;qmax = <span class="number">51</span>;                          <span class="comment">//最大质量</span></span><br><span class="line"></span><br><span class="line">	<span class="comment">//可选参数</span></span><br><span class="line">	pCodecCtx-&gt;max_b_frames=<span class="number">3</span>;                     <span class="comment">//最大b帧数</span></span><br><span class="line"></span><br><span class="line">	AVDictionary *param = <span class="number">0</span>;</span><br><span class="line">	<span class="comment">//H.264</span></span><br><span class="line">	<span class="keyword">if</span>(pCodecCtx-&gt;codec_id == AV_CODEC_ID_H264) &#123;</span><br><span class="line">		<span class="built_in">av_dict_set</span>(&amp;param, <span class="string">&quot;preset&quot;</span>, <span class="string">&quot;slow&quot;</span>, <span class="number">0</span>);</span><br><span class="line">		<span class="built_in">av_dict_set</span>(&amp;param, <span class="string">&quot;tune&quot;</span>, <span class="string">&quot;zerolatency&quot;</span>, <span class="number">0</span>);</span><br><span class="line">		<span class="comment">//av_dict_set(&amp;param, &quot;profile&quot;, &quot;main&quot;, 0);</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="comment">//H.265</span></span><br><span class="line">	<span class="keyword">if</span>(pCodecCtx-&gt;codec_id == AV_CODEC_ID_H265)&#123;</span><br><span class="line">		<span class="built_in">av_dict_set</span>(&amp;param, <span class="string">&quot;preset&quot;</span>, <span class="string">&quot;ultrafast&quot;</span>, <span class="number">0</span>);</span><br><span class="line">		<span class="built_in">av_dict_set</span>(&amp;param, <span class="string">&quot;tune&quot;</span>, <span class="string">&quot;zero-latency&quot;</span>, <span class="number">0</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//调试函数,输出文件的音、视频流的基本信息</span></span><br><span class="line">	<span class="built_in">av_dump_format</span>(pFormatCtx, <span class="number">0</span>, out_file, <span class="number">1</span>);</span><br><span class="line"></span><br><span class="line">	pCodec = <span class="built_in">avcodec_find_encoder</span>(pCodecCtx-&gt;codec_id);</span><br><span class="line">	<span class="keyword">if</span> (!pCodec)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;无法找到编码器! \n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (<span class="built_in">avcodec_open2</span>(pCodecCtx, pCodec,&amp;param) &lt; <span class="number">0</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;无法打开编码器! \n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//分配AVFrame结构体</span></span><br><span class="line">	pFrame = <span class="built_in">av_frame_alloc</span>();</span><br><span class="line">	picture_size = <span class="built_in">avpicture_get_size</span>(pCodecCtx-&gt;pix_fmt, pCodecCtx-&gt;width, pCodecCtx-&gt;height);</span><br><span class="line">	picture_buf = (<span class="type">uint8_t</span> *)<span class="built_in">av_malloc</span>(picture_size);</span><br><span class="line">	<span class="built_in">avpicture_fill</span>((AVPicture *)pFrame, picture_buf, pCodecCtx-&gt;pix_fmt, pCodecCtx-&gt;width, pCodecCtx-&gt;height);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//写文件头</span></span><br><span class="line">	<span class="built_in">avformat_write_header</span>(pFormatCtx,<span class="literal">NULL</span>);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">av_new_packet</span>(&amp;pkt,picture_size);</span><br><span class="line"></span><br><span class="line">	y_size = pCodecCtx-&gt;width * pCodecCtx-&gt;height;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> i=<span class="number">0</span>; i&lt;framenum; i++)&#123;</span><br><span class="line">		<span class="comment">//读原始YUV数据</span></span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">fread</span>(picture_buf, <span class="number">1</span>, y_size*<span class="number">3</span>/<span class="number">2</span>, in_file) &lt;= <span class="number">0</span>)&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;读取原始数据失败! \n&quot;</span>);</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		&#125;<span class="keyword">else</span> <span class="keyword">if</span>(<span class="built_in">feof</span>(in_file))&#123;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		pFrame-&gt;data[<span class="number">0</span>] = picture_buf;              <span class="comment">// Y</span></span><br><span class="line">		pFrame-&gt;data[<span class="number">1</span>] = picture_buf+ y_size;      <span class="comment">// U </span></span><br><span class="line">		pFrame-&gt;data[<span class="number">2</span>] = picture_buf+ y_size*<span class="number">5</span>/<span class="number">4</span>;  <span class="comment">// V</span></span><br><span class="line">		</span><br><span class="line">		<span class="comment">//PTS</span></span><br><span class="line">		pFrame-&gt;pts=i*(video_st-&gt;time_base.den)/((video_st-&gt;time_base.num)*<span class="number">25</span>);</span><br><span class="line">		<span class="type">int</span> got_picture=<span class="number">0</span>;</span><br><span class="line">		</span><br><span class="line">		<span class="comment">//编码部分</span></span><br><span class="line">		<span class="type">int</span> ret = <span class="built_in">avcodec_encode_video2</span>(pCodecCtx, &amp;pkt,pFrame, &amp;got_picture);</span><br><span class="line">		<span class="keyword">if</span>(ret &lt; <span class="number">0</span>)&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;编码失败! \n&quot;</span>);</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">if</span> (got_picture==<span class="number">1</span>)&#123;</span><br><span class="line">			<span class="built_in">printf</span>(<span class="string">&quot;成功编码！当前帧: %5d\t大小:%5d\n&quot;</span>,framecnt,pkt.size);</span><br><span class="line">			framecnt++;</span><br><span class="line">			pkt.stream_index = video_st-&gt;index;</span><br><span class="line">			ret = <span class="built_in">av_write_frame</span>(pFormatCtx, &amp;pkt);</span><br><span class="line">			<span class="built_in">av_free_packet</span>(&amp;pkt);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//输出编码器中剩余的AVPacket</span></span><br><span class="line">	<span class="type">int</span> ret = <span class="built_in">flush_encoder</span>(pFormatCtx,<span class="number">0</span>);</span><br><span class="line">	<span class="keyword">if</span> (ret &lt; <span class="number">0</span>) &#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;更新编码器失败！\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//写文件尾</span></span><br><span class="line">	<span class="built_in">av_write_trailer</span>(pFormatCtx);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//释放内存空间</span></span><br><span class="line">	<span class="keyword">if</span> (video_st)&#123;</span><br><span class="line">		<span class="built_in">avcodec_close</span>(video_st-&gt;codec);</span><br><span class="line">		<span class="built_in">av_free</span>(pFrame);</span><br><span class="line">		<span class="built_in">av_free</span>(picture_buf);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="built_in">avio_close</span>(pFormatCtx-&gt;pb);</span><br><span class="line">	<span class="built_in">avformat_free_context</span>(pFormatCtx);</span><br><span class="line"></span><br><span class="line">	<span class="comment">//关闭文件</span></span><br><span class="line">	<span class="built_in">fclose</span>(in_file);</span><br><span class="line"></span><br><span class="line">	<span class="built_in">getchar</span>();</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>上述代码在MinGW命令行下的编译命令为：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">g++ h264_encoder.cpp -g -o h264_encoder.exe \</span><br><span class="line">-I /usr/local/include -L /usr/local/lib \</span><br><span class="line">-lavformat -lavcodec -lavutil</span><br></pre></td></tr></table></figure>
+
+<h2 id="码流解析"><a href="#码流解析" class="headerlink" title="码流解析"></a>码流解析</h2><p>H.264原始码流由一个一个的NALU组成，该程序通过从码流中搜索0x000001和0x00000001，分离出NALU，然后再分析NALU的各个字段，从而达到H.264码流解析作用。</p>
+<p>H.264码流解析代码在这里给出，并在关键部分添加简单注释：</p>
+<figure class="highlight cpp"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * simplest h264 parser</span></span><br><span class="line"><span class="comment"> * H.264 stream analysis program. </span></span><br><span class="line"><span class="comment"> * learned from https://github.com/leixiaohua1020/</span></span><br><span class="line"><span class="comment"> * It can parse H.264 bitstream and analysis NALU of stream.</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;stdlib.h&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;string.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="comment">//H.264码流基本单元NALU类型、优先级及结构</span></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;</span><br><span class="line">	NALU_TYPE_SLICE    = <span class="number">1</span>,</span><br><span class="line">	NALU_TYPE_DPA      = <span class="number">2</span>,</span><br><span class="line">	NALU_TYPE_DPB      = <span class="number">3</span>,</span><br><span class="line">	NALU_TYPE_DPC      = <span class="number">4</span>,</span><br><span class="line">	NALU_TYPE_IDR      = <span class="number">5</span>,</span><br><span class="line">	NALU_TYPE_SEI      = <span class="number">6</span>,</span><br><span class="line">	NALU_TYPE_SPS      = <span class="number">7</span>,</span><br><span class="line">	NALU_TYPE_PPS      = <span class="number">8</span>,</span><br><span class="line">	NALU_TYPE_AUD      = <span class="number">9</span>,</span><br><span class="line">	NALU_TYPE_EOSEQ    = <span class="number">10</span>,</span><br><span class="line">	NALU_TYPE_EOSTREAM = <span class="number">11</span>,</span><br><span class="line">	NALU_TYPE_FILL     = <span class="number">12</span>,</span><br><span class="line">&#125; NaluType;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> &#123;</span><br><span class="line">	NALU_PRIORITY_DISPOSABLE = <span class="number">0</span>,</span><br><span class="line">	NALU_PRIRITY_LOW         = <span class="number">1</span>,</span><br><span class="line">	NALU_PRIORITY_HIGH       = <span class="number">2</span>,</span><br><span class="line">	NALU_PRIORITY_HIGHEST    = <span class="number">3</span></span><br><span class="line">&#125; NaluPriority;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="keyword">struct</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> startcodeprefix_len;      <span class="comment">//参数集</span></span><br><span class="line">	<span class="type">unsigned</span> len;                 <span class="comment">//NALU长度</span></span><br><span class="line">	<span class="type">unsigned</span> max_size;            <span class="comment">//NALU缓存大小</span></span><br><span class="line">	<span class="type">int</span> forbidden_bit;            <span class="comment">//禁止比特，通常为false</span></span><br><span class="line">	<span class="type">int</span> nal_reference_idc;        <span class="comment">//NALU_PRIORITY_xxxx</span></span><br><span class="line">	<span class="type">int</span> nal_unit_type;            <span class="comment">//NALU_TYPE_xxxx    </span></span><br><span class="line">	<span class="type">char</span> *buf;                    <span class="comment">//包括EBSP后首字节</span></span><br><span class="line">&#125; NALU_t;</span><br><span class="line"></span><br><span class="line">FILE *h264bitstream = <span class="literal">NULL</span>;                <span class="comment">//比特流文件</span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> info2=<span class="number">0</span>, info3=<span class="number">0</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">//找开始比特</span></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">FindStartCode2</span> <span class="params">(<span class="type">unsigned</span> <span class="type">char</span> *Buf)</span></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(Buf[<span class="number">0</span>]!=<span class="number">0</span> || Buf[<span class="number">1</span>]!=<span class="number">0</span> || Buf[<span class="number">2</span>] !=<span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span>; </span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">static</span> <span class="type">int</span> <span class="title">FindStartCode3</span> <span class="params">(<span class="type">unsigned</span> <span class="type">char</span> *Buf)</span></span>&#123;</span><br><span class="line">	<span class="keyword">if</span>(Buf[<span class="number">0</span>]!=<span class="number">0</span> || Buf[<span class="number">1</span>]!=<span class="number">0</span> || Buf[<span class="number">2</span>] !=<span class="number">0</span> || Buf[<span class="number">3</span>] !=<span class="number">1</span>) <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	<span class="keyword">else</span> <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//处理字节流格式的码流</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">GetAnnexbNALU</span> <span class="params">(NALU_t *nalu)</span></span>&#123;</span><br><span class="line">	<span class="type">int</span> pos = <span class="number">0</span>;</span><br><span class="line">	<span class="type">int</span> StartCodeFound, rewind;</span><br><span class="line">	<span class="type">unsigned</span> <span class="type">char</span> *Buf;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> ((Buf = (<span class="type">unsigned</span> <span class="type">char</span>*)<span class="built_in">calloc</span> (nalu-&gt;max_size , <span class="built_in">sizeof</span>(<span class="type">char</span>))) == <span class="literal">NULL</span>) </span><br><span class="line">		<span class="built_in">printf</span> (<span class="string">&quot;码流处理: 无法分配内存空间！\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">	nalu-&gt;startcodeprefix_len=<span class="number">3</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (<span class="number">3</span> != <span class="built_in">fread</span> (Buf, <span class="number">1</span>, <span class="number">3</span>, h264bitstream))&#123;</span><br><span class="line">		<span class="built_in">free</span>(Buf);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	info2 = <span class="built_in">FindStartCode2</span> (Buf);</span><br><span class="line">	<span class="keyword">if</span>(info2 != <span class="number">1</span>) &#123;</span><br><span class="line">		<span class="keyword">if</span>(<span class="number">1</span> != <span class="built_in">fread</span>(Buf+<span class="number">3</span>, <span class="number">1</span>, <span class="number">1</span>, h264bitstream))&#123;</span><br><span class="line">			<span class="built_in">free</span>(Buf);</span><br><span class="line">			<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		info3 = <span class="built_in">FindStartCode3</span> (Buf);</span><br><span class="line">		<span class="keyword">if</span> (info3 != <span class="number">1</span>)&#123; </span><br><span class="line">			<span class="built_in">free</span>(Buf);</span><br><span class="line">			<span class="keyword">return</span> <span class="number">-1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="keyword">else</span> &#123;</span><br><span class="line">			pos = <span class="number">4</span>;</span><br><span class="line">			nalu-&gt;startcodeprefix_len = <span class="number">4</span>;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">else</span>&#123;</span><br><span class="line">		nalu-&gt;startcodeprefix_len = <span class="number">3</span>;</span><br><span class="line">		pos = <span class="number">3</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	StartCodeFound = <span class="number">0</span>;</span><br><span class="line">	info2 = <span class="number">0</span>;</span><br><span class="line">	info3 = <span class="number">0</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span> (!StartCodeFound)&#123;</span><br><span class="line">		<span class="keyword">if</span> (<span class="built_in">feof</span> (h264bitstream))&#123;</span><br><span class="line">			nalu-&gt;len = (pos<span class="number">-1</span>)-nalu-&gt;startcodeprefix_len;</span><br><span class="line">			<span class="built_in">memcpy</span> (nalu-&gt;buf, &amp;Buf[nalu-&gt;startcodeprefix_len], nalu-&gt;len);     </span><br><span class="line">			nalu-&gt;forbidden_bit = nalu-&gt;buf[<span class="number">0</span>] &amp; <span class="number">0x80</span>; <span class="comment">//1 bit(10000000)</span></span><br><span class="line">			nalu-&gt;nal_reference_idc = nalu-&gt;buf[<span class="number">0</span>] &amp; <span class="number">0x60</span>; <span class="comment">// 2 bit(01100000)</span></span><br><span class="line">			nalu-&gt;nal_unit_type = (nalu-&gt;buf[<span class="number">0</span>]) &amp; <span class="number">0x1f</span>;<span class="comment">// 5 bit(00011111)</span></span><br><span class="line">			<span class="built_in">free</span>(Buf);</span><br><span class="line">			<span class="keyword">return</span> pos<span class="number">-1</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		Buf[pos++] = <span class="built_in">fgetc</span> (h264bitstream);</span><br><span class="line">		info3 = <span class="built_in">FindStartCode3</span>(&amp;Buf[pos<span class="number">-4</span>]);</span><br><span class="line">		<span class="keyword">if</span>(info3 != <span class="number">1</span>)</span><br><span class="line">			info2 = <span class="built_in">FindStartCode2</span>(&amp;Buf[pos<span class="number">-3</span>]);</span><br><span class="line">		StartCodeFound = (info2 == <span class="number">1</span> || info3 == <span class="number">1</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 这里找到另一个开始比特</span></span><br><span class="line"></span><br><span class="line">	rewind = (info3 == <span class="number">1</span>)? <span class="number">-4</span> : <span class="number">-3</span>;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (<span class="number">0</span> != <span class="built_in">fseek</span> (h264bitstream, rewind, SEEK_CUR))&#123;</span><br><span class="line">		<span class="built_in">free</span>(Buf);</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;码流处理: 无法设置文件指针！&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">// 这里得到完整NALU, 下一个开始比特在buf中。</span></span><br><span class="line">	</span><br><span class="line">	nalu-&gt;len = (pos+rewind)-nalu-&gt;startcodeprefix_len;</span><br><span class="line">	<span class="built_in">memcpy</span> (nalu-&gt;buf, &amp;Buf[nalu-&gt;startcodeprefix_len], nalu-&gt;len);<span class="comment">//</span></span><br><span class="line">	nalu-&gt;forbidden_bit = nalu-&gt;buf[<span class="number">0</span>] &amp; <span class="number">0x80</span>; <span class="comment">//1 bit</span></span><br><span class="line">	nalu-&gt;nal_reference_idc = nalu-&gt;buf[<span class="number">0</span>] &amp; <span class="number">0x60</span>; <span class="comment">// 2 bit</span></span><br><span class="line">	nalu-&gt;nal_unit_type = (nalu-&gt;buf[<span class="number">0</span>]) &amp; <span class="number">0x1f</span>;<span class="comment">// 5 bit</span></span><br><span class="line">	<span class="built_in">free</span>(Buf);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> (pos+rewind);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">//h264码流解析子函数，参数为码流文件路径</span></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">simplest_h264_parser</span><span class="params">(<span class="type">char</span> *url)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">	NALU_t *n;</span><br><span class="line">	<span class="type">int</span> buffersize=<span class="number">100000</span>;</span><br><span class="line"></span><br><span class="line">	FILE *myout=stdout;</span><br><span class="line"></span><br><span class="line">	h264bitstream=<span class="built_in">fopen</span>(url, <span class="string">&quot;rb+&quot;</span>);</span><br><span class="line">	<span class="keyword">if</span> (h264bitstream==<span class="literal">NULL</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;文件打开失败！\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	n = (NALU_t*)<span class="built_in">calloc</span> (<span class="number">1</span>, <span class="built_in">sizeof</span> (NALU_t));</span><br><span class="line">	<span class="keyword">if</span> (n == <span class="literal">NULL</span>)&#123;</span><br><span class="line">		<span class="built_in">printf</span>(<span class="string">&quot;NALU分配失败！\n&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	n-&gt;max_size=buffersize;</span><br><span class="line">	n-&gt;buf = (<span class="type">char</span>*)<span class="built_in">calloc</span> (buffersize, <span class="built_in">sizeof</span> (<span class="type">char</span>));</span><br><span class="line">	<span class="keyword">if</span> (n-&gt;buf == <span class="literal">NULL</span>)&#123;</span><br><span class="line">		<span class="built_in">free</span> (n);</span><br><span class="line">		<span class="built_in">printf</span> (<span class="string">&quot;NALU分配: n-&gt;buf&quot;</span>);</span><br><span class="line">		<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="type">int</span> data_offset=<span class="number">0</span>;</span><br><span class="line">	<span class="type">int</span> nal_num=<span class="number">0</span>;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;-----+-------- NALU Table ------+---------+\n&quot;</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot; NUM |    POS  |    IDC |  TYPE |   LEN   |\n&quot;</span>);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;-----+---------+--------+-------+---------+\n&quot;</span>);</span><br><span class="line"></span><br><span class="line">	<span class="keyword">while</span>(!<span class="built_in">feof</span>(h264bitstream)) </span><br><span class="line">	&#123;</span><br><span class="line">		<span class="type">int</span> data_lenth;</span><br><span class="line">		data_lenth=<span class="built_in">GetAnnexbNALU</span>(n);</span><br><span class="line"></span><br><span class="line">		<span class="type">char</span> type_str[<span class="number">20</span>]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">		<span class="keyword">switch</span>(n-&gt;nal_unit_type)&#123;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_SLICE:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;SLICE&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_DPA:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;DPA&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_DPB:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;DPB&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_DPC:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;DPC&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_IDR:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;IDR&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_SEI:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;SEI&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_SPS:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;SPS&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_PPS:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;PPS&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_AUD:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;AUD&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_EOSEQ:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;EOSEQ&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_EOSTREAM:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;EOSTREAM&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_TYPE_FILL:<span class="built_in">sprintf</span>(type_str,<span class="string">&quot;FILL&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="type">char</span> idc_str[<span class="number">20</span>]=&#123;<span class="number">0</span>&#125;;</span><br><span class="line">		<span class="keyword">switch</span>(n-&gt;nal_reference_idc&gt;&gt;<span class="number">5</span>)&#123;</span><br><span class="line">			<span class="keyword">case</span> NALU_PRIORITY_DISPOSABLE:<span class="built_in">sprintf</span>(idc_str,<span class="string">&quot;DISPOS&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_PRIRITY_LOW:<span class="built_in">sprintf</span>(idc_str,<span class="string">&quot;LOW&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_PRIORITY_HIGH:<span class="built_in">sprintf</span>(idc_str,<span class="string">&quot;HIGH&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">			<span class="keyword">case</span> NALU_PRIORITY_HIGHEST:<span class="built_in">sprintf</span>(idc_str,<span class="string">&quot;HIGHEST&quot;</span>);<span class="keyword">break</span>;</span><br><span class="line">		&#125;</span><br><span class="line"></span><br><span class="line">		<span class="built_in">fprintf</span>(myout,<span class="string">&quot;%5d| %8d| %7s| %6s| %8d|\n&quot;</span>,nal_num,data_offset,idc_str,type_str,n-&gt;len);</span><br><span class="line"></span><br><span class="line">		data_offset=data_offset+data_lenth;</span><br><span class="line"></span><br><span class="line">		nal_num++;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="comment">//释放空间</span></span><br><span class="line">	<span class="keyword">if</span> (n)&#123;</span><br><span class="line">		<span class="keyword">if</span> (n-&gt;buf)&#123;</span><br><span class="line">			<span class="built_in">free</span>(n-&gt;buf);</span><br><span class="line">			n-&gt;buf=<span class="literal">NULL</span>;</span><br><span class="line">		&#125;</span><br><span class="line">		<span class="built_in">free</span> (n);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">simplest_h264_parser</span>(<span class="string">&quot;ds.h264&quot;</span>); </span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h1 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h1><h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>原始YUV文件<code>ds_480x272.yuv</code>位于目录首页，480x272分辨率，总共100帧。H264编码程序运行时截图如下：</p>
+<p><img src="/1002/h264_encoder.png"></p>
+<p>将编码后的h264使用FFmpeg中的ffplay命令播放测试，运行截图如下：</p>
+<p><img src="/1002/h264_ffplay.png"></p>
+<h2 id="码流解析-1"><a href="#码流解析-1" class="headerlink" title="码流解析"></a>码流解析</h2><p>本程序的输入为一个H.264原始码流（裸流）的文件路径，输出为该码流的NALU统计数据，如下图所示。</p>
+<p><img src="/1002/h264_parser.png"></p>
+<p>至此，完成了视频的H.264编码及其码流的解析。</p>
+<h1 id="结语"><a href="#结语" class="headerlink" title="结语"></a>结语</h1><p>FFMPEG的视音频编解码功能极其强大，几乎囊括了现存所有的视音频编码标准。如今做视音频开发的相关企业，几乎离不开它。</p>
+<p>但从另一个角度来看，FFmpeg的学习难度也比较大。写作本篇课程设计所学习到的知识只是FFmpeg框架中极少的一部分，但对于认识FFmpeg有极大帮助。</p>
+<p>本文使用Markdown语法编写，文中所有代码，借助的库函数及测试文件均上传至了我的Github项目页面。</p>
+<p>如需查阅，请访问：<a target="_blank" rel="noopener" href="https://github.com/gaoteng17/h264_encoder_parser">https://github.com/gaoteng17/h264_encoder_parser</a> 。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><em>参考资料</em></h1><ol>
+<li>FFmpeg Documentation. <a target="_blank" rel="noopener" href="https://ffmpeg.org/ffmpeg.html">https://ffmpeg.org/ffmpeg.html</a></li>
+<li>FFmpeg - Wikipedia. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/FFmpeg">https://en.wikipedia.org/wiki/FFmpeg</a></li>
+<li>MinGW - Wikipedia. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/MinGW">https://en.wikipedia.org/wiki/MinGW</a></li>
+<li>H.264 - Wikipedia. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC">https://en.wikipedia.org/wiki/H.264/MPEG-4_AVC</a></li>
+<li>FFmpeg - Github. <a target="_blank" rel="noopener" href="https://github.com/FFmpeg/FFmpeg">https://github.com/FFmpeg/FFmpeg</a></li>
+<li>leixiaohua - Github. <a target="_blank" rel="noopener" href="https://github.com/leixiaohua1020">https://github.com/leixiaohua1020</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/ffmpeg/" rel="tag"># ffmpeg</a>
+              <a href="/tags/h264/" rel="tag"># h264</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1001/" rel="prev" title="lzw编解码实现">
+                  <i class="fa fa-chevron-left"></i> lzw编解码实现
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1003/" rel="next" title="OpenCV在图像处理方面的应用">
+                  OpenCV在图像处理方面的应用 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"90b06a653f640695a72f4a41b15023cf"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

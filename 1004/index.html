@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="Caffe全称是Convolutional Architecture for Fast Feature Embedding（卷积神经网络框架），是一个清晰、高效的深度学习框架。它是开源的，核心语言是C++，支持命令行、Python和Matlab接口，既可以在CPU上运行也可以在GPU上运行。 本文实现在Ubuntu16.04下深度学习框架caffe + cuda8.0 + cudnn5.1 + o">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ubuntu16.04+CUDA8.0+Cudnn5.1+Opencv3.2.0+Caffe框架的搭建">
+<meta property="og:url" content="http://got17.cn/1004/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="Caffe全称是Convolutional Architecture for Fast Feature Embedding（卷积神经网络框架），是一个清晰、高效的深度学习框架。它是开源的，核心语言是C++，支持命令行、Python和Matlab接口，既可以在CPU上运行也可以在GPU上运行。 本文实现在Ubuntu16.04下深度学习框架caffe + cuda8.0 + cudnn5.1 + o">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1004/driver1.png">
+<meta property="og:image" content="http://got17.cn/1004/driver2.png">
+<meta property="og:image" content="http://got17.cn/1004/driver3.png">
+<meta property="og:image" content="http://got17.cn/1004/cuda1.png">
+<meta property="og:image" content="http://got17.cn/1004/cuda2.png">
+<meta property="og:image" content="http://got17.cn/1004/cudnn1.png">
+<meta property="og:image" content="http://got17.cn/1004/cudnn2.png">
+<meta property="og:image" content="http://got17.cn/1004/opencv1.png">
+<meta property="og:image" content="http://got17.cn/1004/opencv2.png">
+<meta property="og:image" content="http://got17.cn/1004/lantern.png">
+<meta property="og:image" content="http://got17.cn/1004/caffe1.png">
+<meta property="og:image" content="http://got17.cn/1004/caffe2.png">
+<meta property="article:published_time" content="2018-01-12T04:51:45.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.203Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="caffe">
+<meta property="article:tag" content="deep learning">
+<meta property="article:tag" content="opencv">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1004/driver1.png">
+
+
+<link rel="canonical" href="http://got17.cn/1004/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1004/","path":"1004/","title":"Ubuntu16.04+CUDA8.0+Cudnn5.1+Opencv3.2.0+Caffe框架的搭建"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>Ubuntu16.04+CUDA8.0+Cudnn5.1+Opencv3.2.0+Caffe框架的搭建 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#1-%E5%AE%89%E8%A3%85nvidia%E9%A9%B1%E5%8A%A8"><span class="nav-number">1.</span> <span class="nav-text">1 安装nvidia驱动</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-1-runfile%E6%96%B9%E5%BC%8F"><span class="nav-number">1.1.</span> <span class="nav-text">1.1 runfile方式</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%A6%81%E7%94%A8%E9%9B%86%E6%88%90%E7%9A%84nouveau%E9%A9%B1%E5%8A%A8"><span class="nav-number">1.1.1.</span> <span class="nav-text">禁用集成的nouveau驱动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E4%B8%8B%E8%BD%BD%E5%AE%98%E6%96%B9%E9%A9%B1%E5%8A%A8%E7%A8%8B%E5%BA%8F"><span class="nav-number">1.1.2.</span> <span class="nav-text">下载官方驱动程序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E9%A9%B1%E5%8A%A8"><span class="nav-number">1.1.3.</span> <span class="nav-text">安装驱动</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B5%8B%E8%AF%95%E6%98%AF%E5%90%A6%E6%88%90%E5%8A%9F"><span class="nav-number">1.1.4.</span> <span class="nav-text">测试是否成功</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#1-2-apt-get%E6%96%B9%E5%BC%8F"><span class="nav-number">1.2.</span> <span class="nav-text">1.2 apt-get方式</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#2-%E5%AE%89%E8%A3%85CUDA"><span class="nav-number">2.</span> <span class="nav-text">2 安装CUDA</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#3-%E4%BD%BF%E7%94%A8cudnn"><span class="nav-number">3.</span> <span class="nav-text">3 使用cudnn</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#4-%E5%AE%89%E8%A3%85opencv"><span class="nav-number">4.</span> <span class="nav-text">4 安装opencv</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#5-%E5%AE%89%E8%A3%85caffe"><span class="nav-number">5.</span> <span class="nav-text">5 安装caffe</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%89%E8%A3%85%E4%BE%9D%E8%B5%96"><span class="nav-number">5.1.</span> <span class="nav-text">安装依赖</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%BE%91Makefile-config%E6%96%87%E4%BB%B6"><span class="nav-number">5.2.</span> <span class="nav-text">编辑Makefile.config文件</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E8%AF%91caffe"><span class="nav-number">5.3.</span> <span class="nav-text">编译caffe</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1004/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="Ubuntu16.04+CUDA8.0+Cudnn5.1+Opencv3.2.0+Caffe框架的搭建 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Ubuntu16.04+CUDA8.0+Cudnn5.1+Opencv3.2.0+Caffe框架的搭建
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2018-01-12 12:51:45" itemprop="dateCreated datePublished" datetime="2018-01-12T12:51:45+08:00">2018-01-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>Caffe全称是Convolutional Architecture for Fast Feature Embedding（卷积神经网络框架），是一个清晰、高效的深度学习框架。它是开源的，核心语言是C++，支持命令行、Python和Matlab接口，既可以在CPU上运行也可以在GPU上运行。</p>
+<p>本文实现在Ubuntu16.04下深度学习框架caffe + cuda8.0 + cudnn5.1 + opencv3.2.0的搭建，并对搭建过程中的诸多问题进行总结。</p>
+<span id="more"></span>
+
+
+
+<h1 id="1-安装nvidia驱动"><a href="#1-安装nvidia驱动" class="headerlink" title="1 安装nvidia驱动"></a>1 安装nvidia驱动</h1><p><strong>首先注意：UEFI引导的电脑要在BIOS中关闭Secure boot，以避免安装驱动中各种神奇的问题。</strong></p>
+<p>这里介绍两种安装n卡驱动的方式，runfile方式及apt方式。</p>
+<p><strong>据说</strong>如果n卡驱动选择了apt-get方式安装，在后面的cuda模块安装时会有大坑，所以建议使用runfile方式进行安装，如果实在有问题（比如我的情况），再尝试后者。</p>
+<h2 id="1-1-runfile方式"><a href="#1-1-runfile方式" class="headerlink" title="1.1 runfile方式"></a>1.1 runfile方式</h2><h3 id="禁用集成的nouveau驱动"><a href="#禁用集成的nouveau驱动" class="headerlink" title="禁用集成的nouveau驱动"></a>禁用集成的nouveau驱动</h3><p>Ubuntu系统集成的显卡驱动程序是nouveau，它是第三方为NVIDIA开发的开源驱动，我们通过将其添加至黑名单的方法对其屏蔽禁用。</p>
+<p>利用命令创建<code>blacklist-nouveau.conf</code></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install vim</span><br><span class="line">sudo vim /etc/modprobe.d/blacklist-nouveau.conf</span><br></pre></td></tr></table></figure>
+
+<p>输入<code>i</code>切换到insert模式，添加如下内容：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">blacklist nouveau</span><br><span class="line">options nouveau modeset=0</span><br></pre></td></tr></table></figure>
+
+<p>输入<code>Esc</code>退出insert模式，再输入<code>:wq</code>保存退出。</p>
+<p>更新文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo update-initramfs -u</span><br></pre></td></tr></table></figure>
+
+<p>重启系统，确认nouveau已被屏蔽</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">lsmod | grep nouveau</span><br></pre></td></tr></table></figure>
+
+<p>终端没有输出即已屏蔽nouveau。</p>
+<h3 id="下载官方驱动程序"><a href="#下载官方驱动程序" class="headerlink" title="下载官方驱动程序"></a>下载官方驱动程序</h3><p>首先去官网上查找适合你GPU的驱动(<a target="_blank" rel="noopener" href="https://www.geforce.cn/drivers)%E3%80%82">https://www.geforce.cn/drivers)。</a></p>
+<p><img src="/1004/driver1.png"></p>
+<p>在这个页面输入自己的显卡型号可以搜到历史版本的驱动，由于后面要装的cuda8.0适配的驱动型号是375.26,所以我们找到375.26版本的进行下载。</p>
+<p><img src="/1004/driver2.png"></p>
+<p>下载得到<code>NVIDIA-Linux-x86_64-375.26.run</code>文件。</p>
+<p>可以将其移动到你想保存的地方，默认保存位置是<code>/home/XXXX/Downloads</code>。</p>
+<h3 id="安装驱动"><a href="#安装驱动" class="headerlink" title="安装驱动"></a>安装驱动</h3><p>按Ctrl + Alt + F1切换到tty1，登录。接下来的安装都在这里进行。</p>
+<p>关闭图形界面X-window</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo service lightdm stop</span><br></pre></td></tr></table></figure>
+
+<p>删除残留NVIDIA驱动文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get remove --purge nvidia-*</span><br></pre></td></tr></table></figure>
+
+<p>切换到程序目录下并修改权限</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /home/XXXX/Downloads <span class="comment">#这里切换到你的驱动程序的目录</span></span><br><span class="line"><span class="comment">#记不清目录文件名可以用ls显示当前目录下所有文件，Tab可以补全名字</span></span><br><span class="line">sudo <span class="built_in">chmod</span> 777 NVIDIA-Linux-x86_64-375.26.run <span class="comment">#修改可执行权限</span></span><br></pre></td></tr></table></figure>
+
+<p>安装，<strong>注意后面的参数</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo sh ./NVIDIA-Linux-x86_64-375.26.run –no-opengl-files </span><br><span class="line"><span class="comment">#只装驱动不装opengl，否则可能会无法进去桌面循环登录</span></span><br></pre></td></tr></table></figure>
+
+<p>安装过程除了开头协议需要选择<code>accept</code>，其它按照默认选项即可。</p>
+<h3 id="测试是否成功"><a href="#测试是否成功" class="headerlink" title="测试是否成功"></a>测试是否成功</h3><p>安装完成后重启系统</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">reboot</span><br></pre></td></tr></table></figure>
+
+<p>验证是否安装成功</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi <span class="comment">#出现GPU驱动列表信息即成功</span></span><br></pre></td></tr></table></figure>
+
+<p>也可以查看图形界面信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-settings </span><br></pre></td></tr></table></figure>
+
+<p>UEFI引导系统如果没关secure boot这里可能无法正常显示（但我在Ubuntu17.04下测试显示是正常的），而且会导致后面cuda安装出问题，这里注意一下。</p>
+<h2 id="1-2-apt-get方式"><a href="#1-2-apt-get方式" class="headerlink" title="1.2 apt-get方式"></a>1.2 apt-get方式</h2><p>这个方式似乎只能安装到最新的驱动，我这里即使选择了旧版的也安装上了最新的。</p>
+<p>禁用集成的nouveau驱动（同上）</p>
+<p>添加三方ppa源，更新</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo add-apt-repository ppa:graphics-drivers/ppa</span><br><span class="line">sudo apt-get update</span><br></pre></td></tr></table></figure>
+
+<p>新安装的ubuntu16.04在进行 <code>sudo apt-get update</code> 时可能会出现下面的错误：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">Reading package lists... Done</span><br><span class="line">E: Problem executing scripts APT::Update::Post-Invoke-Success</span><br><span class="line"><span class="string">&#x27;if /usr/bin/test -w /var/cache/app-info -a -e /usr/bin/appstreamcli;</span></span><br><span class="line"><span class="string"> then appstreamcli refresh &gt; /dev/null;</span></span><br><span class="line"><span class="string"> fi&#x27;</span></span><br><span class="line">E: Sub-process returned an error code</span><br></pre></td></tr></table></figure>
+
+<p>解决方案：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo pkill -KILL appstreamcli</span><br><span class="line">wget -P /tmp https://launchpad.net/ubuntu/+archive/primary/+files/appstream_0.9.4-1ubuntu1_amd64.deb https://launchpad.net/ubuntu/+archive/primary/+files/libappstream3_0.9.4-1ubuntu1_amd64.deb</span><br><span class="line">sudo dpkg -i /tmp/appstream_0.9.4-1ubuntu1_amd64.deb /tmp/libappstream3_0.9.4-1ubuntu1_amd64.deb</span><br></pre></td></tr></table></figure>
+
+
+
+<p>查找驱动版本并安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-cache search nvidia-* <span class="comment">#可以看到各个驱动版本</span></span><br><span class="line">sudo apt-get install nvidia-375 <span class="comment">#选择安装375版本，但我这里最后还是装上了最新的</span></span><br></pre></td></tr></table></figure>
+
+<p>测试是否成功</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-smi <span class="comment">#出现GPU驱动列表信息即成功</span></span><br></pre></td></tr></table></figure>
+
+<p>也可以查看图形界面信息</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nvidia-settings </span><br></pre></td></tr></table></figure>
+
+<p><img src="/1004/driver3.png"></p>
+<p>总结：使用较新的n卡驱动是可以安装cuda的，但是在测试cuda的samples时会发现，许多sample会由于nvidia显卡驱动版本的问题出现各种错误，这种情况需要自己改写这些文件的相关源码，这无疑是个艰难的工程。所以，应尽量保证驱动的版本与cuda相一致。</p>
+<h1 id="2-安装CUDA"><a href="#2-安装CUDA" class="headerlink" title="2 安装CUDA"></a>2 安装CUDA</h1><p>cuda是nvidia的编程语言平台，想使用GPU就必须要使用cuda。</p>
+<p>虽然cuda9.X已经发布，但很多类库还不支持，而且最关键的是caffe要求的cuda版本是8.0，所以这里安装的是cuda8.0。</p>
+<p>到官网下载cuda8.0（<a target="_blank" rel="noopener" href="https://developer.nvidia.com/cuda-80-ga2-download-archive">https://developer.nvidia.com/cuda-80-ga2-download-archive</a> ）。</p>
+<p>按照自己的平台选择<code>runfile(local)</code>格式。</p>
+<p><img src="/1004/cuda1.png"></p>
+<p>下载得到<code>cuda_8.0.61_375.26_linux.run</code>。</p>
+<p>终端切换到该目录下，执行如下语句安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">chmod</span> 777 cuda_8.0.61_375.26_linux.run <span class="comment">#修改执行权限</span></span><br><span class="line">sudo sh ./cuda_8.0.61_375.26_linux.run</span><br></pre></td></tr></table></figure>
+
+<p>执行后会有一系列提示让你确认，注意，有个让你选择是否安装nvidia375驱动时，一定要选择否，因为这个驱动是会安装opengl的，有可能会导致无法进入桌面循环登录。</p>
+<p><strong>据说</strong>这里也可以用<code>-no-opengl-files</code>命令避免该问题，但我不知道这命令该用到哪，所以并没有尝试。</p>
+<p>其余的选项都直接默认或者选择是即可（我这里只把samples的目录改成了cuda的默认安装位置，不建议修改cuda默认安装位置，以免给自己挖坑）。</p>
+<p>安装成功后终端会输出如下信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">===========</span><br><span class="line">= Summary =</span><br><span class="line">===========</span><br><span class="line">Driver: Not Selected</span><br><span class="line">Toolkit: Installed <span class="keyword">in</span> /usr/local/cuda-8.0 <span class="comment">#cuda安装目录</span></span><br><span class="line">Samples: Installed <span class="keyword">in</span> /usr/local/cuda-8.0 <span class="comment">#sample目录，我改到了cuda安装目录</span></span><br><span class="line">Please make sure that</span><br><span class="line">– PATH includes /usr/local/cuda-8.0/bin</span><br><span class="line">– LD_LIBRARY_PATH includes /usr/local/cuda-8.0/lib64, or, add /usr/local/cuda-8.0/lib64 to /etc/ld.so.conf and run ldconfig as root</span><br><span class="line">To uninstall the CUDA Toolkit, run the uninstall script <span class="keyword">in</span> /usr/local/cuda-8.0/bin</span><br><span class="line">Please see CUDA_Installation_Guide_Linux.pdf <span class="keyword">in</span> /usr/local/cuda-8.0/doc/pdf <span class="keyword">for</span> detailed information on setting up CUDA.</span><br><span class="line">***WARNING: Incomplete installation! This installation did not install the CUDA Driver. A driver of version at least 361.00 is required <span class="keyword">for</span> CUDA 8.0 functionality to work.</span><br><span class="line">To install the driver using this installer, run the following <span class="built_in">command</span>, replacing with the name of this run file:</span><br><span class="line">sudo .run -silent -driver</span><br><span class="line">Logfile is /opt/temp//cuda_install_****.<span class="built_in">log</span></span><br></pre></td></tr></table></figure>
+
+<p>安装完毕后，再声明一下环境变量，并将其写入到 ~&#x2F;.bashrc 的尾部:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">sudo vim  ~/.bashrc <span class="comment">#编辑</span></span><br><span class="line"><span class="comment">#以下两行写到~/.bashrc尾部</span></span><br><span class="line"><span class="built_in">export</span> PATH=/usr/local/cuda-8.0/bin<span class="variable">$&#123;PATH:+:<span class="variable">$&#123;PATH&#125;</span>&#125;</span></span><br><span class="line"><span class="built_in">export</span> LD_LIBRARY_PATH=/usr/local/cuda-8.0/lib64<span class="variable">$&#123;LD_LIBRARY_PATH:+:<span class="variable">$&#123;LD_LIBRARY_PATH&#125;</span>&#125;</span></span><br><span class="line"><span class="comment">#保存退出 :wq</span></span><br><span class="line"><span class="built_in">source</span> ~/.bashrc <span class="comment">#更新</span></span><br></pre></td></tr></table></figure>
+
+<p>然后设置环境变量和动态链接库：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">sudo vim /etc/profile</span><br><span class="line"><span class="built_in">export</span> PATH=/usr/local/cuda/bin:<span class="variable">$PATH</span></span><br><span class="line"><span class="comment">#保存退出 :wq</span></span><br><span class="line">sudo vim /etc/ld.so.conf.d/cuda.conf</span><br><span class="line">/usr/local/cuda/lib64 </span><br><span class="line"><span class="comment">#保存退出 :wq</span></span><br><span class="line">sudo ldconfig <span class="comment">#更新</span></span><br></pre></td></tr></table></figure>
+
+<p>测试cuda的samples</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/local/cuda-8.0/samples/1_Utilities/deviceQuery <span class="comment">#注意自己的samples目录装在了哪</span></span><br><span class="line">make</span><br><span class="line"></span><br><span class="line"><span class="comment">#切换到终端提示的生成目录</span></span><br><span class="line"></span><br><span class="line">sudo ./deviceQuery</span><br></pre></td></tr></table></figure>
+
+<p>如果显示的是如下图的一些关于GPU的信息，则说明安装成功了。</p>
+<p><img src="/1004/cuda2.png"></p>
+<h1 id="3-使用cudnn"><a href="#3-使用cudnn" class="headerlink" title="3 使用cudnn"></a>3 使用cudnn</h1><p>cuDNN（CUDA Deep Neural Network）相比标准的cuda，它在一些常用的神经网络操作上进行了性能的优化，比如卷积，pooling，归一化，以及激活层等等。 </p>
+<p>cudnn目前（2018.1）已更新到了v7.0.5，针对cuda8.0有v5.1和v6.0两个版本可选，这里选择v5.1版本下载。</p>
+<p>首先去官网（<a target="_blank" rel="noopener" href="https://developer.nvidia.com/rdp/cudnn-download">https://developer.nvidia.com/rdp/cudnn-download</a> ）下载cudnn，下载的时候需要注册账号，做一个问卷调查。</p>
+<p><img src="/1004/cudnn1.png"></p>
+<p>下载完cudnn5.1之后进行解压，cd进入该目录，复制文件：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> cuda/ <span class="comment">#进入该解压目录</span></span><br><span class="line">sudo <span class="built_in">cp</span> include/cudnn.h /usr/local/cuda/include/    <span class="comment">#复制头文件</span></span><br><span class="line">sudo <span class="built_in">cp</span> lib64/lib* /usr/local/cuda/lib64/    <span class="comment">#复制动态链接库</span></span><br></pre></td></tr></table></figure>
+
+<p>重新生成软链接</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> /usr/local/cuda/lib64/</span><br></pre></td></tr></table></figure>
+
+<p>这里可以先<code>ls</code>看一下自己的<code>libcudnn.so.*.*.*</code>具体版本号</p>
+<p><img src="/1004/cudnn2.png"></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">rm</span> -rf libcudnn.so libcudnn.so.5    <span class="comment">#删除原有动态文件</span></span><br><span class="line">sudo <span class="built_in">ln</span> -s libcudnn.so.5.1.10 libcudnn.so.5  <span class="comment">#生成软链接，注意版本号一致</span></span><br><span class="line">sudo <span class="built_in">ln</span> -s libcudnn.so.5 libcudnn.so      <span class="comment">#生成软链接</span></span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="4-安装opencv"><a href="#4-安装opencv" class="headerlink" title="4 安装opencv"></a>4 安装opencv</h1><p>OpenCV是一个基于BSD许可（开源）发行的跨平台计算机视觉库。</p>
+<p>在深度学习框架中提供图像处理等功能，目前已更新到了3.4.0版本，caffe对opencv版本无要求，这里选择了3.2.0版本安装。</p>
+<p>首先去官网（<a target="_blank" rel="noopener" href="https://opencv.org/releases.html">https://opencv.org/releases.html</a> ）下载opencv，选择<code>Sources</code>即可。</p>
+<p><img src="/1004/opencv1.png"></p>
+<p>首先安装Ubuntu系统需要的依赖项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install --assume-yes libopencv-dev build-essential cmake git libgtk2.0-dev pkg-config python-dev python-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libpng12-dev libtiff5-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libxine2-dev libgstreamer0.10-dev libgstreamer-plugins-base0.10-dev libv4l-dev libtbb-dev libqt4-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip</span><br></pre></td></tr></table></figure>
+
+<p>这里注意一下，如果中途有问题中断，终端有提示<code>update</code>的话，则输入<code>sudo apt-get update</code>，之后再重复执行即可。反复几次，直到出现下图提示信息即安装完毕。</p>
+<p><img src="/1004/opencv2.png"></p>
+<p>然后安装opencv需要的一些依赖项：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install build-essential cmake git</span><br><span class="line">sudo apt-get install ffmpeg libopencv-dev libgtk-3-dev python-numpy python3-numpy libdc1394-22 libdc1394-22-dev libjpeg-dev libpng12-dev libtiff5-dev libjasper-dev libavcodec-dev libavformat-dev libswscale-dev libxine2-dev libgstreamer1.0-dev libgstreamer-plugins-base1.0-dev libv4l-dev libtbb-dev qtbase5-dev libfaac-dev libmp3lame-dev libopencore-amrnb-dev libopencore-amrwb-dev libtheora-dev libvorbis-dev libxvidcore-dev x264 v4l-utils unzip</span><br></pre></td></tr></table></figure>
+
+<p>这里同样可能会有和上面相同的问题，方法同上面一致。</p>
+<p>解压之前下载好的opencv到你喜欢的位置，<code>cd</code>到该文件夹下，然后：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> build   <span class="comment">#新建一个build文件夹，编译的工程都在这个文件夹里</span></span><br><span class="line"><span class="built_in">cd</span> build/    </span><br><span class="line">cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local -D WITH_TBB=ON -D WITH_V4L=ON -D WITH_QT=ON -D WITH_OPENGL=ON -DCUDA_NVCC_FLAGS=<span class="string">&quot;-D_FORCE_INLINES&quot;</span> ..</span><br></pre></td></tr></table></figure>
+
+<p>cmake成功后，会出现如下结果，提示配置和生成成功：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">-- Configuring <span class="keyword">done</span></span><br><span class="line">-- Generating <span class="keyword">done</span></span><br><span class="line">-- Build files have been written to: /XXXX/opencv-3.2.0/build</span><br></pre></td></tr></table></figure>
+
+<p>然后使用make命令编译即可：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make -j4 <span class="comment">#-j后数字设置为cpu核数时可以加快编译速度</span></span><br></pre></td></tr></table></figure>
+
+<p>这里注意一下，在编译opencv时，ffmpeg或ippicv等第三方库可能会由于众所周知的原因下载不成功，一般解决方法是自己到github上下载，之后解压到相关路径。</p>
+<p>但这种方式比较麻烦，容易出错，不推荐。</p>
+<p>这里推荐挂梯子来下载。访问蓝灯github页面（<a target="_blank" rel="noopener" href="https://github.com/getlantern/lantern">https://github.com/getlantern/lantern</a> ），下载ubuntu平台的安装包。</p>
+<p><img src="/1004/lantern.png"></p>
+<p>之后使用命令安装即可</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo dpkg -i lantern-installer-64-bit.deb</span><br></pre></td></tr></table></figure>
+
+<p>使用时在终端输入<code>lantern</code>，不用的时候<code>Ctrl + C</code>即可。</p>
+<p>另外一个可能出现的问题：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">fatal error: LAPACKE_H_PATH-NOTFOUND/lapacke.h: No such file or directory <span class="comment">#include &quot;LAPACKE_H_PATH-NOTFOUND/lapacke.h&quot;</span></span><br><span class="line"></span><br><span class="line">LAPACK and BLAS are installed.. Any ideas? Didn<span class="string">&#x27;t get these errors with 3.1 or previous 2.4.X versions...</span></span><br></pre></td></tr></table></figure>
+
+<p>解决方案：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get install liblapacke-dev checkinstall</span><br></pre></td></tr></table></figure>
+
+
+
+<p>opencv编译成功后进行安装，并有将设置写入到系统中：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo make install</span><br><span class="line">sudo /bin/bash -c <span class="string">&#x27;echo &quot;/usr/local/lib&quot; &gt; /etc/ld.so.conf.d/opencv.conf&#x27;</span></span><br><span class="line">sudo ldconfig</span><br></pre></td></tr></table></figure>
+
+
+
+<h1 id="5-安装caffe"><a href="#5-安装caffe" class="headerlink" title="5 安装caffe"></a>5 安装caffe</h1><p>Caffe （卷积神经网络框架）是一种应用广泛的深度学习框架，caffe团队在17年初推出了caffe2框架，号称对mobile端有更好的支持，但是目前还是处于初级阶段，这里选择caffe安装配置。</p>
+<p>caffe官方网站（<a target="_blank" rel="noopener" href="http://caffe.berkeleyvision.org/">http://caffe.berkeleyvision.org/</a> ）中也给出了全部安装依赖项。</p>
+<h2 id="安装依赖"><a href="#安装依赖" class="headerlink" title="安装依赖"></a>安装依赖</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">sudo apt-get update </span><br><span class="line">sudo apt-get install -y build-essential cmake git pkg-config </span><br><span class="line">sudo apt-get install -y libprotobuf-dev libleveldb-dev libsnappy-dev libhdf5-serial-dev protobuf-compiler </span><br><span class="line">sudo apt-get install -y libatlas-base-dev </span><br><span class="line">sudo apt-get install -y libopenblas-dev </span><br><span class="line">sudo apt-get install -y --no-install-recommends libboost-all-dev </span><br><span class="line">sudo apt-get install -y libgflags-dev libgoogle-glog-dev liblmdb-dev </span><br><span class="line">sudo apt-get install -y python-pip </span><br><span class="line">sudo apt-get install -y python-dev </span><br><span class="line">sudo apt-get install -y python-numpy python-scipy </span><br><span class="line">sudo apt-get install libhdf5-dev </span><br></pre></td></tr></table></figure>
+
+<p>将终端<code>cd</code>到你要安装caffe的位置，执行如下指令，clone caffe项目。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/BVLC/caffe.git  <span class="comment">#从github上git caffe</span></span><br><span class="line"><span class="built_in">cd</span> caffe <span class="comment">#打开到刚刚git下来的caffe </span></span><br></pre></td></tr></table></figure>
+
+<p>安装caffe项目中python相关的依赖库</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> python/requirements.txt | xargs -L 1 sudo pip install  </span><br></pre></td></tr></table></figure>
+
+<p>增加符号链接</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">ln</span> -s /usr/include/python2.7/ /usr/local/include/python2.7   </span><br><span class="line">sudo <span class="built_in">ln</span> -s /usr/local/lib/python2.7/dist-packages/numpy/core/include/numpy/ /usr/local/include/python2.7/numpy  </span><br></pre></td></tr></table></figure>
+
+<p>修改配置文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sudo <span class="built_in">cp</span> Makefile.config.example Makefile.config</span><br><span class="line"><span class="comment">#Makefile.config.example是caffe给出的makefile例子，复制到Makefile.config</span></span><br><span class="line">sudo gedit Makefile.config <span class="comment">#编辑Makefile.config文件 </span></span><br></pre></td></tr></table></figure>
+
+<h2 id="编辑Makefile-config文件"><a href="#编辑Makefile-config文件" class="headerlink" title="编辑Makefile.config文件"></a>编辑Makefile.config文件</h2><p>这里给出我的加了注释的Makefile.config文件供参考：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## Refer to http://caffe.berkeleyvision.org/installation.html</span></span><br><span class="line"><span class="comment"># Contributions simplifying and improving our build system are welcome!</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># cuDNN acceleration switch (uncomment to build with cuDNN).</span></span><br><span class="line"> USE_CUDNN := 1</span><br><span class="line"><span class="string">&#x27;在有nvidia GPU并且安装CuDNN的情况下取消注释&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># CPU-only switch (uncomment to build without GPU support).</span></span><br><span class="line"><span class="comment"># CPU_ONLY := 1</span></span><br><span class="line"><span class="string">&#x27;如果取消注释则只使用cpu&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># uncomment to disable IO dependencies and corresponding data layers</span></span><br><span class="line"> USE_OPENCV := 1</span><br><span class="line"> <span class="string">&#x27;因为要用到OpenCV库所以要打开，下面这两个选项表示是选择Caffe的数据管理第三方库，两者都不打开Caffe默认用的是LMDB，这两者均是嵌入式数据库管理系统编程库&#x27;</span></span><br><span class="line"><span class="comment"># USE_LEVELDB := 0</span></span><br><span class="line"><span class="comment"># USE_LMDB := 0</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># uncomment to allow MDB_NOLOCK when reading LMDB files (only if necessary)</span></span><br><span class="line"><span class="comment">#	You should not set this flag if you will be reading LMDBs with any</span></span><br><span class="line"><span class="comment">#	possibility of simultaneous read and write</span></span><br><span class="line"><span class="comment"># ALLOW_LMDB_NOLOCK := 1</span></span><br><span class="line"><span class="string">&#x27;当需要读取LMDB文件时可以取消注释，默认不打开&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment if you&#x27;re using OpenCV 3</span></span><br><span class="line"> OPENCV_VERSION := 3</span><br><span class="line"><span class="string">&#x27;安装的opencv版本，2.X版本的话是2,3.X版本就是3&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># To customize your choice of compiler, uncomment and set the following.</span></span><br><span class="line"><span class="comment"># N.B. the default for Linux is g++ and the default for OSX is clang++</span></span><br><span class="line"><span class="comment"># CUSTOM_CXX := g++</span></span><br><span class="line"><span class="string">&#x27;linux系统默认使用g++编译器，OSX则是clang++&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># CUDA directory contains bin/ and lib/ directories that we need.</span></span><br><span class="line">CUDA_DIR := /usr/local/cuda</span><br><span class="line"><span class="string">&#x27;cuda安装目录，如果前面给自己挖坑了这里改一下&#x27;</span></span><br><span class="line"><span class="comment"># On Ubuntu 14.04, if cuda tools are installed via</span></span><br><span class="line"><span class="comment"># &quot;sudo apt-get install nvidia-cuda-toolkit&quot; then use this instead:</span></span><br><span class="line"><span class="comment"># CUDA_DIR := /usr</span></span><br><span class="line"><span class="string">&#x27;如果是在ubuntu14.04版本下通过apt-get方式安装的cuda则在上面这个目录&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># CUDA architecture setting: going with all of them.</span></span><br><span class="line"><span class="comment"># For CUDA &lt; 6.0, comment the *_50 through *_61 lines for compatibility.</span></span><br><span class="line"><span class="comment"># For CUDA &lt; 8.0, comment the *_60 and *_61 lines for compatibility.</span></span><br><span class="line"><span class="comment"># For CUDA &gt;= 9.0, comment the *_20 and *_21 lines for compatibility.</span></span><br><span class="line">CUDA_ARCH := -gencode <span class="built_in">arch</span>=compute_20,code=sm_20 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_20,code=sm_21 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_30,code=sm_30 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_35,code=sm_35 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_50,code=sm_50 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_52,code=sm_52 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_60,code=sm_60 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_61,code=sm_61 \</span><br><span class="line">		-gencode <span class="built_in">arch</span>=compute_61,code=compute_61</span><br><span class="line"><span class="string">&#x27;这些参数需要根据GPU的计算能力来设置，不做调整（主要是不会。。）。&#x27;</span></span><br><span class="line"><span class="string">&#x27;这个网站可以查询自己GPU的算力&#x27;</span></span><br><span class="line"><span class="string">&#x27;http://blog.csdn.net/jiajunlee/article/details/52067962&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># BLAS choice:</span></span><br><span class="line"><span class="comment"># atlas for ATLAS (default)</span></span><br><span class="line"><span class="comment"># mkl for MKL</span></span><br><span class="line"><span class="comment"># open for OpenBlas</span></span><br><span class="line">BLAS := atlas</span><br><span class="line"><span class="string">&#x27;如果用的是ATLAS计算库则赋值atlas，MKL计算库则用mkl赋值，OpenBlas则赋值open&#x27;</span></span><br><span class="line"><span class="string">&#x27;caffe默认是atlas&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Custom (MKL/ATLAS/OpenBLAS) include and lib directories.</span></span><br><span class="line"><span class="comment"># Leave commented to accept the defaults for your choice of BLAS</span></span><br><span class="line"><span class="comment"># (which should work)!</span></span><br><span class="line"><span class="comment"># BLAS_INCLUDE := /path/to/your/blas</span></span><br><span class="line"><span class="comment"># BLAS_LIB := /path/to/your/blas</span></span><br><span class="line"><span class="string">&#x27;如果是默认位置安装的atlas（apt-get方式）则保留注释，否则取消注释并输入安装目录&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Homebrew puts openblas in a directory that is not on the standard search path</span></span><br><span class="line"><span class="comment"># BLAS_INCLUDE := $(shell brew --prefix openblas)/include</span></span><br><span class="line"><span class="comment"># BLAS_LIB := $(shell brew --prefix openblas)/lib</span></span><br><span class="line"><span class="string">&#x27;如果选择了openblas且不是安装在标准路径则要指明&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># This is required only if you will compile the matlab interface.</span></span><br><span class="line"><span class="comment"># MATLAB directory should contain the mex binary in /bin.</span></span><br><span class="line"><span class="comment"># MATLAB_DIR := /usr/local</span></span><br><span class="line"><span class="comment"># MATLAB_DIR := /Applications/MATLAB_R2012b.app</span></span><br><span class="line"><span class="string">&#x27;matlab安装库的目录&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># <span class="doctag">NOTE:</span> this is required only if you will compile the python interface.</span></span><br><span class="line"><span class="comment"># We need to be able to find Python.h and numpy/arrayobject.h.</span></span><br><span class="line">PYTHON_INCLUDE := /usr/include/python2.7 \</span><br><span class="line">                /usr/local/lib/python2.7/dist-packages/numpy/core/include</span><br><span class="line"><span class="string">&#x27;python安装目录，这里要注意第二行位置，ubuntu16.04对python2.7的安装位置有小改动&#x27;</span></span><br><span class="line"><span class="string">&#x27;设置的时候可以先cd到该目录下看python是否安在了那里&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Anaconda Python distribution is quite popular. Include path:</span></span><br><span class="line"><span class="comment"># Verify anaconda location, sometimes it&#x27;s in root.</span></span><br><span class="line"><span class="comment"># ANACONDA_HOME := $(HOME)/anaconda</span></span><br><span class="line"><span class="comment"># PYTHON_INCLUDE := $(ANACONDA_HOME)/include \</span></span><br><span class="line">		<span class="comment"># $(ANACONDA_HOME)/include/python2.7 \</span></span><br><span class="line">		<span class="comment"># $(ANACONDA_HOME)/lib/python2.7/site-packages/numpy/core/include</span></span><br><span class="line"><span class="string">&#x27;如果安装了anaconda（一款集成了许多库的python）则需要把python相关目录设置到anaconda目录&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment to use Python 3 (default is Python 2)</span></span><br><span class="line"><span class="comment"># PYTHON_LIBRARIES := boost_python3 python3.5m</span></span><br><span class="line"><span class="comment"># PYTHON_INCLUDE := /usr/include/python3.5m \</span></span><br><span class="line"><span class="comment">#                 /usr/lib/python3.5/dist-packages/numpy/core/include</span></span><br><span class="line"><span class="string">&#x27;默认使用python2.7,取消注释则使用python3.5&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># We need to be able to find libpythonX.X.so or .dylib.</span></span><br><span class="line">PYTHON_LIB := /usr/lib</span><br><span class="line"><span class="comment"># PYTHON_LIB := $(ANACONDA_HOME)/lib</span></span><br><span class="line"><span class="string">&#x27;python库的位置，安装了anaconda的话似乎也得改&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Homebrew installs numpy in a non standard path (keg only)</span></span><br><span class="line"><span class="comment"># PYTHON_INCLUDE += $(dir $(shell python -c &#x27;import numpy.core; print(numpy.core.__file__)&#x27;))/include</span></span><br><span class="line"><span class="comment"># PYTHON_LIB += $(shell brew --prefix numpy)/lib</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment to support layers written in Python (will link against Python libs)</span></span><br><span class="line"> WITH_PYTHON_LAYER := 1</span><br><span class="line"><span class="string">&#x27;如果要用python来写框架中的layer则取消注释&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Whatever else you find you need goes here.</span></span><br><span class="line">INCLUDE_DIRS := $(PYTHON_INCLUDE) /usr/local/include /usr/include/hdf5/serial</span><br><span class="line">LIBRARY_DIRS := $(PYTHON_LIB) /usr/local/lib /usr/lib /usr/lib/x86_64-linux-gnu /usr/lib/x86_64-linux-gnu/hdf5/serial</span><br><span class="line"><span class="string">&#x27;这里注意要加入hdf5的路径，同样建议加入前先cd到这些目录看看是否前面安装成功了&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># If Homebrew is installed at a non standard location (for example your home directory) and you use it for general dependencies</span></span><br><span class="line"><span class="comment"># INCLUDE_DIRS += $(shell brew --prefix)/include</span></span><br><span class="line"><span class="comment"># LIBRARY_DIRS += $(shell brew --prefix)/lib</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># NCCL acceleration switch (uncomment to build with NCCL)</span></span><br><span class="line"><span class="comment"># https://github.com/NVIDIA/nccl (last tested version: v1.2.3-1+cuda8.0)</span></span><br><span class="line"><span class="comment"># USE_NCCL := 1</span></span><br><span class="line"><span class="string">&#x27;nccl是GPU多卡并行中使用的通信框架，穷比瑟瑟发抖&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment to use `pkg-config` to specify OpenCV library paths.</span></span><br><span class="line"><span class="comment"># (Usually not necessary -- OpenCV libraries are normally installed in one of the above $LIBRARY_DIRS.)</span></span><br><span class="line"><span class="comment"># USE_PKG_CONFIG := 1</span></span><br><span class="line"><span class="string">&#x27;opencv装好了就不用管&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># N.B. both build and distribute dirs are cleared on `make clean`</span></span><br><span class="line">BUILD_DIR := build</span><br><span class="line">DISTRIBUTE_DIR := distribute</span><br><span class="line"><span class="string">&#x27;build目录，注意如果build中途失败了应该执行 make clean 后再重新build&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Uncomment for debugging. Does not work on OSX due to https://github.com/BVLC/caffe/issues/171</span></span><br><span class="line"><span class="comment"># DEBUG := 1</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># The ID of the GPU that &#x27;make runtest&#x27; will use to run unit tests.</span></span><br><span class="line">TEST_GPUID := 0</span><br><span class="line"><span class="string">&#x27;所用的GPU的ID编号，单卡就是0&#x27;</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># enable pretty build (comment to see full commands)</span></span><br><span class="line">Q ?= @</span><br></pre></td></tr></table></figure>
+
+<p>修改相关文件避免gcc版本问题</p>
+<ul>
+<li>修改makefile文件</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#181行位置</span></span><br><span class="line">LIBRARIES += glog gflags protobuf boost_system boost_filesystem m hdf5_hl hdf5</span><br><span class="line">替换为：</span><br><span class="line">LIBRARIES += glog gflags protobuf boost_system boost_filesystem m hdf5_hl hdf5 opencv_core opencv_imgproc opencv_imgcodecs opencv_highgui</span><br><span class="line"></span><br><span class="line"><span class="comment">#415行位置</span></span><br><span class="line">NVCCFLAGS +=-ccbin=$(CXX) -Xcompiler-fPIC $(COMMON_FLAGS)</span><br><span class="line">替换为：</span><br><span class="line">NVCCFLAGS += -D_FORCE_INLINES -ccbin=$(CXX) -Xcompiler -fPIC $(COMMON_FLAGS)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>修改&#x2F;usr&#x2F;local&#x2F;cuda&#x2F;include&#x2F;host_config.h，注释掉第119行</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#119行位置</span></span><br><span class="line"><span class="comment">#error -- unsupported GNU version! gcc versions later than 5 are not supported!</span></span><br><span class="line">改为</span><br><span class="line">//<span class="comment">#error -- unsupported GNU version! gcc versions later than 5 are not supported!</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="编译caffe"><a href="#编译caffe" class="headerlink" title="编译caffe"></a>编译caffe</h2><p>在caffe目录下</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">make all -j4  </span><br><span class="line">make <span class="built_in">test</span> -j4  </span><br><span class="line">make runtest  </span><br><span class="line">make pycaffe  </span><br></pre></td></tr></table></figure>
+
+<p>编译通过则说明安装正确。</p>
+<p>使用MNIST手写数据集测试</p>
+<p>mnist是一个手写数字库，训练样本为60000张，测试样本为10000张，每个样本为28x28大小的黑白图片，手写数字为0-9，因此分为10类。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> caffe <span class="comment">#你的caffe安装目录    </span></span><br><span class="line">sudo sh ./data/mnist/get_mnist.sh    <span class="comment">#下载数据</span></span><br><span class="line">sudo sh ./examples/mnist/create_mnist.sh <span class="comment">#转换成lmdb数据</span></span><br><span class="line">sudo sh ./examples/mnist/train_lenet.sh <span class="comment">#训练模型</span></span><br><span class="line"><span class="comment">#全局参数和网络参数可以在lenet_solver.prototxt与train_lenet.prototxt文件中进行设置</span></span><br></pre></td></tr></table></figure>
+<p>gpu+cuda情况下几分钟即可完成训练，训练完成后会生成caffemodel文件，这种训练好的模型也可以用在其它平台的caffe网络中。</p>
+<p><img src="/1004/caffe1.png"></p>
+<p>链接python与caffe</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">gedit ~/.bashrc  <span class="comment">#打开  </span></span><br><span class="line"></span><br><span class="line"><span class="built_in">export</span> PYTHONPATH=/你的caffe的目录/python:<span class="variable">$PYTHONPATH</span>   </span><br><span class="line"><span class="comment">#可以通过在python目录下右键打开终端，输入pwd获取绝对路径</span></span><br><span class="line"></span><br><span class="line"><span class="built_in">source</span> ~/.bashrc   <span class="comment">#生效 </span></span><br></pre></td></tr></table></figure>
+
+<p>测试是否链接成功</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python</span><br><span class="line"><span class="keyword">import</span> caffe</span><br><span class="line">caffe.__version__</span><br></pre></td></tr></table></figure>
+
+<p>出现版本信息即成功。</p>
+<p><img src="/1004/caffe2.png"></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/caffe/" rel="tag"># caffe</a>
+              <a href="/tags/deep-learning/" rel="tag"># deep learning</a>
+              <a href="/tags/opencv/" rel="tag"># opencv</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1003/" rel="prev" title="OpenCV在图像处理方面的应用">
+                  <i class="fa fa-chevron-left"></i> OpenCV在图像处理方面的应用
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1005/" rel="next" title="在 Android上移植solrex改写的 Caffe 深度学习框架">
+                  在 Android上移植solrex改写的 Caffe 深度学习框架 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"3b8a3376ec72248689673947aaea1736"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

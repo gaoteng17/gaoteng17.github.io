@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="NTP全称网络时间协议(Network Time Protocol)，它是用来同步网络中各个计算机的时间的协议。 NTP 只考虑 UTC 时间，不考虑时区，不考虑夏令时等。 NTP使用UDP，端口123。 在H3C模拟器上进行DNS的配置，系统版本v7。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【信息网络学习day10 H3C设备配置ntp】">
+<meta property="og:url" content="http://got17.cn/1026/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="NTP全称网络时间协议(Network Time Protocol)，它是用来同步网络中各个计算机的时间的协议。 NTP 只考虑 UTC 时间，不考虑时区，不考虑夏令时等。 NTP使用UDP，端口123。 在H3C模拟器上进行DNS的配置，系统版本v7。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1026/1.PNG">
+<meta property="og:image" content="http://got17.cn/1026/2.PNG">
+<meta property="og:image" content="http://got17.cn/1026/3.PNG">
+<meta property="article:published_time" content="2019-08-03T05:19:26.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.277Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="信息网络">
+<meta property="article:tag" content="H3C">
+<meta property="article:tag" content="ntp">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1026/1.PNG">
+
+
+<link rel="canonical" href="http://got17.cn/1026/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1026/","path":"1026/","title":"【信息网络学习day10 H3C设备配置ntp】"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【信息网络学习day10 H3C设备配置ntp】 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%88%86%E7%B1%BB"><span class="nav-number">1.</span> <span class="nav-text">分类</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NTP%E6%9C%8D%E5%8A%A1%E5%99%A8-x2F-%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%A8%A1%E5%BC%8F"><span class="nav-number">2.</span> <span class="nav-text">NTP服务器&#x2F;客户端模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%93%E6%89%91"><span class="nav-number">2.1.</span> <span class="nav-text">拓扑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">2.3.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#NTP%E5%B9%BF%E6%92%AD%E6%A8%A1%E5%BC%8F"><span class="nav-number">3.</span> <span class="nav-text">NTP广播模式</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%93%E6%89%91-1"><span class="nav-number">3.1.</span> <span class="nav-text">拓扑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-1"><span class="nav-number">3.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81-1"><span class="nav-number">3.3.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%9F%9F%E5%90%8D%E8%A7%A3%E6%9E%90%E6%98%BE%E7%A4%BA%E7%BB%B4%E6%8A%A4%E7%9B%B8%E5%85%B3%E5%91%BD%E4%BB%A4"><span class="nav-number">4.</span> <span class="nav-text">域名解析显示维护相关命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1026/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【信息网络学习day10 H3C设备配置ntp】 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【信息网络学习day10 H3C设备配置ntp】
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-08-03 13:19:26" itemprop="dateCreated datePublished" datetime="2019-08-03T13:19:26+08:00">2019-08-03</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>NTP全称网络时间协议(Network Time Protocol)，它是用来同步网络中各个计算机的时间的协议。</p>
+<p>NTP 只考虑 UTC 时间，不考虑时区，不考虑夏令时等。</p>
+<p>NTP使用UDP，端口123。</p>
+<p>在H3C模拟器上进行DNS的配置，系统版本v7。</p>
+<span id="more"></span>
+
+<h1 id="分类"><a href="#分类" class="headerlink" title="分类"></a>分类</h1><p>设备可以采用多种NTP工作模式进行时间同步：</p>
+<ul>
+<li>服务器&#x2F;客户端模式</li>
+<li>对等体模式</li>
+<li>广播模式</li>
+<li>组播模式</li>
+</ul>
+<p>同时也可在同步模式中加入身份验证等，这里只对服务器&#x2F;客户端模式、广播模式进行模拟验证。</p>
+<h1 id="NTP服务器-x2F-客户端模式"><a href="#NTP服务器-x2F-客户端模式" class="headerlink" title="NTP服务器&#x2F;客户端模式"></a>NTP服务器&#x2F;客户端模式</h1><h2 id="拓扑"><a href="#拓扑" class="headerlink" title="拓扑"></a>拓扑</h2><p>按照下图拓扑连接，配置基本配置，使拓扑网络互通：</p>
+<p><img src="/1026/1.PNG"></p>
+<p>其中SW1作为ntp服务器，SW2、SW3作为ntp客户端。</p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>首先在<strong>SW1</strong>上修改默认时间：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">[SW1]clock protocol none</span><br><span class="line">[SW1]quit</span><br><span class="line">&lt;SW1&gt;clock datetime 12:00:00 8/3/2019</span><br></pre></td></tr></table></figure>
+
+<p>此时SW1时间与SW2、SW3时间不同：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">&lt;SW1&gt;dis clock</span><br><span class="line">12:03:17 UTC Sat 08/03/2019</span><br><span class="line"></span><br><span class="line">&lt;SW2&gt;dis clock</span><br><span class="line">11:51:28 UTC Sat 08/03/2019</span><br><span class="line"></span><br><span class="line">&lt;SW3&gt;dis clock</span><br><span class="line">11:51:28 UTC Sat 08/03/2019</span><br></pre></td></tr></table></figure>
+
+<p>开启ntp服务：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">[SW1]clock protocol ntp</span><br><span class="line"></span><br><span class="line"># 开启NTP功能。</span><br><span class="line">[SW1]ntp-service enable</span><br><span class="line"># 设置本地时钟作为参考时钟，层数为2。</span><br><span class="line">[SW1]ntp-service refclock-master 2</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[SW2]ntp-service enable</span><br><span class="line"># 设置NTP Server为Switch B的时间服务器。</span><br><span class="line">[SW2]ntp-service unicast-server 1.0.1.11</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[SW3]ntp-service enable</span><br><span class="line"># 设置NTP Server为Switch B的时间服务器。</span><br><span class="line">[SW3]ntp-service unicast-server 1.0.1.11</span><br></pre></td></tr></table></figure>
+
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><p>配置完成后，SW2和SW3向SW1进行时间同步。</p>
+<p>在SW2上查看NTP的运行状态及会话信息如下图：</p>
+<p><img src="/1026/2.PNG"></p>
+<p>此时SW2已经与SW1同步，层数比SW1的层数大1，为3。</p>
+<h1 id="NTP广播模式"><a href="#NTP广播模式" class="headerlink" title="NTP广播模式"></a>NTP广播模式</h1><h2 id="拓扑-1"><a href="#拓扑-1" class="headerlink" title="拓扑"></a>拓扑</h2><p>拓扑同上。</p>
+<h2 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h2><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"># 开启NTP功能。</span><br><span class="line">[SW1]ntp-service enable</span><br><span class="line"># 设置本地时钟作为参考时钟，层数为2。</span><br><span class="line">[SW1]ntp-service refclock-master 2</span><br><span class="line"># 配置从Vlan-interface1向网络中发送NTP广播报文。</span><br><span class="line">[SW1]int vlan 1</span><br><span class="line">[SwitchC-Vlan-interface1] ntp-service broadcast-server</span><br><span class="line"></span><br><span class="line">[SW2]ntp-service enable</span><br><span class="line"># 设置为广播客户端，从Vlan-interface1监听广播消息。</span><br><span class="line">[SW2]interface vlan-interface 1</span><br><span class="line">[SW2-Vlan-interface1] ntp-service broadcast-client</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[SW3]ntp-service enable</span><br><span class="line"># 设置为广播客户端，从Vlan-interface1监听广播消息。</span><br><span class="line">[SW3]interface vlan-interface 1</span><br><span class="line">[SW3-Vlan-interface1] ntp-service broadcast-client</span><br></pre></td></tr></table></figure>
+
+<h2 id="验证-1"><a href="#验证-1" class="headerlink" title="验证"></a>验证</h2><p>配置完成后，等待一段时间（我的拓扑大约等了2分钟），SW2和SW3自动向SW1进行时间同步。</p>
+<p>在SW2上查看NTP的运行状态及会话信息如下图：</p>
+<p><img src="/1026/3.PNG"></p>
+<p>此时SW2已经与SW1同步，层数比SW1的层数大1，为3。</p>
+<h1 id="域名解析显示维护相关命令"><a href="#域名解析显示维护相关命令" class="headerlink" title="域名解析显示维护相关命令"></a>域名解析显示维护相关命令</h1><table>
+<thead>
+<tr>
+<th><strong>操作</strong></th>
+<th><strong>命令</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>显示NTP的运行状态</td>
+<td><strong>display ntp-service status</strong></td>
+</tr>
+<tr>
+<td>显示NTP会话信息</td>
+<td><strong>display ntp-service sessions [ verbose ]</strong></td>
+</tr>
+<tr>
+<td>显示从本地设备沿着时间同步NTP服务器链，回溯到主参考时钟源的各个NTP时间服务器的简要信息</td>
+<td><strong>display ntp-service trace</strong></td>
+</tr>
+<tr>
+<td>打开NTP各项信息的调试开关</td>
+<td><strong>debugging ntp-service { access &#x2F; adjustment &#x2F; all &#x2F; authentication &#x2F; event &#x2F; filter &#x2F; packet &#x2F; parameter &#x2F; refclock &#x2F; selection &#x2F; synchronization &#x2F; validity }</strong></td>
+</tr>
+</tbody></table>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li>H3C B00900060 NTP</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E4%BF%A1%E6%81%AF%E7%BD%91%E7%BB%9C/" rel="tag"># 信息网络</a>
+              <a href="/tags/H3C/" rel="tag"># H3C</a>
+              <a href="/tags/ntp/" rel="tag"># ntp</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1025/" rel="prev" title="【信息网络学习day10 H3C设备配置DNS】">
+                  <i class="fa fa-chevron-left"></i> 【信息网络学习day10 H3C设备配置DNS】
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1027/" rel="next" title="【信息网络学习day11 H3C设备配置FTP】">
+                  【信息网络学习day11 H3C设备配置FTP】 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"f28800fbd76396200d1e2ebd0f1bf050"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

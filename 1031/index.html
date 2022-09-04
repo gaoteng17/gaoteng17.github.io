@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="通常，同一网段内的所有主机都设置一条相同的以网关为下一跳的缺省路由。当网关发生故障时，本网段内所有以网关为缺省路由的主机将无法与外部网络通信。 通过VRRP可以避免由于局域网网关单点故障而导致的网络中断。 在H3C模拟器上进行VRRP的配置，包括单备份组配置、监视接口配置、双备份组配置，系统版本v7。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【信息网络学习day13 H3C设备配置VRRP】">
+<meta property="og:url" content="http://got17.cn/1031/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="通常，同一网段内的所有主机都设置一条相同的以网关为下一跳的缺省路由。当网关发生故障时，本网段内所有以网关为缺省路由的主机将无法与外部网络通信。 通过VRRP可以避免由于局域网网关单点故障而导致的网络中断。 在H3C模拟器上进行VRRP的配置，包括单备份组配置、监视接口配置、双备份组配置，系统版本v7。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1031/1.PNG">
+<meta property="og:image" content="http://got17.cn/1031/2.PNG">
+<meta property="og:image" content="http://got17.cn/1031/3.PNG">
+<meta property="og:image" content="http://got17.cn/1031/4.PNG">
+<meta property="og:image" content="http://got17.cn/1031/5.PNG">
+<meta property="og:image" content="http://got17.cn/1031/5.PNG">
+<meta property="og:image" content="http://got17.cn/1031/5.PNG">
+<meta property="article:published_time" content="2019-08-07T03:19:26.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.288Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="信息网络">
+<meta property="article:tag" content="H3C">
+<meta property="article:tag" content="VRRP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1031/1.PNG">
+
+
+<link rel="canonical" href="http://got17.cn/1031/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1031/","path":"1031/","title":"【信息网络学习day13 H3C设备配置VRRP】"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【信息网络学习day13 H3C设备配置VRRP】 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">原理</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#VRRP%E6%A6%82%E5%BF%B5"><span class="nav-number">1.1.</span> <span class="nav-text">VRRP概念</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VRRP%E4%B8%BB%E5%A4%87%E5%A4%87%E4%BB%BD"><span class="nav-number">1.2.</span> <span class="nav-text">VRRP主备备份</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VRRP%E8%B4%9F%E8%BD%BD%E5%88%86%E6%8B%85"><span class="nav-number">1.3.</span> <span class="nav-text">VRRP负载分担</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VRRP%E9%80%89%E4%B8%BE"><span class="nav-number">1.4.</span> <span class="nav-text">VRRP选举</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#VRRP%E7%9B%91%E8%A7%86%E6%8E%A5%E5%8F%A3%E5%8A%9F%E8%83%BD"><span class="nav-number">1.5.</span> <span class="nav-text">VRRP监视接口功能</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8D%95%E5%A4%87%E4%BB%BD%E7%BB%84%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">单备份组配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%93%E6%89%91"><span class="nav-number">2.1.</span> <span class="nav-text">拓扑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">2.3.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%9B%91%E8%A7%86%E6%8E%A5%E5%8F%A3%E9%85%8D%E7%BD%AE"><span class="nav-number">3.</span> <span class="nav-text">监视接口配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%93%E6%89%91-1"><span class="nav-number">3.1.</span> <span class="nav-text">拓扑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-1"><span class="nav-number">3.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81-1"><span class="nav-number">3.3.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%8C%E5%A4%87%E4%BB%BD%E7%BB%84%E9%85%8D%E7%BD%AE"><span class="nav-number">4.</span> <span class="nav-text">双备份组配置</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8B%93%E6%89%91-2"><span class="nav-number">4.1.</span> <span class="nav-text">拓扑</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE-2"><span class="nav-number">4.2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81-2"><span class="nav-number">4.3.</span> <span class="nav-text">验证</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B3%A8%E6%84%8F"><span class="nav-number">5.</span> <span class="nav-text">注意</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">6.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1031/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【信息网络学习day13 H3C设备配置VRRP】 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【信息网络学习day13 H3C设备配置VRRP】
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-08-07 11:19:26" itemprop="dateCreated datePublished" datetime="2019-08-07T11:19:26+08:00">2019-08-07</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>通常，同一网段内的所有主机都设置一条相同的以网关为下一跳的缺省路由。当网关发生故障时，本网段内所有以网关为缺省路由的主机将无法与外部网络通信。</p>
+<p>通过VRRP可以避免由于局域网网关单点故障而导致的网络中断。</p>
+<p>在H3C模拟器上进行VRRP的配置，包括<strong>单备份组配置</strong>、<strong>监视接口配置</strong>、<strong>双备份组配置</strong>，系统版本v7。</p>
+<span id="more"></span>
+
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><h2 id="VRRP概念"><a href="#VRRP概念" class="headerlink" title="VRRP概念"></a>VRRP概念</h2><ul>
+<li><p>RFC 3768定义的VRRPv2是一种容错协议，在提高可靠性的同时，简化了主机的配置。</p>
+</li>
+<li><p>VRRP协议报文使用固定的组播地址224.0.0.18进行发送。</p>
+</li>
+<li><p>虚拟路由器由LAN上唯一的Virtual Router ID标识。并具有虚MAC地址：00-00-5E-00-01-{vrid}。</p>
+</li>
+</ul>
+<h2 id="VRRP主备备份"><a href="#VRRP主备备份" class="headerlink" title="VRRP主备备份"></a>VRRP主备备份</h2><p><img src="/1031/1.PNG"></p>
+<ul>
+<li><p>VRRP将可以将多个路由器加入到备份组中，形成一台虚拟路由器，承担网关功能。</p>
+</li>
+<li><p>只要备份组中仍有一台路由正常工作，虚拟路由器就仍然正常工作。</p>
+</li>
+</ul>
+<h2 id="VRRP负载分担"><a href="#VRRP负载分担" class="headerlink" title="VRRP负载分担"></a>VRRP负载分担</h2><p><img src="/1031/2.PNG"></p>
+<ul>
+<li>VRRP将多台路由器同时承担业务，形成多台虚拟路由器，分担内网与外网之间的流量。</li>
+</ul>
+<h2 id="VRRP选举"><a href="#VRRP选举" class="headerlink" title="VRRP选举"></a>VRRP选举</h2><p><img src="/1031/3.PNG"></p>
+<p>当路由器使能VRRP功能后，会根据优先级确定自己在备份组中的角色。当优先级变化后，根据VRRP模式确认VRRP状态。</p>
+<ul>
+<li><p>在非抢占模式下。即使配置backup更高的优先级，也不会迁移master。</p>
+</li>
+<li><p>抢占模式下，谁大谁优先。</p>
+</li>
+</ul>
+<h2 id="VRRP监视接口功能"><a href="#VRRP监视接口功能" class="headerlink" title="VRRP监视接口功能"></a>VRRP监视接口功能</h2><p><img src="/1031/4.PNG"></p>
+<ul>
+<li>当Master路由器连接上行链路的接口处于Down状态时，路由器主动降低自己的优先级，使得备份组内重新选择Master，承担转发任务。</li>
+</ul>
+<h1 id="单备份组配置"><a href="#单备份组配置" class="headerlink" title="单备份组配置"></a>单备份组配置</h1><h2 id="拓扑"><a href="#拓扑" class="headerlink" title="拓扑"></a>拓扑</h2><p>按下图拓扑连接，配置各端口ip，并启用rip协议，版本号<code>ver 2</code>，并关闭自动汇总<code>undo summary</code>，并在<code>SWA</code>、<code>SWB</code>的rip进程中将vlan10设置为静默端口。</p>
+<p><img src="/1031/5.PNG"></p>
+<h2 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h2><p>在<code>SWA</code>上配置VRRP单备份组1虚拟IP，优先级120，抢占模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[SWA]int vlan 10</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 virtual-ip 192.168.0.254</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 priority 120</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 preempt-mode</span><br></pre></td></tr></table></figure>
+
+<p>在<code>SWB</code>上配置VRRP单备份组1虚拟IP，优先级100，抢占模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[SWB]int vlan 10</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 virtual-ip 192.168.0.254</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 priority 100</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 preempt-mode</span><br></pre></td></tr></table></figure>
+
+<h2 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h2><p>在<code>PCA</code>上tracert<code>PCC</code>，可以看出报文通过<strong>SWA</strong>转发：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[PCA]tracert 10.0.0.1</span><br><span class="line">traceroute to 10.0.0.1 (10.0.0.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  192.168.0.252 (192.168.0.252)  2.000 ms  3.000 ms  2.000 ms</span><br><span class="line"> 2  192.168.255.2 (192.168.255.2)  3.000 ms  3.000 ms  4.000 ms</span><br><span class="line"> 3  10.0.0.1 (10.0.0.1)  4.000 ms  4.000 ms  5.000 ms</span><br></pre></td></tr></table></figure>
+
+<p>此时<code>SWA</code>、<code>SWB</code>的VRRP端口表项如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">[SWA]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Master</span><br><span class="line">     Config pri       : 120                 Running pri  : 120</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Virtual MAC      : 0000-5e00-0101</span><br><span class="line">     Master IP        : 192.168.0.252</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[SWB]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Backup</span><br><span class="line">     Config pri       : 100                 Running pri  : 100</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Become master    : 2930 millisecond left</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Master IP        : 192.168.0.252</span><br></pre></td></tr></table></figure>
+
+<p>即<code>SWA</code>为主，<code>SWB</code>为备。</p>
+<p>接下来在<code>SWA</code>上关闭与<code>SWC</code>相连的g1&#x2F;0&#x2F;2端口：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">[SWA]int g1/0/2</span><br><span class="line">[SWA-GigabitEthernet1/0/2]shutdown</span><br></pre></td></tr></table></figure>
+
+<p>此时再从<code>PCA</code>上tracert<code>PCC</code>，可以看出报文转由<strong>SWB</strong>转发：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[PCA]tracert 10.0.0.1</span><br><span class="line">traceroute to 10.0.0.1 (10.0.0.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  192.168.0.253 (192.168.0.253)  2.000 ms  2.000 ms  1.000 ms</span><br><span class="line"> 2  192.168.255.6 (192.168.255.6)  4.000 ms  3.000 ms  4.000 ms</span><br><span class="line"> 3  10.0.0.1 (10.0.0.1)  4.000 ms  4.000 ms  5.000 ms</span><br></pre></td></tr></table></figure>
+
+<p>此时<code>SWA</code>、<code>SWB</code>的VRRP端口表项如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line">[SWA]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Initialize</span><br><span class="line">     Config pri       : 120                 Running pri  : 120</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Master IP        : 0.0.0.0</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[SWB]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Master</span><br><span class="line">     Config pri       : 100                 Running pri  : 100</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Virtual MAC      : 0000-5e00-0101</span><br><span class="line">     Master IP        : 192.168.0.253</span><br></pre></td></tr></table></figure>
+
+<p>即<code>SWA</code>为Initialize状态不参与转发，<code>SWB</code>为主。</p>
+<h1 id="监视接口配置"><a href="#监视接口配置" class="headerlink" title="监视接口配置"></a>监视接口配置</h1><h2 id="拓扑-1"><a href="#拓扑-1" class="headerlink" title="拓扑"></a>拓扑</h2><p>按下图拓扑连接，配置各端口ip，并启用rip协议，版本号<code>ver 2</code>，并关闭自动汇总<code>undo summary</code>，并在<code>SWA</code>、<code>SWB</code>的rip进程中将vlan10、vlan20设置为静默端口。</p>
+<p><img src="/1031/5.PNG"></p>
+<h2 id="配置-1"><a href="#配置-1" class="headerlink" title="配置"></a>配置</h2><p>在<code>SWA</code>上配置VRRP单备份组1虚拟IP，优先级120，抢占模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[SWA]int vlan 10</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 virtual-ip 192.168.0.254</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 priority 120</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 preempt-mode</span><br></pre></td></tr></table></figure>
+
+<p>在<code>SWB</code>上配置VRRP单备份组1虚拟IP，优先级100，抢占模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[SWB]int vlan 10</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 virtual-ip 192.168.0.254</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 priority 100</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 preempt-mode</span><br></pre></td></tr></table></figure>
+
+<p>在<code>SWA</code>上配置VRRP监视端口：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">[SWA]track 1 interface Vlan-interface 100</span><br><span class="line"></span><br><span class="line">[SWA]int vlan 10</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 track 1 priority reduced 30</span><br></pre></td></tr></table></figure>
+
+<h2 id="验证-1"><a href="#验证-1" class="headerlink" title="验证"></a>验证</h2><p>配置VRRP监视端口前，断掉vlan100，<code>PCA</code>tracert<code>PCC</code>不通：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;PCA&gt;tracert 10.0.0.1</span><br><span class="line">traceroute to 10.0.0.1 (10.0.0.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  192.168.0.252 (192.168.0.252)  3.000 ms  2.000 ms  1.000 ms</span><br><span class="line"> 2  192.168.0.252 (192.168.0.252)  2.000 ms !N  3.000 ms !N  2.000 ms !N</span><br></pre></td></tr></table></figure>
+
+<p>此时<code>SWA</code>、<code>SWB</code>的VRRP端口表项如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[SWA]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Master</span><br><span class="line">     Config pri       : 120                 Running pri  : 120</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Virtual MAC      : 0000-5e00-0101</span><br><span class="line">     Master IP        : 192.168.0.252</span><br><span class="line">   VRRP track information:</span><br><span class="line">     Track object   : 1                   State : Positive   Pri reduced : 30</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[SWB]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Backup</span><br><span class="line">     Config pri       : 100                 Running pri  : 100</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Become master    : 2930 millisecond left</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Master IP        : 192.168.0.252</span><br></pre></td></tr></table></figure>
+
+<p>即<code>SWA</code>仍为主，优先级120；<code>SWB</code>为备，优先级100。</p>
+<p>配置监视端口后，断掉vlan100，此时再从<code>PCA</code>上tracert<code>PCC</code>，可以看出报文转由<strong>SWB</strong>转发：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">[PCA]tracert 10.0.0.1</span><br><span class="line">traceroute to 10.0.0.1 (10.0.0.1), 30 hops at most, 40 bytes each packet, press CTRL_C to break</span><br><span class="line"> 1  192.168.0.253 (192.168.0.253)  2.000 ms  2.000 ms  1.000 ms</span><br><span class="line"> 2  192.168.255.6 (192.168.255.6)  4.000 ms  3.000 ms  4.000 ms</span><br><span class="line"> 3  10.0.0.1 (10.0.0.1)  4.000 ms  4.000 ms  5.000 ms</span><br></pre></td></tr></table></figure>
+
+<p>此时<code>SWA</code>、<code>SWB</code>的VRRP端口表项如下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br></pre></td><td class="code"><pre><span class="line">[SWA]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Backup</span><br><span class="line">     Config pri       : 120                 Running pri  : 90</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Become master    : 3090 millisecond left</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Master IP        : 192.168.0.253</span><br><span class="line">   VRRP track information:</span><br><span class="line">     Track object   : 1                   State : Negative   Pri reduced : 30</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">[SWB]dis vrrp verbose</span><br><span class="line">IPv4 virtual router information:</span><br><span class="line"> Running mode : Standard</span><br><span class="line"> Total number of virtual routers : 1</span><br><span class="line">   Interface Vlan-interface10</span><br><span class="line">     VRID             : 1                   Adver timer  : 100 centiseconds</span><br><span class="line">     Admin status     : Up                  State        : Master</span><br><span class="line">     Config pri       : 100                 Running pri  : 100</span><br><span class="line">     Preempt mode     : Yes                 Delay time   : 0 centiseconds</span><br><span class="line">     Auth type        : None</span><br><span class="line">     Virtual IP       : 192.168.0.254</span><br><span class="line">     Virtual MAC      : 0000-5e00-0101</span><br><span class="line">     Master IP        : 192.168.0.253</span><br></pre></td></tr></table></figure>
+
+<p>可见VRRP状态发生了迁移，<code>SWA</code>的优先级减了30，变成了备；<code>SWB</code>为主，优先级100。</p>
+<h1 id="双备份组配置"><a href="#双备份组配置" class="headerlink" title="双备份组配置"></a>双备份组配置</h1><h2 id="拓扑-2"><a href="#拓扑-2" class="headerlink" title="拓扑"></a>拓扑</h2><p>按下图拓扑连接，配置各端口ip，并启用rip协议，版本号<code>ver 2</code>，并关闭自动汇总<code>undo summary</code>，并在<code>SWA</code>、<code>SWB</code>的rip进程中将vlan10、vlan20设置为静默端口。</p>
+<p><img src="/1031/5.PNG"></p>
+<h2 id="配置-2"><a href="#配置-2" class="headerlink" title="配置"></a>配置</h2><p>在<code>SWA</code>上配置VRRP备份组1虚拟IP，优先级120，备份组2虚拟IP，优先级100，均为抢占模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[SWA]int vlan 10</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 virtual-ip 192.168.0.254</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 priority 120</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 1 preempt-mode</span><br><span class="line"></span><br><span class="line">[SWA]int vlan 20</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 2 virtual-ip 192.168.1.254</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 2 priority 100</span><br><span class="line">[SWA-Vlan-interface10]vrrp vrid 2 preempt-mode</span><br></pre></td></tr></table></figure>
+
+<p>在<code>SWB</code>上配置VRRP备份组1虚拟IP，优先级100，备份组2虚拟IP，优先级120，均为抢占模式：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[SWB]int vlan 10</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 virtual-ip 192.168.0.254</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 priority 100</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 1 preempt-mode</span><br><span class="line"></span><br><span class="line">[SWB]int vlan 20</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 2 virtual-ip 192.168.1.254</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 2 priority 120</span><br><span class="line">[SWB-Vlan-interface10]vrrp vrid 2 preempt-mode</span><br></pre></td></tr></table></figure>
+
+<h2 id="验证-2"><a href="#验证-2" class="headerlink" title="验证"></a>验证</h2><p>配置没问题，死活不通。</p>
+<p>老子不玩了 操</p>
+<p><strong>———————–2019.8.8更新—————————-</strong></p>
+<p>找到问题了，实验三中新加的PCB<strong>192.168.1.0&#x2F;24</strong>网段，在rip中发布网段<strong>192.168.0.0</strong>其实不包含的，所以要在<code>SWA</code>、<code>SWB</code>中再发布一次。</p>
+<p>其实看一下路由表就行了，主要昨天坑太多心态崩了。</p>
+<p>另外，每次逻辑链路（int vlan 100）通断切换主备时，都可能会导致能ping通但是tracert中间某一跳回不来。原因是rip更新路由表实在太慢了，tracert中间某一跳可能对应的路由条目刚好是中断链路对应的那一条，而这个路由条目要等好久才能消失（我这里&gt;&#x3D;3分钟）。</p>
+<h1 id="注意"><a href="#注意" class="headerlink" title="注意"></a>注意</h1><p>要使用H3C设备的tracert功能，需在设备上开启相应功能：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># Enable sending of ICMP Time Exceeded packets</span><br><span class="line">[H3C]ip ttl-expires enable</span><br><span class="line"></span><br><span class="line"># Enable sending of ICMP Destination Unreachable packets</span><br><span class="line">[H3C]ip unreachables enable</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li>H3C B00500050 VRRP</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E4%BF%A1%E6%81%AF%E7%BD%91%E7%BB%9C/" rel="tag"># 信息网络</a>
+              <a href="/tags/H3C/" rel="tag"># H3C</a>
+              <a href="/tags/VRRP/" rel="tag"># VRRP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1030/" rel="prev" title="【信息网络学习day12 H3C设备配置路由过滤】">
+                  <i class="fa fa-chevron-left"></i> 【信息网络学习day12 H3C设备配置路由过滤】
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1032/" rel="next" title="【信息网络学习day14 win10开启ftp服务】">
+                  【信息网络学习day14 win10开启ftp服务】 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"352101590451797b5268f2cdf9f5964f"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，登录后代码审计，利用溢出提权，最终获取flag。 本篇使用工具netdiscover、nmap、dirb、ssh2john。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全0x01】SSH私钥泄露">
+<meta property="og:url" content="http://got17.cn/1051/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，登录后代码审计，利用溢出提权，最终获取flag。 本篇使用工具netdiscover、nmap、dirb、ssh2john。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1051/1.PNG">
+<meta property="og:image" content="http://got17.cn/1051/2.PNG">
+<meta property="og:image" content="http://got17.cn/1051/3.PNG">
+<meta property="og:image" content="http://got17.cn/1051/4.PNG">
+<meta property="og:image" content="http://got17.cn/1051/5.PNG">
+<meta property="og:image" content="http://got17.cn/1051/6.PNG">
+<meta property="og:image" content="http://got17.cn/1051/7.PNG">
+<meta property="og:image" content="http://got17.cn/1051/8.PNG">
+<meta property="og:image" content="http://got17.cn/1051/9.PNG">
+<meta property="og:image" content="http://got17.cn/1051/10.PNG">
+<meta property="og:image" content="http://got17.cn/1051/11.PNG">
+<meta property="og:image" content="http://got17.cn/1051/12.PNG">
+<meta property="og:image" content="http://got17.cn/1051/13.PNG">
+<meta property="og:image" content="http://got17.cn/1051/14.PNG">
+<meta property="og:image" content="http://got17.cn/1051/15.PNG">
+<meta property="article:published_time" content="2020-05-12T10:43:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.377Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="nmap">
+<meta property="article:tag" content="dirb">
+<meta property="article:tag" content="john">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1051/1.PNG">
+
+
+<link rel="canonical" href="http://got17.cn/1051/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1051/","path":"1051/","title":"【网络安全0x01】SSH私钥泄露"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【网络安全0x01】SSH私钥泄露 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B8%97%E9%80%8F%E8%AE%B0%E5%BD%95"><span class="nav-number">1.</span> <span class="nav-text">渗透记录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%80%BB%E7%BB%93"><span class="nav-number">2.</span> <span class="nav-text">命令总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#netdiscover"><span class="nav-number">2.1.</span> <span class="nav-text">netdiscover</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#nmap"><span class="nav-number">2.2.</span> <span class="nav-text">nmap</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#dirb"><span class="nav-number">2.3.</span> <span class="nav-text">dirb</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ssh2john"><span class="nav-number">2.4.</span> <span class="nav-text">ssh2john</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1051/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【网络安全0x01】SSH私钥泄露 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【网络安全0x01】SSH私钥泄露
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-05-12 18:43:08" itemprop="dateCreated datePublished" datetime="2020-05-12T18:43:08+08:00">2020-05-12</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>51CTO的网课，本篇通过探测服务器敏感文件获取普通用户SSH秘钥，登录后代码审计，利用溢出提权，最终获取flag。</p>
+<p>本篇使用工具netdiscover、nmap、dirb、ssh2john。</p>
+<span id="more"></span>
+
+<h1 id="渗透记录"><a href="#渗透记录" class="headerlink" title="渗透记录"></a>渗透记录</h1><ol>
+<li>首先使用netdiscover扫描网段，找到靶机ip地址：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">netdiscover -r 192.168.1.0/24</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/1.PNG"></p>
+<ol start="2">
+<li>使用nmap扫描靶机ip地址，找出开放端口：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV 192.168.1.113</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/2.PNG"></p>
+<p>可以看到31337端口开启了http服务，大于1024的端口一般是用户可自行支配的端口，属于敏感端口。</p>
+<ol start="3">
+<li>访问31337端口的http服务，查看页面和源码均没有什么有用的信息：</li>
+</ol>
+<p><img src="/1051/3.PNG"></p>
+<ol start="4">
+<li>使用dirb挖掘网站目录：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">dirb http://192.168.1.113:31337/</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/4.PNG"></p>
+<p>其中<code>robots.txt</code>提供给搜索引擎爬虫，告知网站中哪些资源不可爬取，一般这里会有敏感信息。</p>
+<p>另外一个<code>/.ssh</code>也很有意思，有可能会有SSH秘钥。</p>
+<ol start="5">
+<li>访问<code>robots.txt</code>，看到一个不被允许访问的敏感目录<code>/taxes</code>，访问得到第一个flag：</li>
+</ol>
+<p><img src="/1051/5.PNG"></p>
+<p><img src="/1051/6.PNG"></p>
+<ol start="6">
+<li>再回过头访问<code>/.ssh</code>目录，可以看到SSH秘钥对，将私钥和公钥都下载到本地：</li>
+</ol>
+<p><img src="/1051/7.PNG"></p>
+<p><img src="/1051/8.PNG"></p>
+<ol start="7">
+<li>修改私钥<code>id_rsa</code>权限为600，即只允许root用户的读写操作，否则ssh登录会因为权限太多被拒绝：</li>
+</ol>
+<p><img src="/1051/9.PNG"></p>
+<ol start="8">
+<li>使用ssh2john对私钥进行破解：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">python /usr/share/john/ssh2john.py id_rsa &gt; crack</span><br><span class="line">zcat /usr/share/wordlists/rockyou.txt.gz | john crack</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/10.PNG"></p>
+<p>可以看到已破解出passphrase是starwars。</p>
+<ol start="9">
+<li>cat公钥得到用户名，配合私钥以及破解出来的密码，ssh登录靶机：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">root@gaoteng17:~/Desktop<span class="comment"># cat id_rsa.pub</span></span><br><span class="line">root@gaoteng17:~/Desktop<span class="comment"># ssh -i id_rsa simon@192.168.1.113</span></span><br><span class="line">Enter passphrase <span class="keyword">for</span> key <span class="string">&#x27;id_rsa&#x27;</span>:starwars</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1051/11.PNG"></p>
+<ol start="10">
+<li>切换到<code>/root</code>目录下，查看敏感文件，找到flag，但是权限不够：</li>
+</ol>
+<p><img src="/1051/12.PNG"></p>
+<ol start="11">
+<li>查看<code>/root</code>目录下的<code>read_message.c</code>文件，得到第2个flag：</li>
+</ol>
+<p><img src="/1051/13.PNG"></p>
+<p>审计代码，发现有溢出漏洞。</p>
+<ol start="12">
+<li>查找有权限执行的文件，这步其实没怎么搞明白：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">find / -perm -4000 2&gt;/dev/null</span><br></pre></td></tr></table></figure>
+
+<p>&#x2F;是从根目录开始查找，最后的2&gt;&#x2F;dev&#x2F;null是将stderr信息转向到这个特殊null文件中，这样屏幕不会被权限不够这些错误信息刷屏从而找不到有用信息，0对应stdin，1对应stdout，但是中间的-perm -4000参数没怎么搞明白，网上也没搜到，以后再补充吧。</p>
+<p><img src="/1051/14.PNG"></p>
+<ol start="13">
+<li>利用代码的溢出，输20位以Simon打头的字符，后面接上<code>/bin/sh</code>，实现提权，获得最后一个flag：</li>
+</ol>
+<p><img src="/1051/15.PNG"></p>
+<p>这个也没怎么搞明白，为什么后面接<code>/bin/sh</code>就能提权，也没搜到，以后再补充吧。</p>
+<h1 id="命令总结"><a href="#命令总结" class="headerlink" title="命令总结"></a>命令总结</h1><h2 id="netdiscover"><a href="#netdiscover" class="headerlink" title="netdiscover"></a>netdiscover</h2><p>专用的二层发现工具。拥有主动和被动发现两种方式。</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>意义</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-i:网卡</td>
+<td>选择你监控的网卡。比如eth0</td>
+</tr>
+<tr>
+<td>-r:range</td>
+<td>指定IP段。比如192.168.0.0&#x2F;24</td>
+</tr>
+<tr>
+<td>-l:filename</td>
+<td>从文件读取range列表</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>被动模式。默默的侦听指定的网卡以发现别的二层主机</td>
+</tr>
+<tr>
+<td>-t</td>
+<td>ARP包发送间隔。单位毫秒。这个可以用来规避检测系统的告警。</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>发包数量</td>
+</tr>
+</tbody></table>
+<p>举例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">netdiscover  -i eth0 -r 192.168.43.0/24   主动发现：-i指定所要侦听的网卡，-r指定ip段。</span><br><span class="line">netdiscover -p                            被动发现</span><br></pre></td></tr></table></figure>
+
+<h2 id="nmap"><a href="#nmap" class="headerlink" title="nmap"></a>nmap</h2><p>十条nmap常用的扫描命令:</p>
+<ol>
+<li>获取远程主机的系统类型及开放端口</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nmap -sS -P0 -sV -O &lt;target&gt;</span><br><span class="line">这里的 &lt; target &gt; 可以是单一 IP, 或主机名，或域名，或子网</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>-sS TCP SYN 扫描 (又称半开放,或隐身扫描)</li>
+<li>-P0 允许你关闭 ICMP pings.</li>
+<li>-sV 打开系统版本检测</li>
+<li>-O 尝试识别远程操作系统</li>
+</ul>
+<p>其它选项:</p>
+<ul>
+<li>-A 同时打开操作系统指纹和版本检测</li>
+<li>-v 详细输出扫描情况.</li>
+</ul>
+<ol start="2">
+<li>列出开放了指定端口的主机列表</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sT -p 80 -oG – 192.168.1.* | grep open</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>在网络寻找所有在线主机</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sP 192.168.0.*</span><br></pre></td></tr></table></figure>
+
+<p>或者也可用以下命令:</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nmap -sP 192.168.0.0/24</span><br><span class="line">指定 subnet</span><br></pre></td></tr></table></figure>
+
+<ol start="4">
+<li>Ping 指定范围内的 IP 地址</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -sP 192.168.1.100-254</span><br></pre></td></tr></table></figure>
+
+<ol start="5">
+<li>在某段子网上查找未占用的 IP</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -T4 -sP 192.168.2.0/24 &amp;&amp; egrep “00:00:00:00:00:00″ /proc/net/arp</span><br></pre></td></tr></table></figure>
+
+<ol start="6">
+<li>在局域网上扫找 Conficker 蠕虫病毒</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -PN -T4 -p139,445 -n -v –script=smb-check-vulns –script-args safe=1 192.168.0.1-254</span><br></pre></td></tr></table></figure>
+
+<ol start="7">
+<li>扫描网络上的恶意接入点 （rogue APs）.</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">nmap -A -p1-85,113,443,8080-8100 -T4 –min-hostgroup 50 –max-rtt-timeout</span><br><span class="line">2000 –initial-rtt-timeout 300 –max-retries 3 –host-timeout 20m</span><br><span class="line">–max-scan-delay 1000 -oA wapscan 10.0.0.0/8</span><br></pre></td></tr></table></figure>
+
+<ol start="8">
+<li>使用诱饵扫描方法来扫描主机端口</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sudo nmap -sS 192.168.0.10 -D 192.168.0.2</span><br></pre></td></tr></table></figure>
+
+<ol start="9">
+<li>为一个子网列出反向DNS记录</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">nmap -R -sL 209.85.229.99/27 | awk ‘&#123;<span class="keyword">if</span>(<span class="variable">$3</span>==”not”)<span class="built_in">print</span>”(“<span class="variable">$2</span>″) no PTR”;<span class="keyword">else</span> <span class="built_in">print</span><span class="variable">$3</span>″ is “<span class="variable">$2</span>&#125;’ | grep ‘(‘</span><br></pre></td></tr></table></figure>
+
+<ol start="10">
+<li>显示网络上共有多少台 Linux 及 Win 设备?</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo nmap -F -O 192.168.0.1-255 | grep “Running: ” &gt; /tmp/os; <span class="built_in">echo</span> “$(<span class="built_in">cat</span> /tmp/os | grep Linux \</span><br><span class="line">| <span class="built_in">wc</span> -l) Linux device(s)”; <span class="built_in">echo</span> “$(<span class="built_in">cat</span> /tmp/os | grep Windows | <span class="built_in">wc</span> -l) Window(s) device”</span><br></pre></td></tr></table></figure>
+
+<h2 id="dirb"><a href="#dirb" class="headerlink" title="dirb"></a>dirb</h2><p>dirb是一个类似windows下御剑这些目录扫描工具，下面是几个常用的参数：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>设置ua</td>
+</tr>
+<tr>
+<td>-c</td>
+<td>设置cookie带cookie扫描</td>
+</tr>
+<tr>
+<td>-N</td>
+<td>忽略某些响应码</td>
+</tr>
+<tr>
+<td>-o</td>
+<td>输出结果</td>
+</tr>
+<tr>
+<td>-p</td>
+<td>使用代理</td>
+</tr>
+<tr>
+<td>-X</td>
+<td>在每个测试目录上附加后缀</td>
+</tr>
+<tr>
+<td>-z</td>
+<td>设置毫秒延迟</td>
+</tr>
+</tbody></table>
+<p>举例：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">一、正常扫描</span><br><span class="line">dirb 目标 字典路径</span><br><span class="line"></span><br><span class="line">二、设置 ua 和 cookie</span><br><span class="line">dirb 目标 字典路径 -a <span class="string">&quot;ua&quot;</span>  -c <span class="string">&quot;cookie&quot;</span></span><br><span class="line"></span><br><span class="line">三、使用代理和输出结果</span><br><span class="line">dirb 目标 字典路径 -p ip:port -o result.txt</span><br><span class="line"></span><br><span class="line">四、设置附加后缀</span><br><span class="line">dirb dirb 目标 字典路径 -X <span class="built_in">test</span>(这样每个被测试的字典都附加了<span class="built_in">test</span>)</span><br><span class="line"></span><br><span class="line">五、设置毫秒延迟</span><br><span class="line">如果目标存在一些安全程序爬扫描太快被屏蔽的话可以设置-z参数单位是毫秒</span><br><span class="line">dirb dirb 目标 字典路径 -z 1000 (1秒)</span><br><span class="line">现在只能1秒访问一次了</span><br></pre></td></tr></table></figure>
+
+<h2 id="ssh2john"><a href="#ssh2john" class="headerlink" title="ssh2john"></a>ssh2john</h2><p>John the Ripper可以破解在RSA加密中创建的SSH私钥。</p>
+<p>首先利用自带的ssh2john工具改变SSH私钥的格式变成john能处理的格式，然后跑字典进行破解：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">chmod</span> 600 id_rsa</span><br><span class="line">ssh2john id_rsa &gt; crack</span><br><span class="line">john --wordlist=/usr/share/wordlists/rockyou.txt crack</span><br><span class="line">john crack --show</span><br><span class="line"></span><br><span class="line">字典是gz包的话：</span><br><span class="line">zcat /usr/share/wordlists/rockyou.txt.gz | john crack</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1SJ411h7VW">2020发布 CTF基础入门&#x2F;CTF教程零基础 渗透测试&#x2F;web安全&#x2F;CTF夺旗【整套教程】</a></li>
+<li><a target="_blank" rel="noopener" href="https://blog.csdn.net/qq_30247635/article/details/86257968">Netdiscover使用</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.linuxprobe.com/10-nmap.html">十条nmap常用的扫描命令</a></li>
+<li><a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/26549845">(每日一工具)dirb目录扫描工具</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/zlgxzswjy/p/10081873.html">SSH passphrase的破解</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+              <a href="/tags/nmap/" rel="tag"># nmap</a>
+              <a href="/tags/dirb/" rel="tag"># dirb</a>
+              <a href="/tags/john/" rel="tag"># john</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1050/" rel="prev" title="【磁盘mbr转gpt后缺少esp分区导致win10无法引导的解决方案】">
+                  <i class="fa fa-chevron-left"></i> 【磁盘mbr转gpt后缺少esp分区导致win10无法引导的解决方案】
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1052/" rel="next" title="【网络安全0x02】SSH服务器夺旗">
+                  【网络安全0x02】SSH服务器夺旗 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"490a97cc8a0059483ecec53aa990b4a3"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="MISC，中文即杂项，包括隐写，数据还原，脑洞、社会工程、与信息安全相关的大数据等。竞赛过程中解MISC时会涉及到各种脑洞，各种花式技巧，主要考察选手的快速理解、学习能力以及日常知识积累的广度、深度。 本篇为隐写类常见做法简单汇总，以图片为主。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全3x02】CTF8月竞赛学习----------隐写">
+<meta property="og:url" content="http://got17.cn/1084/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="MISC，中文即杂项，包括隐写，数据还原，脑洞、社会工程、与信息安全相关的大数据等。竞赛过程中解MISC时会涉及到各种脑洞，各种花式技巧，主要考察选手的快速理解、学习能力以及日常知识积累的广度、深度。 本篇为隐写类常见做法简单汇总，以图片为主。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-01T13:25:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.699Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="隐写">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://got17.cn/1084/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1084/","path":"1084/","title":"【网络安全3x02】CTF8月竞赛学习----------隐写"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【网络安全3x02】CTF8月竞赛学习----------隐写 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%9A%90%E5%86%99%E6%80%BB%E7%BB%93"><span class="nav-number">1.</span> <span class="nav-text">隐写总结</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#png-x2F-bmp"><span class="nav-number">1.1.</span> <span class="nav-text">png&#x2F;bmp</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jpg"><span class="nav-number">1.2.</span> <span class="nav-text">jpg</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#gif"><span class="nav-number">1.3.</span> <span class="nav-text">gif</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mp3-x2F-wav"><span class="nav-number">1.4.</span> <span class="nav-text">mp3&#x2F;wav</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">2.</span> <span class="nav-text">常用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#bftools"><span class="nav-number">2.1.</span> <span class="nav-text">bftools</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#binwalk"><span class="nav-number">2.2.</span> <span class="nav-text">binwalk</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#exiftool"><span class="nav-number">2.3.</span> <span class="nav-text">exiftool</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#ExtractX"><span class="nav-number">2.4.</span> <span class="nav-text">ExtractX</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#F5-steganography"><span class="nav-number">2.5.</span> <span class="nav-text">F5-steganography</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#foremost"><span class="nav-number">2.6.</span> <span class="nav-text">foremost</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#jphide"><span class="nav-number">2.7.</span> <span class="nav-text">jphide</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#mp3stego"><span class="nav-number">2.8.</span> <span class="nav-text">mp3stego</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#outguess-linux"><span class="nav-number">2.9.</span> <span class="nav-text">outguess(linux)</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#stegdetect"><span class="nav-number">2.10.</span> <span class="nav-text">stegdetect</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#steghide"><span class="nav-number">2.11.</span> <span class="nav-text">steghide</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1084/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【网络安全3x02】CTF8月竞赛学习----------隐写 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【网络安全3x02】CTF8月竞赛学习----------隐写
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-08-01 21:25:08" itemprop="dateCreated datePublished" datetime="2020-08-01T21:25:08+08:00">2020-08-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>MISC，中文即杂项，包括隐写，数据还原，脑洞、社会工程、与信息安全相关的大数据等。竞赛过程中解MISC时会涉及到各种脑洞，各种花式技巧，主要考察选手的快速理解、学习能力以及日常知识积累的广度、深度。</p>
+<p>本篇为隐写类常见做法简单汇总，以图片为主。</p>
+<span id="more"></span>
+
+<h1 id="隐写总结"><a href="#隐写总结" class="headerlink" title="隐写总结"></a>隐写总结</h1><h2 id="png-x2F-bmp"><a href="#png-x2F-bmp" class="headerlink" title="png&#x2F;bmp"></a>png&#x2F;bmp</h2><ol>
+<li>看属性</li>
+<li>stegsolve过滤通道</li>
+<li>binwalk查看文件结构(binwalk -e或foremost分离)</li>
+<li>fireworks过滤图层</li>
+<li>winhex改文件头(tweakpng查错误部分)</li>
+</ol>
+<h2 id="jpg"><a href="#jpg" class="headerlink" title="jpg"></a>jpg</h2><ol>
+<li>看属性</li>
+<li>binwalk查看文件结构(binwalk -e或foremost分离)</li>
+<li>stegdetect查看隐藏</li>
+<li>steghide&#x2F;jphide分离隐藏信息</li>
+<li>winhex改文件头</li>
+</ol>
+<h2 id="gif"><a href="#gif" class="headerlink" title="gif"></a>gif</h2><ol>
+<li>stegsolve过滤通道</li>
+<li>convert分离图片</li>
+<li>winhex改文件头</li>
+</ol>
+<h2 id="mp3-x2F-wav"><a href="#mp3-x2F-wav" class="headerlink" title="mp3&#x2F;wav"></a>mp3&#x2F;wav</h2><ol>
+<li>coolpro2分析波形（摩斯电码、曼彻斯特编码）</li>
+<li>MP3Stego</li>
+<li>winhex查隐写</li>
+</ol>
+<h1 id="常用命令"><a href="#常用命令" class="headerlink" title="常用命令"></a>常用命令</h1><h2 id="bftools"><a href="#bftools" class="headerlink" title="bftools"></a>bftools</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">bftools.exe decode braincopter doge.jpg --output --dogeout.jpg</span><br><span class="line">bftools.exe run --dogeout.jpg</span><br></pre></td></tr></table></figure>
+
+<h2 id="binwalk"><a href="#binwalk" class="headerlink" title="binwalk"></a>binwalk</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">binwalk [file]</span><br><span class="line">binwalk -e [file]</span><br></pre></td></tr></table></figure>
+
+<h2 id="exiftool"><a href="#exiftool" class="headerlink" title="exiftool"></a>exiftool</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">exiftool [file.jpg] | grep <span class="string">&quot;flag&quot;</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="ExtractX"><a href="#ExtractX" class="headerlink" title="ExtractX"></a>ExtractX</h2><p>与文件置于同一目录双击运行</p>
+<h2 id="F5-steganography"><a href="#F5-steganography" class="headerlink" title="F5-steganography"></a>F5-steganography</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">git <span class="built_in">clone</span> https://github.com/matthewgao/F5-steganography</span><br><span class="line"><span class="built_in">cd</span> F5-steganography</span><br><span class="line">java Extract [file.jpg] -p [password]</span><br></pre></td></tr></table></figure>
+
+<h2 id="foremost"><a href="#foremost" class="headerlink" title="foremost"></a>foremost</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">foremost [file]</span><br></pre></td></tr></table></figure>
+
+<h2 id="jphide"><a href="#jphide" class="headerlink" title="jphide"></a>jphide</h2><p>运行jphswin.exe -&gt; jseek -&gt; 输入口令解密</p>
+<h2 id="mp3stego"><a href="#mp3stego" class="headerlink" title="mp3stego"></a>mp3stego</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Decode.exe -X -P [password] [file.mp3]</span><br></pre></td></tr></table></figure>
+
+<h2 id="outguess-linux"><a href="#outguess-linux" class="headerlink" title="outguess(linux)"></a>outguess(linux)</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">./configure &amp;&amp; make &amp;&amp; make install</span><br><span class="line">outguess -r angrybird.jpg outfile.txt</span><br></pre></td></tr></table></figure>
+
+<h2 id="stegdetect"><a href="#stegdetect" class="headerlink" title="stegdetect"></a>stegdetect</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">stegdetect -tjpoi -s 10.0 [file.jpg]</span><br></pre></td></tr></table></figure>
+
+<h2 id="steghide"><a href="#steghide" class="headerlink" title="steghide"></a>steghide</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">steghide.exe info [file.jpg]</span><br><span class="line">steghide.exe extract -sf [file.jpg]</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+              <a href="/tags/%E9%9A%90%E5%86%99/" rel="tag"># 隐写</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1083/" rel="prev" title="【网络安全3x01】CTF8月竞赛学习----------取证">
+                  <i class="fa fa-chevron-left"></i> 【网络安全3x01】CTF8月竞赛学习----------取证
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1085/" rel="next" title="debian系linux网卡设置">
+                  debian系linux网卡设置 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"d77ce5fc96d231967c324da2f995cbc1"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

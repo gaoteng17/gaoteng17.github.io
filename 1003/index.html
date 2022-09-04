@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="OpenCV是一个基于BSD许可（开源）发行的跨平台计算机视觉库，可以运行在Linux、Windows、Android和Mac OS操作系统上。它轻量级而且高效——由一系列 C 函数和少量 C++ 类构成，同时提供了Python、Ruby、MATLAB等语言的接口，实现了图像处理和计算机视觉方面的很多通用算法。 本文将使用python3.6，通过调用OpenCV库来实现图像处理几个方面的功能。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="OpenCV在图像处理方面的应用">
+<meta property="og:url" content="http://got17.cn/1003/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="OpenCV是一个基于BSD许可（开源）发行的跨平台计算机视觉库，可以运行在Linux、Windows、Android和Mac OS操作系统上。它轻量级而且高效——由一系列 C 函数和少量 C++ 类构成，同时提供了Python、Ruby、MATLAB等语言的接口，实现了图像处理和计算机视觉方面的很多通用算法。 本文将使用python3.6，通过调用OpenCV库来实现图像处理几个方面的功能。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1003/1.png">
+<meta property="og:image" content="http://got17.cn/1003/2.png">
+<meta property="og:image" content="http://got17.cn/1003/3.png">
+<meta property="og:image" content="http://got17.cn/1003/4.png">
+<meta property="og:image" content="http://got17.cn/1003/5.png">
+<meta property="og:image" content="http://got17.cn/1003/6.png">
+<meta property="og:image" content="http://got17.cn/1003/7.png">
+<meta property="og:image" content="http://got17.cn/1003/8.png">
+<meta property="og:image" content="http://got17.cn/1003/6.png">
+<meta property="og:image" content="http://got17.cn/1003/9.png">
+<meta property="og:image" content="http://got17.cn/1003/10.png">
+<meta property="og:image" content="http://got17.cn/1003/6.png">
+<meta property="og:image" content="http://got17.cn/1003/11.png">
+<meta property="og:image" content="http://got17.cn/1003/12.png">
+<meta property="og:image" content="http://got17.cn/1003/13.png">
+<meta property="article:published_time" content="2017-12-27T05:43:45.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.187Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="opencv">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1003/1.png">
+
+
+<link rel="canonical" href="http://got17.cn/1003/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1003/","path":"1003/","title":"OpenCV在图像处理方面的应用"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>OpenCV在图像处理方面的应用 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%89%8D%E6%9C%9F%E5%B7%A5%E4%BD%9C"><span class="nav-number">1.</span> <span class="nav-text">前期工作</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#python3%E5%AE%89%E8%A3%85"><span class="nav-number">1.1.</span> <span class="nav-text">python3安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#OpenCV%E5%AE%89%E8%A3%85"><span class="nav-number">1.2.</span> <span class="nav-text">OpenCV安装</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86%E4%B8%8E%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">原理与实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E5%83%8F%E5%8E%BB%E5%99%AA"><span class="nav-number">2.1.</span> <span class="nav-text">图像去噪</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">2.1.1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.1.2.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">2.1.3.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E5%83%8F%E5%8C%B9%E9%85%8D"><span class="nav-number">2.2.</span> <span class="nav-text">图像匹配</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86-1"><span class="nav-number">2.2.1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0-1"><span class="nav-number">2.2.2.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-1"><span class="nav-number">2.2.3.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E5%83%8F%E5%8E%8B%E7%BC%A9"><span class="nav-number">2.3.</span> <span class="nav-text">图像压缩</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86-2"><span class="nav-number">2.3.1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0-2"><span class="nav-number">2.3.2.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-2"><span class="nav-number">2.3.3.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%BE%B9%E7%BC%98%E6%A3%80%E6%B5%8B"><span class="nav-number">2.4.</span> <span class="nav-text">边缘检测</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86-3"><span class="nav-number">2.4.1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0-3"><span class="nav-number">2.4.2.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-3"><span class="nav-number">2.4.3.</span> <span class="nav-text">结果</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%9B%BE%E5%83%8F%E5%88%86%E5%89%B2"><span class="nav-number">2.5.</span> <span class="nav-text">图像分割</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8E%9F%E7%90%86-4"><span class="nav-number">2.5.1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0-4"><span class="nav-number">2.5.2.</span> <span class="nav-text">实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C-4"><span class="nav-number">2.5.3.</span> <span class="nav-text">结果</span></a></li></ol></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%BB%E7%BB%93"><span class="nav-number">3.</span> <span class="nav-text">总结</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">4.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1003/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="OpenCV在图像处理方面的应用 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          OpenCV在图像处理方面的应用
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-12-27 13:43:45" itemprop="dateCreated datePublished" datetime="2017-12-27T13:43:45+08:00">2017-12-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>OpenCV是一个基于BSD许可（开源）发行的跨平台计算机视觉库，可以运行在Linux、Windows、Android和Mac OS操作系统上。它轻量级而且高效——由一系列 C 函数和少量 C++ 类构成，同时提供了Python、Ruby、MATLAB等语言的接口，实现了图像处理和计算机视觉方面的很多通用算法。</p>
+<p>本文将使用python3.6，通过调用OpenCV库来实现图像处理几个方面的功能。</p>
+<span id="more"></span>
+
+<h1 id="前期工作"><a href="#前期工作" class="headerlink" title="前期工作"></a>前期工作</h1><h2 id="python3安装"><a href="#python3安装" class="headerlink" title="python3安装"></a>python3安装</h2><p>浏览官方网站（ <a target="_blank" rel="noopener" href="https://www.python.org/downloads/">https://www.python.org/downloads/</a> ）选择合适版本下载。</p>
+<p><img src="/1003/1.png"></p>
+<p>下载完成后运行安装即可。</p>
+<h2 id="OpenCV安装"><a href="#OpenCV安装" class="headerlink" title="OpenCV安装"></a>OpenCV安装</h2><ol>
+<li>浏览python扩展库站（ <a target="_blank" rel="noopener" href="https://www.lfd.uci.edu/~gohlke/pythonlibs/">https://www.lfd.uci.edu/~gohlke/pythonlibs/</a> ）选择合适版本。</li>
+</ol>
+<p><img src="/1003/2.png"></p>
+<ol start="2">
+<li>使用__cmd__进入下载好的文件的目录，使用__pip__指令安装：</li>
+</ol>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">pip install opencv_python‑<span class="number">3.4</span><span class="number">.0</span>‑cp36‑cp36m‑win_amd64.whl</span><br></pre></td></tr></table></figure>
+
+<p>在__cmd__中进入python并加载opencv模块验证是否安装成功：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> cv2</span><br><span class="line"><span class="built_in">print</span>(cv2.__version__)</span><br></pre></td></tr></table></figure>
+
+<p>如下图屏幕输出版本号即说明安装成功。</p>
+<p><img src="/1003/3.png"></p>
+<h1 id="原理与实现"><a href="#原理与实现" class="headerlink" title="原理与实现"></a>原理与实现</h1><h2 id="图像去噪"><a href="#图像去噪" class="headerlink" title="图像去噪"></a>图像去噪</h2><h3 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h3><p>图像去噪主要是由图像平滑（图像模糊）算法来实现的。图像平滑要使用滤波器，图像的滤波可以看成是滤波模板与原始图像对应部分的的卷积运算。</p>
+<p>在图像处理中，常见的滤波器包括：</p>
+<ol>
+<li>归一化滤波器（Homogeneous blur）</li>
+</ol>
+<p>  也是均值滤波器，用输出像素点核窗口内的像素均值代替输出点像素值。</p>
+<ol start="2">
+<li>高斯滤波器（Guassian blur）</li>
+</ol>
+<p>  是实际中最常用的滤波器，高斯滤波是将输入数组的每一个像素点与高斯内核卷积将卷积和当作输出像素值。高斯核相当于对输出像素的邻域赋予不同的权值，输出像素点所在位置的权值最大（对应高斯函数的均值位置）。</p>
+<ol start="3">
+<li>中值滤波器（median blur）</li>
+</ol>
+<p>  中值滤波将图像的每个像素用邻域(以当前像素为中心的正方形区域)像素的中值代替。对椒盐噪声最有效的滤波器，去除跳变点非常有效。</p>
+<ol start="4">
+<li>双边滤波器（Bilatrial blur）</li>
+</ol>
+<p>  为避免滤波器平滑图像去噪的同时使边缘也模糊，这种情况下使用双边滤波器。</p>
+<p>这里选择高斯滤波器来实现图像去噪，其它使用方法大致相同。</p>
+<h3 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h3><p>定义图像匹配子函数，提供标准接口，源码及注释如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">img_filt</span>(<span class="params">InputFile,OutputFile,OutputFile2</span>): </span><br><span class="line">       <span class="comment">#接口参数：(输入原图片，输出加噪声图片，输出已去噪图片)</span></span><br><span class="line">    img = cv2.imread(InputFile,<span class="number">0</span>) <span class="comment">#直接读为灰度图像</span></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">2000</span>): <span class="comment">#添加2000个点噪声</span></span><br><span class="line">        temp_x = np.random.randint(<span class="number">0</span>,img.shape[<span class="number">0</span>]) <span class="comment">#x方向随机坐标</span></span><br><span class="line">        temp_y = np.random.randint(<span class="number">0</span>,img.shape[<span class="number">1</span>]) <span class="comment">#y方向随机坐标</span></span><br><span class="line">        img[temp_x][temp_y] = <span class="number">255</span> <span class="comment">#随机点噪声</span></span><br><span class="line">    blur = cv2.GaussianBlur(img,(<span class="number">5</span>,<span class="number">5</span>),<span class="number">0</span>) <span class="comment">#高斯滤波</span></span><br><span class="line">    cv2.imwrite(OutputFile,img) <span class="comment">#输出加噪声图片</span></span><br><span class="line">    cv2.imwrite(OutputFile2,blur) <span class="comment">#输出已去噪图片</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h3><p>加噪图及滤波图如下所示：</p>
+<p><img src="/1003/4.png"></p>
+<p><img src="/1003/5.png"></p>
+<h2 id="图像匹配"><a href="#图像匹配" class="headerlink" title="图像匹配"></a>图像匹配</h2><h3 id="原理-1"><a href="#原理-1" class="headerlink" title="原理"></a>原理</h3><p>模板匹配是在图像中寻找和识别模板的一种简单的方法。</p>
+<p>通过调用cv2库及numpy库函数，加载原始图像和要搜索的图像模板。OpenCV对原始图像进行处理，创建一个灰度版本，在灰度图像里进行处理和查找匹配。然后使用相同的坐标在原始图像中进行还原并输出。</p>
+<h3 id="实现-1"><a href="#实现-1" class="headerlink" title="实现"></a>实现</h3><p>定义图像匹配子函数，提供标准接口，源码及注释如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">img_match</span>(<span class="params">InputFile,InputFile2,OutputFile</span>): </span><br><span class="line">       <span class="comment">#接口参数：(输入原图片，待匹配模板，输出已匹配图片)</span></span><br><span class="line">    img_rgb = cv2.imread(InputFile) <span class="comment">#读原图</span></span><br><span class="line">    img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY) <span class="comment">#灰度化处理</span></span><br><span class="line">    template = cv2.imread(InputFile2,<span class="number">0</span>) <span class="comment">#读模板</span></span><br><span class="line">    w, h = template.shape[::-<span class="number">1</span>] <span class="comment">#读模板高度宽度</span></span><br><span class="line">    res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED) <span class="comment">#匹配</span></span><br><span class="line">    threshold = <span class="number">0.7</span> <span class="comment">#设定匹配阈值</span></span><br><span class="line">    loc = np.where( res &gt;= threshold) <span class="comment">#找标记位置</span></span><br><span class="line">    color = (<span class="number">0</span>,<span class="number">0</span>,<span class="number">255</span>)       <span class="comment"># 设定标记框颜色</span></span><br><span class="line">    strokeWeight = <span class="number">1</span>        <span class="comment"># 设定标记框粗细</span></span><br><span class="line">    <span class="keyword">for</span> pt <span class="keyword">in</span> <span class="built_in">zip</span>(*loc[::-<span class="number">1</span>]):</span><br><span class="line">        cv2.rectangle(img_rgb, pt, (pt[<span class="number">0</span>] + w, pt[<span class="number">1</span>] + h), color, strokeWeight)   <span class="comment">#在原图中标记</span></span><br><span class="line">    cv2.imwrite(OutputFile, img_rgb) <span class="comment">#输出已匹配图片</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="结果-1"><a href="#结果-1" class="headerlink" title="结果"></a>结果</h3><p>原图、模板图及匹配图如下所示：</p>
+<p><img src="/1003/6.png"></p>
+<p><img src="/1003/7.png"></p>
+<p><img src="/1003/8.png"></p>
+<h2 id="图像压缩"><a href="#图像压缩" class="headerlink" title="图像压缩"></a>图像压缩</h2><h3 id="原理-2"><a href="#原理-2" class="headerlink" title="原理"></a>原理</h3><p>Opencv中直接用cv2.imwrite()即可保存图像。其中，imwrite()有个可选的第三个参数。</p>
+<p>对于JPEG，第三个参数__cv2.IMWRITE_JPEG_QUALITY__表示的是图像的质量，用0-100的整数表示，默认为95。 </p>
+<p>对于PNG，第三个参数__cv2.IMWRITE_PNG_COMPRESSION__表示的是压缩级别。从0到9，压缩级别越高，图像尺寸越小。默认级别为3。</p>
+<p>需注意的是，第三个参数类型为Long，必须转换成int。</p>
+<p>可以通过调整这个可选参数来实现图像的压缩。</p>
+<h3 id="实现-2"><a href="#实现-2" class="headerlink" title="实现"></a>实现</h3><p>定义图像匹配子函数，提供标准接口，源码及注释如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">img_zip</span>(<span class="params">InputFile, OutputFile</span>): </span><br><span class="line">    <span class="comment">#接口参数：(输入原图片(jpg版)，输出已压缩图片)</span></span><br><span class="line">    image = cv2.imread(InputFile) <span class="comment">#读原图</span></span><br><span class="line">    rows, cols, channels = image.shape <span class="comment">#读原图尺寸</span></span><br><span class="line">    res = cv2.resize(image, (cols, rows), interpolation=cv2.INTER_AREA)</span><br><span class="line">    <span class="comment">#使用象素关系重采样。当图像缩小时候，该方法可以避免波纹出现</span></span><br><span class="line">    cv2.imwrite(OutputFile, res,  [<span class="built_in">int</span>(cv2.IMWRITE_JPEG_QUALITY), <span class="number">50</span>])</span><br><span class="line">    <span class="comment">#输出已压缩图片，调整质量参数为50</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="结果-2"><a href="#结果-2" class="headerlink" title="结果"></a>结果</h3><p>原图、压缩图及文件大小属性图如下所示：</p>
+<p><img src="/1003/6.png"></p>
+<p><img src="/1003/9.png"></p>
+<p><img src="/1003/10.png"></p>
+<h2 id="边缘检测"><a href="#边缘检测" class="headerlink" title="边缘检测"></a>边缘检测</h2><h3 id="原理-3"><a href="#原理-3" class="headerlink" title="原理"></a>原理</h3><p>边缘检测一般由以下三个步骤组成：</p>
+<ol>
+<li><p>滤波：边缘检测的算法主要是基于图像强度的一阶和二阶导数，但导数通常对噪声很敏感，因此必须采用滤波器来改善与噪声有关的边缘检测器的性能。常见的滤波方法主要有高斯滤波等(见3.1)。</p>
+</li>
+<li><p>增强：增强边缘的基础是确定图像各点邻域强度的变化值。增强算法可以将图像灰度点邻域强度值有显著变化的点凸显出来。在具体编程实现时，可通过计算梯度幅值来确定。</p>
+</li>
+<li><p>检测：经过增强的图像，往往邻域中有很多点的梯度值比较大，而在特定的应用中，这些点并不是我们要找的边缘点，所以应该采用某种方法来对这些点进行取舍。实际工程中，常用的方法是通过阈值化方法来检测。</p>
+</li>
+</ol>
+<p>Opencv中提供了几种不同的算子来实现边缘检测算法，这里选择了效果最佳的Canny算子来实现图像分割。</p>
+<p>Canny 边缘检测的步骤主要有以下几步：</p>
+<ol>
+<li>消除噪声。 一般情况下，使用高斯平滑滤波器卷积降噪。</li>
+<li>计算梯度幅值和方向。 此处，一般按照Sobel滤波器的步骤。</li>
+<li>非极大值抑制。 这一步排除非边缘像素， 仅仅保留了一些细线条(候选边缘)。</li>
+<li>滞后阈值。最后一步，Canny 使用了滞后阈值，滞后阈值需要两个阈值(高阈值作为边缘，低阈值排除，中间阈值连接边缘)。</li>
+</ol>
+<h3 id="实现-3"><a href="#实现-3" class="headerlink" title="实现"></a>实现</h3><p>定义边缘检测子函数，提供标准接口，源码及注释如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">img_edgedetection</span>(<span class="params">InputFile, OutputFile</span>):</span><br><span class="line">           <span class="comment">#接口参数：(输入原图片，输出边缘图片)</span></span><br><span class="line">    image = cv2.imread(InputFile) <span class="comment">#读原图</span></span><br><span class="line">    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY) <span class="comment">#灰度化</span></span><br><span class="line">    canny = cv2.Canny(gray, <span class="number">30</span>, <span class="number">150</span>) <span class="comment">#30和150分别是高低阈值</span></span><br><span class="line">    cv2.imwrite(OutputFile,canny) <span class="comment">#输出边缘图片</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="结果-3"><a href="#结果-3" class="headerlink" title="结果"></a>结果</h3><p>原图及边缘检测图如下所示：</p>
+<p><img src="/1003/6.png"></p>
+<p><img src="/1003/11.png"></p>
+<h2 id="图像分割"><a href="#图像分割" class="headerlink" title="图像分割"></a>图像分割</h2><h3 id="原理-4"><a href="#原理-4" class="headerlink" title="原理"></a>原理</h3><p>OpenCV中提供了分水岭算法来实现图像的分割。</p>
+<p>分水岭算法的原理就是任意的灰度图像可以被看做是地质学表面，高亮度的地方是山峰，低亮度的地方是山谷。给每个孤立的山谷（局部最小值）不同颜色的水（标签），当水涨起来，根据周围的山峰（梯度），不同的山谷也就是不同的颜色会开始合并，要避免这个，可以在水要合并的地方建立障碍，直到所有山峰都被淹没。而这些创建的障碍就是分割结果。</p>
+<p>利用OpenCV中的相关函数，我们对图片进行二值化处理，并使用形态学开运算去掉小的白色噪点，用形态学闭运算去除小的洞，腐蚀法去掉边缘的像素，对结果进行膨胀，把目标边缘扩展到背景，剩下的区域利用分水岭算法，以实现图像分割。</p>
+<h3 id="实现-4"><a href="#实现-4" class="headerlink" title="实现"></a>实现</h3><p>定义图像分割子函数，提供标准接口，源码及注释如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">img_segmentation</span>(<span class="params">InputFile, OutputFile</span>):</span><br><span class="line">           <span class="comment">#接口参数：(输入原图片，输出边缘图片)</span></span><br><span class="line">    img = cv2.imread(InputFile) <span class="comment">#读原图</span></span><br><span class="line">    gray = cv2.cvtColor(img,cv2.COLOR_BGR2GRAY) <span class="comment">#灰度化</span></span><br><span class="line">    ret, thresh = cv2.threshold(gray,<span class="number">0</span>,<span class="number">255</span>,cv2.THRESH_BINARY_INV+cv2.THRESH_OTSU) <span class="comment">#二值化</span></span><br><span class="line">    </span><br><span class="line">    kernel = np.ones((<span class="number">3</span>,<span class="number">3</span>),np.uint8)</span><br><span class="line">    opening = cv2.morphologyEx(thresh,cv2.MORPH_OPEN,kernel, iterations = <span class="number">2</span>) <span class="comment">#去噪</span></span><br><span class="line">    </span><br><span class="line">    sure_bg = cv2.dilate(opening,kernel,iterations=<span class="number">3</span>) <span class="comment">#背景区域</span></span><br><span class="line"></span><br><span class="line">    dist_transform = cv2.distanceTransform(opening,cv2.DIST_L2,<span class="number">5</span>)</span><br><span class="line">    ret, sure_fg = cv2.threshold(dist_transform,<span class="number">0.7</span>*dist_transform.<span class="built_in">max</span>(),<span class="number">255</span>,<span class="number">0</span>) <span class="comment">#找前景区域</span></span><br><span class="line"></span><br><span class="line">    sure_fg = np.uint8(sure_fg)</span><br><span class="line">    unknown = cv2.subtract(sure_bg,sure_fg) <span class="comment">#找未知区域</span></span><br><span class="line"></span><br><span class="line">    ret, markers = cv2.connectedComponents(sure_fg) <span class="comment">#标记</span></span><br><span class="line"></span><br><span class="line">    markers = markers+<span class="number">1</span> <span class="comment">#保证确定的背景区不是0是1</span></span><br><span class="line"></span><br><span class="line">    markers[unknown==<span class="number">255</span>]=<span class="number">0</span> <span class="comment">#未知区域标0</span></span><br><span class="line"></span><br><span class="line">    markers = cv2.watershed(img,markers)</span><br><span class="line">    img[markers == -<span class="number">1</span>] = [<span class="number">255</span>,<span class="number">0</span>,<span class="number">0</span>] <span class="comment">#分割框颜色</span></span><br><span class="line"></span><br><span class="line">    cv2.imwrite(OutputFile, img) <span class="comment">#输出已分割图片</span></span><br></pre></td></tr></table></figure>
+
+<h3 id="结果-4"><a href="#结果-4" class="headerlink" title="结果"></a>结果</h3><p>图片分割部分选择边缘较明显图片，原图及分割图如下所示：</p>
+<p><img src="/1003/12.png"></p>
+<p><img src="/1003/13.png"></p>
+<h1 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h1><p>OpenCV在图像处理方面功能强大，还有许多技术有待学习。</p>
+<p>本文中所有的源码及测试图片均已上传至我的github项目页中，如有需要请访问<a target="_blank" rel="noopener" href="https://github.com/gaoteng17/ImageProcessing">https://github.com/gaoteng17/ImageProcessing</a> 。</p>
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a><em>参考资料</em></h1><ol>
+<li>OpenCV - Wikipedia. <a target="_blank" rel="noopener" href="https://en.wikipedia.org/wiki/OpenCV">https://en.wikipedia.org/wiki/OpenCV</a></li>
+<li>OpenCV - API Reference. <a target="_blank" rel="noopener" href="https://docs.opencv.org/2.4/index.html">https://docs.opencv.org/2.4/index.html</a></li>
+<li>QianMo - github. <a target="_blank" rel="noopener" href="https://github.com/QianMo/OpenCV3-Intro-Book-Src">https://github.com/QianMo/OpenCV3-Intro-Book-Src</a></li>
+<li>jungrea - github. <a target="_blank" rel="noopener" href="https://github.com/jungrea">https://github.com/jungrea</a></li>
+<li>xxxss - jianshu. <a target="_blank" rel="noopener" href="https://www.jianshu.com/u/c01fd7356e58">https://www.jianshu.com/u/c01fd7356e58</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/opencv/" rel="tag"># opencv</a>
+              <a href="/tags/python/" rel="tag"># python</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1002/" rel="prev" title="h264编码器实现">
+                  <i class="fa fa-chevron-left"></i> h264编码器实现
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1004/" rel="next" title="Ubuntu16.04+CUDA8.0+Cudnn5.1+Opencv3.2.0+Caffe框架的搭建">
+                  Ubuntu16.04+CUDA8.0+Cudnn5.1+Opencv3.2.0+Caffe框架的搭建 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"a768ac0a2f470f436dc9bb52eb58cd97"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

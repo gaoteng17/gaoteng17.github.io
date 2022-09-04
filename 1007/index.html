@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="工作要求，需要对几十个格式相同的设备台账excel表格中电源数据、光端机起终点数据分别进行筛选计数，由于表格数据量极大，人工效率低，因此利用python脚本对这几十个表格进行自动筛选计数。 在写脚本的过程中，学到了很多python处理excel表格的相关技巧，写下此文帮助记忆。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="利用python脚本对excel表格目标数据进行自动筛选计数">
+<meta property="og:url" content="http://got17.cn/1007/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="工作要求，需要对几十个格式相同的设备台账excel表格中电源数据、光端机起终点数据分别进行筛选计数，由于表格数据量极大，人工效率低，因此利用python脚本对这几十个表格进行自动筛选计数。 在写脚本的过程中，学到了很多python处理excel表格的相关技巧，写下此文帮助记忆。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1007/1.PNG">
+<meta property="og:image" content="http://got17.cn/1007/2.PNG">
+<meta property="og:image" content="http://got17.cn/1007/3.PNG">
+<meta property="og:image" content="http://got17.cn/1007/4.PNG">
+<meta property="article:published_time" content="2019-02-27T01:46:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.224Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="python">
+<meta property="article:tag" content="excel">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1007/1.PNG">
+
+
+<link rel="canonical" href="http://got17.cn/1007/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1007/","path":"1007/","title":"利用python脚本对excel表格目标数据进行自动筛选计数"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>利用python脚本对excel表格目标数据进行自动筛选计数 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#xlrd-x2F-xlwt%E6%A8%A1%E5%9D%97%E4%BB%8B%E7%BB%8D"><span class="nav-number">1.</span> <span class="nav-text">xlrd&#x2F;xlwt模块介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#xlrd-x2F-xlwt%E7%9A%84%E5%AE%89%E8%A3%85"><span class="nav-number">1.1.</span> <span class="nav-text">xlrd&#x2F;xlwt的安装</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#xlrd-x2F-xlwt%E7%9A%84%E4%BD%BF%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">xlrd&#x2F;xlwt的使用</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E8%87%AA%E5%8A%A8%E7%AD%9B%E9%80%89%E8%84%9A%E6%9C%AC%E7%BC%96%E5%86%99"><span class="nav-number">2.</span> <span class="nav-text">自动筛选脚本编写</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%AB%E6%8F%8F%E7%9B%AE%E5%BD%95%E4%B8%8B%E6%89%80%E6%9C%89%E7%9B%AE%E6%A0%87excel%E8%A1%A8%E6%A0%BC"><span class="nav-number">2.1.</span> <span class="nav-text">扫描目录下所有目标excel表格</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%86%E5%88%AB%E8%AF%BB%E6%95%B0%E6%8D%AE%EF%BC%8C%E7%AD%9B%E9%80%89%E8%AE%A1%E6%95%B0%EF%BC%8C%E5%B9%B6%E5%B0%86%E7%BB%9F%E8%AE%A1%E7%BB%93%E6%9E%9C%E5%86%99%E5%85%A5%E6%96%B0%E5%BB%BAexcel%E8%A1%A8%E4%B8%AD"><span class="nav-number">2.2.</span> <span class="nav-text">分别读数据，筛选计数，并将统计结果写入新建excel表中</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%B0%86%E5%90%84excel%E7%BB%9F%E8%AE%A1%E7%BB%93%E6%9E%9C%E8%BF%9B%E8%A1%8C%E6%B1%87%E6%80%BB%EF%BC%8C%E5%BE%97%E5%88%B0%E6%80%BB%E7%9A%84%E7%BB%9F%E8%AE%A1%E7%BB%93%E6%9E%9C"><span class="nav-number">2.3.</span> <span class="nav-text">将各excel统计结果进行汇总，得到总的统计结果</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#read-excel%E7%9A%84%E7%BC%96%E5%86%99"><span class="nav-number">2.4.</span> <span class="nav-text">read_excel的编写</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#write-excel%E7%9A%84%E7%BC%96%E5%86%99"><span class="nav-number">2.5.</span> <span class="nav-text">write_excel的编写</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sum%E7%9A%84%E7%BC%96%E5%86%99"><span class="nav-number">2.6.</span> <span class="nav-text">sum的编写</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%95%88%E6%9E%9C%E6%B5%8B%E8%AF%95"><span class="nav-number">3.</span> <span class="nav-text">效果测试</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1007/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="利用python脚本对excel表格目标数据进行自动筛选计数 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          利用python脚本对excel表格目标数据进行自动筛选计数
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-02-27 09:46:08" itemprop="dateCreated datePublished" datetime="2019-02-27T09:46:08+08:00">2019-02-27</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>工作要求，需要对几十个格式相同的设备台账excel表格中电源数据、光端机起终点数据分别进行筛选计数，由于表格数据量极大，人工效率低，因此利用python脚本对这几十个表格进行自动筛选计数。</p>
+<p>在写脚本的过程中，学到了很多python处理excel表格的相关技巧，写下此文帮助记忆。</p>
+<span id="more"></span>
+
+<h1 id="xlrd-x2F-xlwt模块介绍"><a href="#xlrd-x2F-xlwt模块介绍" class="headerlink" title="xlrd&#x2F;xlwt模块介绍"></a>xlrd&#x2F;xlwt模块介绍</h1><p>python操作excel主要用到xlrd和xlwt两个库。xlrd是读excel，xlwt是写excel。</p>
+<h2 id="xlrd-x2F-xlwt的安装"><a href="#xlrd-x2F-xlwt的安装" class="headerlink" title="xlrd&#x2F;xlwt的安装"></a>xlrd&#x2F;xlwt的安装</h2><p>cmd窗口下：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">pip install xlrd</span><br><span class="line">pip install xlwt</span><br></pre></td></tr></table></figure>
+
+<h2 id="xlrd-x2F-xlwt的使用"><a href="#xlrd-x2F-xlwt的使用" class="headerlink" title="xlrd&#x2F;xlwt的使用"></a>xlrd&#x2F;xlwt的使用</h2><p>xlrd读excel：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding=utf-8 -*-</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> xlrd  <span class="comment">#导入读excel的模块</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#打开excel</span></span><br><span class="line">filename=<span class="string">&#x27;test.xlsx&#x27;</span></span><br><span class="line">data=xlrd.open_workbook(filename,<span class="string">&quot;rb&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#获取excel工作表</span></span><br><span class="line">mysheets=data.sheets() <span class="comment">#获取工作表list</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#通过索引获取第一个sheet</span></span><br><span class="line">mysheet=mysheets[<span class="number">0</span>]</span><br><span class="line"></span><br><span class="line"><span class="comment">#通过索引顺序获取</span></span><br><span class="line"><span class="comment">#mysheet=data.sheet_by_index(0)</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#通过名称获取</span></span><br><span class="line"><span class="comment">#mysheet=data.sheet_by_name(u&#x27;Sheet1&#x27;)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">#获取行数和列数</span></span><br><span class="line">nrows=mysheet.nrows</span><br><span class="line"><span class="built_in">print</span> nrows</span><br><span class="line">ncols=mysheet.ncols</span><br><span class="line"><span class="built_in">print</span> ncols</span><br><span class="line"></span><br><span class="line"><span class="comment">#获取一行和一列</span></span><br><span class="line"><span class="comment">#myRowValues=mysheet.row_values(0)</span></span><br><span class="line"><span class="comment">#print myRowValues</span></span><br><span class="line"><span class="comment">#myColValues=mysheet.col_values(0)</span></span><br><span class="line"><span class="comment">#print myColValues</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#读取单元格数据</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(ncols):</span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(nrows):</span><br><span class="line">        myCell=mysheet.cell(j,i)</span><br><span class="line">        myCellValue=myCell.value</span><br><span class="line">        <span class="built_in">print</span> myCellValue</span><br></pre></td></tr></table></figure>
+
+<p>xlwt写excel：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># -*- coding=utf-8 -*-</span></span><br><span class="line"><span class="comment">#导入模块</span></span><br><span class="line"><span class="keyword">import</span>  xlwt</span><br><span class="line"></span><br><span class="line"><span class="comment">#创建excel工作薄</span></span><br><span class="line">myWorkbook=xlwt.Workbook()</span><br><span class="line"></span><br><span class="line"><span class="comment">#添加Excel工作表</span></span><br><span class="line">mySheet=myWorkbook.add_sheet(<span class="string">&quot;a Test Sheet&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="comment">#写入数据</span></span><br><span class="line">myStyle=xlwt.easyxf(<span class="string">&#x27;font: name Times New Roman, color-index red, bold on&#x27;</span>, num_format_str=<span class="string">&#x27;#,##0.00&#x27;</span>) <span class="comment">#数据格式</span></span><br><span class="line">mySheet.write(<span class="number">1</span>,<span class="number">1</span>,<span class="number">1234.56</span>,myStyle)</span><br><span class="line">mySheet.write(<span class="number">2</span>,<span class="number">0</span>,<span class="number">1</span>)</span><br><span class="line">mySheet.write(<span class="number">2</span>,<span class="number">1</span>,<span class="number">1</span>)</span><br><span class="line">mySheet.write(<span class="number">2</span>,<span class="number">2</span>,xlwt.Formula(<span class="string">&quot;A3+B3&quot;</span>))</span><br><span class="line"></span><br><span class="line">myWorkbook.save(<span class="string">&quot;excelFile.xlsx&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="自动筛选脚本编写"><a href="#自动筛选脚本编写" class="headerlink" title="自动筛选脚本编写"></a>自动筛选脚本编写</h1><p>分析表格数据，目标表格存在合并单元格，因此我需要先将合并单元格拆分，并将数据复制到每一个拆分的单元格，这里从百度搜到了现成代码，经测试可以正常使用：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">read_excel</span>(<span class="params">file_path</span>):</span><br><span class="line">	data = xlrd.open_workbook(file_path) <span class="comment">#打开excel</span></span><br><span class="line">	sheet_names = data.sheet_names()<span class="comment">#读sheet</span></span><br><span class="line"></span><br><span class="line">	table = data.sheet_by_name(sheet_name) <span class="comment">#按名字获取工作表</span></span><br><span class="line">	nrows = table.nrows <span class="comment">#获得行数</span></span><br><span class="line">	ncols = table.ncols <span class="comment">#获得列数</span></span><br><span class="line"></span><br><span class="line">	name = []</span><br><span class="line"></span><br><span class="line">	colspan = &#123;&#125;</span><br><span class="line">	<span class="keyword">if</span> table.merged_cells :</span><br><span class="line">		<span class="keyword">for</span> item <span class="keyword">in</span> table.merged_cells:</span><br><span class="line">			<span class="keyword">for</span> row <span class="keyword">in</span> <span class="built_in">range</span>(item[<span class="number">0</span>], item[<span class="number">1</span>]):</span><br><span class="line">				<span class="keyword">for</span> col <span class="keyword">in</span> <span class="built_in">range</span>(item[<span class="number">2</span>], item[<span class="number">3</span>]):</span><br><span class="line">					<span class="keyword">if</span> (row, col) != (item[<span class="number">0</span>], item[<span class="number">2</span>]):</span><br><span class="line">						colspan.update(&#123;(row, col): (item[<span class="number">0</span>], item[<span class="number">2</span>])&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, nrows):</span><br><span class="line">		row = []</span><br><span class="line">		<span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(ncols):</span><br><span class="line">			<span class="keyword">if</span> colspan.get((i, j)):</span><br><span class="line">				row.append(table.cell_value(*colspan.get((i, j))))</span><br><span class="line">			<span class="keyword">else</span>:</span><br><span class="line">				row.append(table.cell_value(i, j))</span><br></pre></td></tr></table></figure>
+
+<p>分析目标表格，需要筛选的电源数据格式如下：</p>
+<p><img src="/1007/1.PNG" alt="电源数据格式"></p>
+<p>需要筛选的光端机起终点数据格式如下：</p>
+<p><img src="/1007/2.PNG" alt="光端机数据格式"></p>
+<p>根据数据格式，编写脚本：</p>
+<h2 id="扫描目录下所有目标excel表格"><a href="#扫描目录下所有目标excel表格" class="headerlink" title="扫描目录下所有目标excel表格"></a>扫描目录下所有目标excel表格</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">filelist=[]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> root, dirs, files <span class="keyword">in</span> os.walk(<span class="string">&quot;.&quot;</span>, topdown=<span class="literal">False</span>):</span><br><span class="line">	<span class="keyword">for</span> name <span class="keyword">in</span> files:</span><br><span class="line">		<span class="built_in">str</span>=os.path.join(root, name)</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">str</span>.split(<span class="string">&#x27;.&#x27;</span>)[-<span class="number">1</span>]==<span class="string">&#x27;xlsx&#x27;</span>:</span><br><span class="line">			filelist.append(<span class="built_in">str</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(filelist)</span><br></pre></td></tr></table></figure>
+
+<h2 id="分别读数据，筛选计数，并将统计结果写入新建excel表中"><a href="#分别读数据，筛选计数，并将统计结果写入新建excel表中" class="headerlink" title="分别读数据，筛选计数，并将统计结果写入新建excel表中"></a>分别读数据，筛选计数，并将统计结果写入新建excel表中</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> file <span class="keyword">in</span> filelist :</span><br><span class="line"></span><br><span class="line">	result = []</span><br><span class="line">	result.append([<span class="string">&quot;屏序号&quot;</span>, <span class="string">&quot;屏名称&quot;</span>, <span class="string">&quot;屏内设备&quot;</span>, <span class="string">&quot;厂家型号&quot;</span>, <span class="string">&quot;起点&quot;</span>, <span class="string">&quot;终点&quot;</span>, <span class="string">&quot;备注&quot;</span>])</span><br><span class="line">	result2 = []</span><br><span class="line">	result2.append([<span class="string">&quot;屏序号&quot;</span>, <span class="string">&quot;屏名称&quot;</span>, <span class="string">&quot;屏内设备&quot;</span>, <span class="string">&quot;厂家型号&quot;</span>, <span class="string">&quot;数量&quot;</span>, <span class="string">&quot;备注&quot;</span>])</span><br><span class="line">	read_excel(file)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">	tmp = file.split(<span class="string">&quot;.xlsx&quot;</span>)[<span class="number">0</span>].split(<span class="string">&quot;\\&quot;</span>)[-<span class="number">1</span>]</span><br><span class="line"></span><br><span class="line">	<span class="built_in">print</span>(tmp)</span><br><span class="line"></span><br><span class="line">	write_excel(result, tmp+<span class="string">&quot; 光端机.xls&quot;</span>)</span><br><span class="line">	write_excel(result2, tmp+<span class="string">&quot; 电源.xls&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h2 id="将各excel统计结果进行汇总，得到总的统计结果"><a href="#将各excel统计结果进行汇总，得到总的统计结果" class="headerlink" title="将各excel统计结果进行汇总，得到总的统计结果"></a>将各excel统计结果进行汇总，得到总的统计结果</h2><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">filelist=[]</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> root, dirs, files <span class="keyword">in</span> os.walk(<span class="string">&quot;.&quot;</span>, topdown=<span class="literal">False</span>):</span><br><span class="line">	<span class="keyword">for</span> name <span class="keyword">in</span> files:</span><br><span class="line">		<span class="built_in">str</span>=os.path.join(root, name)</span><br><span class="line">		<span class="keyword">if</span> <span class="built_in">str</span>.split(<span class="string">&#x27;.&#x27;</span>)[-<span class="number">1</span>]==<span class="string">&#x27;xls&#x27;</span>:</span><br><span class="line">			filelist.append(<span class="built_in">str</span>)</span><br><span class="line"></span><br><span class="line"><span class="built_in">print</span>(filelist)</span><br><span class="line"></span><br><span class="line">result = []</span><br><span class="line">result.append([<span class="string">&quot;屏序号&quot;</span>, <span class="string">&quot;屏名称&quot;</span>, <span class="string">&quot;屏内设备&quot;</span>, <span class="string">&quot;厂家型号&quot;</span>, <span class="string">&quot;起点&quot;</span>, <span class="string">&quot;终点&quot;</span>, <span class="string">&quot;备注&quot;</span>, <span class="string">&quot;来源&quot;</span>])</span><br><span class="line">result2 = []</span><br><span class="line">result2.append([<span class="string">&quot;屏序号&quot;</span>, <span class="string">&quot;屏名称&quot;</span>, <span class="string">&quot;屏内设备&quot;</span>, <span class="string">&quot;厂家型号&quot;</span>, <span class="string">&quot;数量&quot;</span>, <span class="string">&quot;备注&quot;</span>, <span class="string">&quot;来源&quot;</span>])</span><br><span class="line"></span><br><span class="line"><span class="built_in">sum</span>(filelist)</span><br></pre></td></tr></table></figure>
+
+<h2 id="read-excel的编写"><a href="#read-excel的编写" class="headerlink" title="read_excel的编写"></a><code>read_excel</code>的编写</h2><p>在拆分数据格后，按行扫描，扫描到关键词后将本段内容统计计数，<strong>需要注意的是拆分后导致的重复计数</strong></p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">read_excel</span>(<span class="params">file_path</span>):</span><br><span class="line">	data = xlrd.open_workbook(file_path) <span class="comment">#打开excel</span></span><br><span class="line">	sheet_names = data.sheet_names()<span class="comment">#读sheet</span></span><br><span class="line"></span><br><span class="line">	table = data.sheet_by_name(<span class="string">&quot;设备屏&quot;</span>)</span><br><span class="line">	nrows = table.nrows <span class="comment">#获得行数</span></span><br><span class="line">	ncols = table.ncols <span class="comment">#获得列数</span></span><br><span class="line"></span><br><span class="line">	name = []</span><br><span class="line"></span><br><span class="line">	colspan = &#123;&#125;</span><br><span class="line">	<span class="keyword">if</span> table.merged_cells :</span><br><span class="line">		<span class="keyword">for</span> item <span class="keyword">in</span> table.merged_cells:</span><br><span class="line">			<span class="keyword">for</span> row <span class="keyword">in</span> <span class="built_in">range</span>(item[<span class="number">0</span>], item[<span class="number">1</span>]):</span><br><span class="line">				<span class="keyword">for</span> col <span class="keyword">in</span> <span class="built_in">range</span>(item[<span class="number">2</span>], item[<span class="number">3</span>]):</span><br><span class="line">					<span class="keyword">if</span> (row, col) != (item[<span class="number">0</span>], item[<span class="number">2</span>]):</span><br><span class="line">						colspan.update(&#123;(row, col): (item[<span class="number">0</span>], item[<span class="number">2</span>])&#125;)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">1</span>, nrows):</span><br><span class="line">		row = []</span><br><span class="line">		<span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(ncols):</span><br><span class="line">			<span class="keyword">if</span> colspan.get((i, j)):</span><br><span class="line">				row.append(table.cell_value(*colspan.get((i, j))))</span><br><span class="line">			<span class="keyword">else</span>:</span><br><span class="line">				row.append(table.cell_value(i, j))</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> row[<span class="number">4</span>].find(<span class="string">&quot;起点&quot;</span>) :</span><br><span class="line">			name.append(row[<span class="number">4</span>])</span><br><span class="line">		<span class="keyword">else</span> :</span><br><span class="line">			result.append([row[<span class="number">0</span>], row[<span class="number">1</span>], row[<span class="number">3</span>], name[-<span class="number">1</span>], row[<span class="number">4</span>], row[<span class="number">5</span>], row[<span class="number">6</span>]])</span><br><span class="line"></span><br><span class="line">		<span class="keyword">if</span> row[<span class="number">1</span>].find(<span class="string">&quot;电源&quot;</span>) &gt; -<span class="number">1</span> <span class="keyword">or</span> row[<span class="number">1</span>].find(<span class="string">&quot;直流&quot;</span>) &gt; -<span class="number">1</span> <span class="keyword">or</span> row[<span class="number">1</span>].find(<span class="string">&quot;交流&quot;</span>) &gt; -<span class="number">1</span>:</span><br><span class="line">			<span class="keyword">if</span> row[<span class="number">6</span>] :</span><br><span class="line">				result2.append([row[<span class="number">0</span>], row[<span class="number">1</span>], row[<span class="number">3</span>], row[<span class="number">4</span>], row[<span class="number">5</span>], row[<span class="number">6</span>]])	</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h2 id="write-excel的编写"><a href="#write-excel的编写" class="headerlink" title="write_excel的编写"></a><code>write_excel</code>的编写</h2><p>写入的话可以进行一些参数的设定，这里这设置了固定列宽</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">write_excel</span>(<span class="params">data, file_path</span>):</span><br><span class="line">	xls = xlwt.Workbook()</span><br><span class="line">	sheet = xls.add_sheet(<span class="string">&#x27;sheet&#x27;</span>, cell_overwrite_ok=<span class="literal">True</span>)</span><br><span class="line"></span><br><span class="line">	<span class="keyword">for</span> row <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(data)):</span><br><span class="line"></span><br><span class="line">		sheet.col(row).width = <span class="number">7500</span>  <span class="comment">#固定列宽</span></span><br><span class="line"></span><br><span class="line">		<span class="keyword">for</span> col <span class="keyword">in</span> <span class="built_in">range</span>(<span class="built_in">len</span>(data[<span class="number">0</span>])):</span><br><span class="line">		</span><br><span class="line">			sheet.write(row, col, data[row][col])</span><br><span class="line"></span><br><span class="line">	xls.save(file_path)</span><br></pre></td></tr></table></figure>
+
+<h2 id="sum的编写"><a href="#sum的编写" class="headerlink" title="sum的编写"></a><code>sum</code>的编写</h2><p>sum函数只是简单的excel表格拼接，汇总各excel表格统计结果</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">sum</span>(<span class="params">filelist</span>):</span><br><span class="line">	</span><br><span class="line">	<span class="keyword">for</span> file <span class="keyword">in</span> filelist :</span><br><span class="line"></span><br><span class="line">		tmp = file.split(<span class="string">&quot;.xlsx&quot;</span>)[<span class="number">0</span>].split(<span class="string">&quot;\\&quot;</span>)[-<span class="number">1</span>]</span><br><span class="line">		<span class="built_in">print</span>(tmp)</span><br><span class="line">		</span><br><span class="line">		<span class="keyword">if</span> file.find(<span class="string">&quot;汇总&quot;</span>) &gt; -<span class="number">1</span> :</span><br><span class="line">			<span class="built_in">print</span>(<span class="string">&quot;233&quot;</span>)</span><br><span class="line">		<span class="keyword">elif</span> file.find(<span class="string">&quot;光端机&quot;</span>) &gt; -<span class="number">1</span> :</span><br><span class="line">			sum_excel(file, result, tmp)</span><br><span class="line">		<span class="keyword">elif</span> file.find(<span class="string">&quot;电源&quot;</span>) &gt; -<span class="number">1</span> :</span><br><span class="line">			sum_excel(file, result2, tmp)</span><br><span class="line"></span><br><span class="line">	write_excel(result, <span class="string">&quot;汇总 - 光端机.xls&quot;</span>)</span><br><span class="line">	write_excel(result2, <span class="string">&quot;汇总 - 电源.xls&quot;</span>)</span><br></pre></td></tr></table></figure>
+
+<h1 id="效果测试"><a href="#效果测试" class="headerlink" title="效果测试"></a>效果测试</h1><p>首先将需要统计的excel表格放到同一目录下，执行脚本，自动生成各excel表格统计结果表与汇总表。这里使用了三个excel表格进行测试。</p>
+<p><img src="/1007/3.PNG" alt="原目录文件"></p>
+<p><img src="/1007/4.PNG" alt="执行脚本后目录文件"></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/python/" rel="tag"># python</a>
+              <a href="/tags/excel/" rel="tag"># excel</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1006/" rel="prev" title="如何直观地解释 back propagation 算法？">
+                  <i class="fa fa-chevron-left"></i> 如何直观地解释 back propagation 算法？
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1008/" rel="next" title="考无忧模拟考试题库软件的分析破解">
+                  考无忧模拟考试题库软件的分析破解 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"4e1c6f678b2ef9b33b39738f88046f00"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

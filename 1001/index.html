@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="LZW 压缩技术由以色列人 Lempel 和 Ziv 共同提出，美国人 Welch 将其从概念发展到实用阶段。LZW使用字典库查找方案。它读入待压缩的数据并与一个字典库（库开始是空的）中的字符串对比，如有匹配的字符串，则输出该字符串数据在字典库中的位置索引，否则将该字符串插入字典中。LZW广泛应用于无损数据压缩，包括无损图像压缩领域，包括 GIF、TIFF、PNG 等格式图像文件。 本篇文章使用P">
+<meta property="og:type" content="article">
+<meta property="og:title" content="lzw编解码实现">
+<meta property="og:url" content="http://got17.cn/1001/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="LZW 压缩技术由以色列人 Lempel 和 Ziv 共同提出，美国人 Welch 将其从概念发展到实用阶段。LZW使用字典库查找方案。它读入待压缩的数据并与一个字典库（库开始是空的）中的字符串对比，如有匹配的字符串，则输出该字符串数据在字典库中的位置索引，否则将该字符串插入字典中。LZW广泛应用于无损数据压缩，包括无损图像压缩领域，包括 GIF、TIFF、PNG 等格式图像文件。 本篇文章使用P">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2017-07-04T13:51:45.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.182Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="lzw">
+<meta property="article:tag" content="python">
+<meta name="twitter:card" content="summary">
+
+
+<link rel="canonical" href="http://got17.cn/1001/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1001/","path":"1001/","title":"lzw编解码实现"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>lzw编解码实现 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%AE%97%E6%B3%95%E6%80%9D%E6%83%B3"><span class="nav-number">1.</span> <span class="nav-text">算法思想</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81"><span class="nav-number">1.1.</span> <span class="nav-text">编码</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E7%A0%81"><span class="nav-number">1.2.</span> <span class="nav-text">解码</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%AE%9E%E7%8E%B0"><span class="nav-number">2.</span> <span class="nav-text">实现</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E6%93%8D%E4%BD%9C"><span class="nav-number">2.1.</span> <span class="nav-text">文件操作</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%BC%96%E7%A0%81%E9%83%A8%E5%88%86"><span class="nav-number">2.2.</span> <span class="nav-text">编码部分</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E8%A7%A3%E7%A0%81%E9%83%A8%E5%88%86"><span class="nav-number">2.3.</span> <span class="nav-text">解码部分</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E7%BB%93%E6%9E%9C"><span class="nav-number">3.</span> <span class="nav-text">结果</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%80%9D%E8%80%83"><span class="nav-number">4.</span> <span class="nav-text">思考</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%99%84%E5%BD%95"><span class="nav-number">5.</span> <span class="nav-text">附录</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1001/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="lzw编解码实现 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          lzw编解码实现
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2017-07-04 21:51:45" itemprop="dateCreated datePublished" datetime="2017-07-04T21:51:45+08:00">2017-07-04</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>LZW 压缩技术由以色列人 Lempel 和 Ziv 共同提出，美国人 Welch 将其从概念发展到实用阶段。LZW使用字典库查找方案。它读入待压缩的数据并与一个字典库（库开始是空的）中的字符串对比，如有匹配的字符串，则输出该字符串数据在字典库中的位置索引，否则将该字符串插入字典中。LZW广泛应用于<strong>无损数据压缩</strong>，包括无损图像压缩领域，包括 GIF、TIFF、PNG 等格式图像文件。</p>
+<p>本篇文章使用Python3.6工具、win10(64bit)环境，实现LZW的编码及解码流程，并测试编解码效果。除此之外，提出一些改进的想法，并作简单分析与思考。</p>
+<span id="more"></span>
+
+<h1 id="算法思想"><a href="#算法思想" class="headerlink" title="算法思想"></a>算法思想</h1><h2 id="编码"><a href="#编码" class="headerlink" title="编码"></a>编码</h2><p>LZW的编码思想如以下流程所示：</p>
+<ol>
+<li>初始化编码字典，其中含有所有可能出现的单字符。</li>
+<li>从字典中查找匹配当前字符串前缀的最长字符串W。</li>
+<li>将W的字典下标作为编码输出并从当前字符串中删去W。 </li>
+<li>将W和W在当前字符串中的后续字符合并添加到编码字典中。</li>
+<li>重复步骤2。</li>
+</ol>
+<p>举例如下：</p>
+<p><strong>输入数据流</strong></p>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+<th>7</th>
+<th>8</th>
+<th>9</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>字符</td>
+<td>A</td>
+<td>B</td>
+<td>B</td>
+<td>A</td>
+<td>B</td>
+<td>A</td>
+<td>B</td>
+<td>A</td>
+<td>C</td>
+</tr>
+</tbody></table>
+<p><strong>编码过程</strong></p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>位置</th>
+<th>索引</th>
+<th>字典</th>
+<th>输出</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+<td>1</td>
+<td>A</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>2</td>
+<td>B</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td>3</td>
+<td>C</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>AB</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>5</td>
+<td>BB</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3</td>
+<td>3</td>
+<td>6</td>
+<td>BA</td>
+<td>2</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>7</td>
+<td>ABA</td>
+<td>4</td>
+</tr>
+<tr>
+<td>5</td>
+<td>6</td>
+<td>8</td>
+<td>ABAC</td>
+<td>7</td>
+</tr>
+<tr>
+<td>6</td>
+<td></td>
+<td></td>
+<td></td>
+<td>3</td>
+</tr>
+</tbody></table>
+<h2 id="解码"><a href="#解码" class="headerlink" title="解码"></a>解码</h2><p>LZW的解码思想如以下流程所示：</p>
+<ol>
+<li>初始化解码字典，其中含有所有可能出现的下标(对应编码字典)。</li>
+<li>从字典中查找匹配当前待解码字符的下标W。</li>
+<li>将P和W对应字符串首字符合并添加到解码字典中。</li>
+<li>将W在解码字典中对应的字符串作为解码输出并把输出存为旧字符串P。 </li>
+<li>重复步骤2。</li>
+</ol>
+<p>举例如下：</p>
+<p><strong>输入数据流</strong></p>
+<table>
+<thead>
+<tr>
+<th>位置</th>
+<th>1</th>
+<th>2</th>
+<th>3</th>
+<th>4</th>
+<th>5</th>
+<th>6</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>字符</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>4</td>
+<td>7</td>
+<td>3</td>
+</tr>
+</tbody></table>
+<p><strong>解码过程</strong></p>
+<table>
+<thead>
+<tr>
+<th>序号</th>
+<th>数据</th>
+<th>旧字符串</th>
+<th>输出</th>
+<th>索引</th>
+<th>字典</th>
+</tr>
+</thead>
+<tbody><tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>A</td>
+<td>1</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>B</td>
+<td>2</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>C</td>
+<td>3</td>
+</tr>
+<tr>
+<td>1</td>
+<td>1</td>
+<td></td>
+<td>A</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2</td>
+<td>2</td>
+<td>A</td>
+<td>B</td>
+<td>AB</td>
+<td>4</td>
+</tr>
+<tr>
+<td>3</td>
+<td>2</td>
+<td>B</td>
+<td>B</td>
+<td>BB</td>
+<td>5</td>
+</tr>
+<tr>
+<td>4</td>
+<td>4</td>
+<td>B</td>
+<td>AB</td>
+<td>BA</td>
+<td>6</td>
+</tr>
+<tr>
+<td>5</td>
+<td>7</td>
+<td>AB</td>
+<td>ABA</td>
+<td>ABA</td>
+<td>7</td>
+</tr>
+<tr>
+<td>6</td>
+<td>3</td>
+<td>ABA</td>
+<td>C</td>
+<td>ABAC</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<h1 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h1><h2 id="文件操作"><a href="#文件操作" class="headerlink" title="文件操作"></a>文件操作</h2><p>待编码原文本存在text.txt中；将lzw编码后的文本存到compress.txt中；之后再次通过lzw解码的文本存到decompress.txt中：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> os</span><br><span class="line"><span class="keyword">from</span> struct <span class="keyword">import</span> *</span><br><span class="line">f1 = <span class="built_in">open</span>(<span class="string">&quot;text.txt&quot;</span>, <span class="string">&quot;r&quot;</span>)         <span class="comment">#待编码文本</span></span><br><span class="line">f2 = <span class="built_in">open</span>(<span class="string">&quot;compress.txt&quot;</span>, <span class="string">&quot;wb&quot;</span>)    <span class="comment">#编码后文本</span></span><br><span class="line">f3 = <span class="built_in">open</span>(<span class="string">&quot;decompress.txt&quot;</span>, <span class="string">&quot;w&quot;</span>)   <span class="comment">#解码后文本</span></span><br><span class="line"></span><br><span class="line">Input = f1.read()                  <span class="comment">#读取文本</span></span><br><span class="line"></span><br><span class="line"><span class="comment">#lzw编码与解码部分</span></span><br><span class="line">compressed_string = lzw_compress(Input)</span><br><span class="line">decompressed_string = lzw_decompress(compressed_string)</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> compressed_string:        <span class="comment">#将编码文本写入f2</span></span><br><span class="line">	f2.write(pack(<span class="string">&quot;H&quot;</span>, i))	  <span class="comment">#二进制写入以获得更大压缩比</span></span><br><span class="line">f3.write(decompressed_string)      <span class="comment">#将解码文本写入f3</span></span><br><span class="line"></span><br><span class="line">f1.close()                         <span class="comment">#关闭文件，下同</span></span><br><span class="line">f2.close()</span><br><span class="line">f3.close()</span><br></pre></td></tr></table></figure>
+
+<h2 id="编码部分"><a href="#编码部分" class="headerlink" title="编码部分"></a>编码部分</h2><p>首先建立编码字典，其中含有所有可能出现的单字符：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设ASCII码0~255均为初始化字符，编码中添加字符串下标从256开始</span></span><br><span class="line">dictionary = &#123;<span class="built_in">chr</span>(i) : i <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">pos = <span class="number">256</span></span><br><span class="line">p = <span class="string">&#x27;&#x27;</span>                   <span class="comment">#初始化前缀串与编码结果集</span></span><br><span class="line">result = []</span><br></pre></td></tr></table></figure>
+
+<p>然后依次对字符串进行编码，动态更改编码字典：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> string:            <span class="comment">#遍历待编码文本</span></span><br><span class="line">	pc = p + c				<span class="comment">#取当前串为前缀串加后一字符</span></span><br><span class="line">	<span class="keyword">if</span> pc <span class="keyword">in</span> dictionary:	<span class="comment">#如果当前串在编码字典中</span></span><br><span class="line">		p = pc				<span class="comment">#更新前缀串为当前串</span></span><br><span class="line">	<span class="keyword">else</span>:					<span class="comment">#否则前缀串下标对应码字输出</span></span><br><span class="line">		result.append(dictionary[p])</span><br><span class="line">		dictionary[pc] = pos<span class="comment">#将当前串存到编码字典最后</span></span><br><span class="line">		pos += <span class="number">1</span>			<span class="comment">#编码字典位置指针加一</span></span><br><span class="line">		p = c				<span class="comment">#更新前缀串为当前遍历字符</span></span><br></pre></td></tr></table></figure>
+
+<p>最后返回编码结果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> p :						<span class="comment">#保证最后一个字符串编码完成</span></span><br><span class="line">	result.append(dictionary[p])</span><br><span class="line"><span class="keyword">return</span> result				<span class="comment">#返回编码结果</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="解码部分"><a href="#解码部分" class="headerlink" title="解码部分"></a>解码部分</h2><p>首先建立解码字典，其中含有所有可能出现的单字符：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#设ASCII码0~255均为初始化字符，解码中添加字符串下标从256开始</span></span><br><span class="line">dictionary = &#123;i : <span class="built_in">chr</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">pos = <span class="number">256</span></span><br><span class="line">result = []						<span class="comment">#初始化解码结果集</span></span><br><span class="line">p = array.pop(<span class="number">0</span>)				<span class="comment">#取首字符初始化前缀串</span></span><br><span class="line">result.append(dictionary[p])	<span class="comment">#首字符解码输出</span></span><br></pre></td></tr></table></figure>
+
+<p>然后依次对字符串进行解码，动态更改解码字典：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> array:              <span class="comment">#遍历待解码文本</span></span><br><span class="line">	<span class="keyword">if</span> c <span class="keyword">in</span> dictionary:      <span class="comment">#如果遍历字符在解码字典中</span></span><br><span class="line">		entry = dictionary[c]<span class="comment">#将该遍历字符赋给当前串</span></span><br><span class="line"><span class="comment">#如果遍历字符不在字典中且与字典下表指针相同（即将加入解码字典）</span></span><br><span class="line">	<span class="keyword">elif</span> c == pos:			 <span class="comment">#将前缀串加首字符赋给当前串</span></span><br><span class="line">		entry = dictionary[p] + dictionary[p][<span class="number">0</span>]</span><br><span class="line">	<span class="keyword">else</span>:					 <span class="comment">#否则编码有误，抛出异常</span></span><br><span class="line">		<span class="keyword">raise</span> ValueError(<span class="string">&#x27;Compressed Error : %s&#x27;</span> % c)</span><br><span class="line">	result.append(entry)	 <span class="comment">#将当前串作为解码输出</span></span><br><span class="line">	<span class="comment">#将前缀串下标对应字符串加当前串首字符合并加入解码字典</span></span><br><span class="line">	dictionary[pos] = dictionary[p] + entry[<span class="number">0</span>]</span><br><span class="line">	pos += <span class="number">1</span>				 <span class="comment">#解码字典位置指针加一</span></span><br><span class="line">	p = c					 <span class="comment">#更新前缀串为当前遍历字符</span></span><br></pre></td></tr></table></figure>
+
+<p>最后返回解码结果：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">#结果存在list类中，可转换成字符串格式返回，即和原文本相同格式</span></span><br><span class="line"><span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join(result)</span><br></pre></td></tr></table></figure>
+
+<h1 id="结果"><a href="#结果" class="headerlink" title="结果"></a>结果</h1><p>本文使用了17.8KB的《I have a dream》与635KB的《Wuthering Heights》作为测试文本对上一章节的LZW编码进行测试，测试结果如下表：</p>
+<table>
+<thead>
+<tr>
+<th>文件名称</th>
+<th>大小</th>
+<th>字符数</th>
+<th>编码码字</th>
+<th>编码大小</th>
+<th>压缩比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>《I have a dream》</td>
+<td>17.8K</td>
+<td>18138</td>
+<td>5674</td>
+<td>9.0K</td>
+<td>50.6%</td>
+</tr>
+<tr>
+<td>《Wuthering Heights》</td>
+<td>635K</td>
+<td>645611</td>
+<td>143912</td>
+<td>281.0K</td>
+<td>44.3%</td>
+</tr>
+</tbody></table>
+<p>由此表可以看出，LZW编码存在<strong>文本量越大，编码压缩效果越好</strong>的特性。</p>
+<h1 id="思考"><a href="#思考" class="headerlink" title="思考"></a>思考</h1><p>在第3章实现了LZW的编码和解码后，自然对LZW压缩算法产生一些思考。通过网络查询，发现了以下几种提高LZW压缩率的改进途径：</p>
+<ol>
+<li>混合使用LZ77和LZ78。即在发现标记匹配结束后，不立即结束匹配，而是再在一个滑动窗口中寻找是否有更好的匹配，如果有就以{位置，匹配长度}组的形式写入输出流中，并把该字符串逐个增加为标记。</li>
+<li>使用固定长度字节的编码，即设定编码字典的长度，当编码字典满了之后清空字典。</li>
+<li>实时检测压缩率，当压缩率下降到一定阈值时，清空编码字典。</li>
+</ol>
+<p>这些途径都各有优缺。</p>
+<p>第一种途径可以很大地提高压缩比。但滑动窗口的选择是个复杂的问题。而且匹配长字符串会增加很多标记，使字典增加过快。</p>
+<p>第二种途径压缩速度快，压缩效率较高，该方法也广为使用。</p>
+<p>第三种途径在一般情况下应该有不错效果，但在源文件的统计规律发生较大变化大情况下，等发现字典不合适后再重建可能就来不及了。如果和其它的方法结合使用可能更好。</p>
+<p>综合各点，可以看出，在不特别考虑速度的情况下，LZW的编码压缩率主要集中于<strong>码字长度</strong>与<strong>码字个数</strong>上。</p>
+<p>结合第二种途径分析，我觉得可以在清空字典这一环节上加以改进。比如并不完全清空字典，只清空掉使用率低的码字。但这种方法实现复杂，会增加很大开销。因此采用比较折中的方法，即清空时只清空一半，保留一半原编码字典。</p>
+<p>针对此方法，修改LZW编码部分关键代码如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> string:</span><br><span class="line">	pc = p + c</span><br><span class="line">	<span class="keyword">if</span> pc <span class="keyword">in</span> dictionary <span class="keyword">and</span> dictionary[pc]&lt;pos: </span><br><span class="line">		p = pc				<span class="comment">#避免访问到字典已清空部分</span></span><br><span class="line">	<span class="keyword">else</span>:</span><br><span class="line">		result.append(dictionary[p])</span><br><span class="line">		dictionary[pc] = pos</span><br><span class="line">		pos += <span class="number">1</span></span><br><span class="line">		p = c</span><br><span class="line">	<span class="keyword">if</span> pos == <span class="number">65536</span>:        <span class="comment">#设定编码字典长度16位</span></span><br><span class="line">		pos = pos&gt;&gt;<span class="number">1</span>		<span class="comment">#超过长度时清空一半字典</span></span><br></pre></td></tr></table></figure>
+
+<p>使用《Wuthering Heights》测试此方法压缩效果并与原LZW压缩算法对比如下表：</p>
+<table>
+<thead>
+<tr>
+<th>压缩方法</th>
+<th>码字个数</th>
+<th>码字长度</th>
+<th>编码大小</th>
+<th>压缩比</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>不清空字典编码</td>
+<td>125909</td>
+<td>3(17bit)</td>
+<td>368.9K</td>
+<td>50.6%</td>
+</tr>
+<tr>
+<td>全清空字典编码</td>
+<td>143912</td>
+<td>2(16bit)</td>
+<td>281.0K</td>
+<td>44.3%</td>
+</tr>
+<tr>
+<td>半清空字典编码</td>
+<td>129694</td>
+<td>2(16bit)</td>
+<td>253.3K</td>
+<td>39.9%</td>
+</tr>
+</tbody></table>
+<p>可以看到，该方法针对全清空字典方案压缩率有小幅度提升。但同时也承认，在极端情况下，即<strong>未清空部分字典出现频率极低（甚至只出现一次）的情况下，只清空一半的方式反而不会得到太好的压缩效率。</strong></p>
+<h1 id="附录"><a href="#附录" class="headerlink" title="附录"></a><em>附录</em></h1><p>此处给出第3章节LZW编解码部分完整代码：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">lzw_compress</span>(<span class="params">string</span>):</span><br><span class="line">	<span class="comment">#设ASCII码0~255均为初始化字符，编码中添加字符串下标从256开始</span></span><br><span class="line">	dictionary = &#123;<span class="built_in">chr</span>(i) : i <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">	pos = <span class="number">256</span></span><br><span class="line">	p = <span class="string">&#x27;&#x27;</span>                   <span class="comment">#初始化前缀串与编码结果集</span></span><br><span class="line">	result = []</span><br><span class="line">	<span class="keyword">for</span> c <span class="keyword">in</span> string:            <span class="comment">#遍历待编码文本</span></span><br><span class="line">		pc = p + c				<span class="comment">#取当前串为前缀串加后一字符</span></span><br><span class="line">		<span class="keyword">if</span> pc <span class="keyword">in</span> dictionary:	<span class="comment">#如果当前串在编码字典中</span></span><br><span class="line">			p = pc				<span class="comment">#更新前缀串为当前串</span></span><br><span class="line">		<span class="keyword">else</span>:					<span class="comment">#否则前缀串下标对应码字输出</span></span><br><span class="line">			result.append(dictionary[p])</span><br><span class="line">			dictionary[pc] = pos<span class="comment">#将当前串存到编码字典最后</span></span><br><span class="line">			pos += <span class="number">1</span>			<span class="comment">#编码字典位置指针加一</span></span><br><span class="line">			p = c				<span class="comment">#更新前缀串为当前遍历字符</span></span><br><span class="line">	<span class="keyword">if</span> p :						<span class="comment">#保证最后一个字符串编码完成</span></span><br><span class="line">		result.append(dictionary[p])</span><br><span class="line">	<span class="keyword">return</span> result				<span class="comment">#返回编码结果</span></span><br></pre></td></tr></table></figure>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">def</span> <span class="title function_">lzw_decompress</span>(<span class="params">array</span>):</span><br><span class="line"><span class="comment">#设ASCII码0~255均为初始化字符，解码中添加字符串下标从256开始</span></span><br><span class="line">	dictionary = &#123;i : <span class="built_in">chr</span>(i) <span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">256</span>)&#125;</span><br><span class="line">	pos = <span class="number">256</span></span><br><span class="line">	result = []						<span class="comment">#初始化解码结果集</span></span><br><span class="line">	p = array.pop(<span class="number">0</span>)				<span class="comment">#取首字符初始化前缀串</span></span><br><span class="line">	result.append(dictionary[p])	<span class="comment">#首字符解码输出</span></span><br><span class="line"><span class="keyword">for</span> c <span class="keyword">in</span> array:              <span class="comment">#遍历待解码文本</span></span><br><span class="line">		<span class="keyword">if</span> c <span class="keyword">in</span> dictionary:      <span class="comment">#如果遍历字符在解码字典中</span></span><br><span class="line">			entry = dictionary[c]<span class="comment">#将该遍历字符赋给当前串</span></span><br><span class="line">	<span class="comment">#如果遍历字符不在字典中且与字典下表指针相同（即将加入解码字典）</span></span><br><span class="line">		<span class="keyword">elif</span> c == pos:			 <span class="comment">#将前缀串加首字符赋给当前串</span></span><br><span class="line">			entry = dictionary[p] + dictionary[p][<span class="number">0</span>]</span><br><span class="line">		<span class="keyword">else</span>:					 <span class="comment">#否则编码有误，抛出异常</span></span><br><span class="line">			<span class="keyword">raise</span> ValueError(<span class="string">&#x27;Compressed Error : %s&#x27;</span> % c)</span><br><span class="line">		result.append(entry)	 <span class="comment">#将当前串作为解码输出</span></span><br><span class="line">		<span class="comment">#将前缀串下标对应字符串加当前串首字符合并加入解码字典</span></span><br><span class="line">		dictionary[pos] = dictionary[p] + entry[<span class="number">0</span>]</span><br><span class="line">		pos += <span class="number">1</span>				 <span class="comment">#解码字典位置指针加一</span></span><br><span class="line">		p = c					 <span class="comment">#更新前缀串为当前遍历字符</span></span><br><span class="line">	<span class="comment">#结果存在list类中，可转换成字符串格式返回，即和原文本相同格式</span></span><br><span class="line">	<span class="keyword">return</span> <span class="string">&#x27;&#x27;</span>.join(result)</span><br></pre></td></tr></table></figure>
+
+<p>由于篇幅问题，LZW改进部分只在第5章节给出了核心代码，如需查阅<strong>改进部分完整代码</strong>及<strong>测试文本</strong>《I have a dream》、《Wuthering Heights》，请访问我的github页面：<a target="_blank" rel="noopener" href="https://github.com/gaoteng17/lzw">https://github.com/gaoteng17/lzw</a></p>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/lzw/" rel="tag"># lzw</a>
+              <a href="/tags/python/" rel="tag"># python</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+            </div>
+            <div class="post-nav-item">
+                <a href="/1002/" rel="next" title="h264编码器实现">
+                  h264编码器实现 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"3c8f719a287ed435cc96d42d503b2b5c"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>

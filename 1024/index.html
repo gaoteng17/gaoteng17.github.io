@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width">
+<meta name="theme-color" content="#222"><meta name="generator" content="Hexo 6.2.0">
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <link rel="manifest" href="/images/manifest.json">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css" integrity="sha256-AbA177XfpSnFEvgpYu1jMygiLabzPCJCRIBtR5jGc0k=" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.1.1/animate.min.css" integrity="sha256-PR7ttpcvz8qrF57fur/yAx1qXMFJeJFiA6pSzWi0OIE=" crossorigin="anonymous">
+
+<script class="next-config" data-name="main" type="application/json">{"hostname":"got17.cn","root":"/","images":"/images","scheme":"Mist","darkmode":false,"version":"8.13.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12},"copycode":{"enable":false,"style":null},"bookmark":{"enable":false,"color":"#222","save":"auto"},"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"stickytabs":true,"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"fadeInDown","post_body":"fadeInDown","coll_header":"fadeInLeft","sidebar":"fadeInUp"}},"prism":false,"i18n":{"placeholder":"搜索...","empty":"没有找到任何搜索结果：${query}","hits_time":"找到 ${hits} 个搜索结果（用时 ${time} 毫秒）","hits":"找到 ${hits} 个搜索结果"},"path":"/search.xml","localsearch":{"enable":true,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false}}</script><script src="/js/config.js"></script>
+
+    <meta name="description" content="DHCP 是动态主机配置协议的英文缩写，从BOOTP（Bootstrap Protocol）协议发展而来，其作用向主机动态分配IP地址及其他相关信息。 DHCP可以自动为局域网中主机完成TCP&#x2F;IP协议配置，使用DHCP自动配置避免了IP地址冲突的问题。 在H3C模拟器上进行DHCP的配置，系统版本v7。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="【信息网络学习day9 H3C设备配置DHCP】">
+<meta property="og:url" content="http://got17.cn/1024/index.html">
+<meta property="og:site_name" content="gaoteng&#39;s blog">
+<meta property="og:description" content="DHCP 是动态主机配置协议的英文缩写，从BOOTP（Bootstrap Protocol）协议发展而来，其作用向主机动态分配IP地址及其他相关信息。 DHCP可以自动为局域网中主机完成TCP&#x2F;IP协议配置，使用DHCP自动配置避免了IP地址冲突的问题。 在H3C模拟器上进行DHCP的配置，系统版本v7。">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://got17.cn/1024/1.PNG">
+<meta property="og:image" content="http://got17.cn/1024/2.PNG">
+<meta property="og:image" content="http://got17.cn/1024/3.PNG">
+<meta property="og:image" content="http://got17.cn/1024/4.PNG">
+<meta property="article:published_time" content="2019-08-02T09:49:26.000Z">
+<meta property="article:modified_time" content="2022-09-03T03:28:56.272Z">
+<meta property="article:author" content="gaoteng17">
+<meta property="article:tag" content="信息网络">
+<meta property="article:tag" content="H3C">
+<meta property="article:tag" content="DHCP">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://got17.cn/1024/1.PNG">
+
+
+<link rel="canonical" href="http://got17.cn/1024/">
+
+
+
+<script class="next-config" data-name="page" type="application/json">{"sidebar":"","isHome":false,"isPost":true,"lang":"zh-CN","comments":true,"permalink":"http://got17.cn/1024/","path":"1024/","title":"【信息网络学习day9 H3C设备配置DHCP】"}</script>
+
+<script class="next-config" data-name="calendar" type="application/json">""</script>
+<title>【信息网络学习day9 H3C设备配置DHCP】 | gaoteng's blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+    <link rel="stylesheet" href="/css/noscript.css">
+  </noscript>
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" class="use-motion">
+  <div class="headband"></div>
+
+  <main class="main">
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏" role="button">
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+        <span class="toggle-line"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <i class="logo-line"></i>
+      <p class="site-title">gaoteng's blog</p>
+      <i class="logo-line"></i>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+        <i class="fa fa-search fa-fw fa-lg"></i>
+    </div>
+  </div>
+</div>
+
+
+
+<nav class="site-nav">
+  <ul class="main-menu menu"><li class="menu-item menu-item-home"><a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a></li><li class="menu-item menu-item-tags"><a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a></li><li class="menu-item menu-item-archives"><a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a></li><li class="menu-item menu-item-about"><a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a></li>
+      <li class="menu-item menu-item-search">
+        <a role="button" class="popup-trigger"><i class="fa fa-search fa-fw"></i>搜索
+        </a>
+      </li>
+  </ul>
+</nav>
+
+
+
+  <div class="search-pop-overlay">
+    <div class="popup search-popup"><div class="search-header">
+  <span class="search-icon">
+    <i class="fa fa-search"></i>
+  </span>
+  <div class="search-input-container">
+    <input autocomplete="off" autocapitalize="off" maxlength="80"
+           placeholder="搜索..." spellcheck="false"
+           type="search" class="search-input">
+  </div>
+  <span class="popup-btn-close" role="button">
+    <i class="fa fa-times-circle"></i>
+  </span>
+</div>
+<div class="search-result-container no-result">
+  <div class="search-result-icon">
+    <i class="fa fa-spinner fa-pulse fa-5x"></i>
+  </div>
+</div>
+
+    </div>
+  </div>
+
+</div>
+        
+  
+  <div class="toggle sidebar-toggle" role="button">
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+    <span class="toggle-line"></span>
+  </div>
+
+  <aside class="sidebar">
+
+    <div class="sidebar-inner sidebar-nav-active sidebar-toc-active">
+      <ul class="sidebar-nav">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <div class="sidebar-panel-container">
+        <!--noindex-->
+        <div class="post-toc-wrap sidebar-panel">
+            <div class="post-toc animated"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8E%9F%E7%90%86"><span class="nav-number">1.</span> <span class="nav-text">原理</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%85%8D%E7%BD%AE"><span class="nav-number">2.</span> <span class="nav-text">配置</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E9%AA%8C%E8%AF%81"><span class="nav-number">3.</span> <span class="nav-text">验证</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#DHCP%E7%9B%B8%E5%85%B3%E6%98%BE%E7%A4%BA%E7%BB%B4%E6%8A%A4%E5%91%BD%E4%BB%A4"><span class="nav-number">4.</span> <span class="nav-text">DHCP相关显示维护命令</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#%E5%8F%82%E8%80%83"><span class="nav-number">5.</span> <span class="nav-text">参考</span></a></li></ol></div>
+        </div>
+        <!--/noindex-->
+
+        <div class="site-overview-wrap sidebar-panel">
+          <div class="site-author site-overview-item animated" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="gaoteng17"
+      src="/images/avatar.jpg">
+  <p class="site-author-name" itemprop="name">gaoteng17</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap site-overview-item animated">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+        <a href="/archives/">
+          <span class="site-state-item-count">94</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+          <a href="/tags/">
+        <span class="site-state-item-count">82</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author site-overview-item animated">
+      <span class="links-of-author-item">
+        <a href="https://github.com/gaoteng17" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;gaoteng17" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:gaoteng17@gmail.com" title="E-Mail → mailto:gaoteng17@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="https://weibo.com/u/5544866728" title="Weibo → https:&#x2F;&#x2F;weibo.com&#x2F;u&#x2F;5544866728" rel="noopener" target="_blank"><i class="fab fa-weibo fa-fw"></i>Weibo</a>
+      </span>
+  </div>
+
+
+
+        </div>
+      </div>
+    </div>
+  </aside>
+  <div class="sidebar-dimmer"></div>
+
+
+    </header>
+
+    
+  <div class="back-to-top" role="button" aria-label="返回顶部">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+<noscript>
+  <div class="noscript-warning">Theme NexT works best with JavaScript enabled</div>
+</noscript>
+
+
+    <div class="main-inner post posts-expand">
+
+
+  
+
+
+<div class="post-block">
+  
+  
+
+  <article itemscope itemtype="http://schema.org/Article" class="post-content" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://got17.cn/1024/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.jpg">
+      <meta itemprop="name" content="gaoteng17">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="post" itemscope itemtype="http://schema.org/CreativeWork">
+      <meta itemprop="name" content="【信息网络学习day9 H3C设备配置DHCP】 | gaoteng's blog">
+      <meta itemprop="description" content="">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          【信息网络学习day9 H3C设备配置DHCP】
+        </h1>
+
+        <div class="post-meta-container">
+          <div class="post-meta">
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar"></i>
+      </span>
+      <span class="post-meta-item-text">发表于</span>
+
+      <time title="创建时间：2019-08-02 17:49:26" itemprop="dateCreated datePublished" datetime="2019-08-02T17:49:26+08:00">2019-08-02</time>
+    </span>
+    <span class="post-meta-item">
+      <span class="post-meta-item-icon">
+        <i class="far fa-calendar-check"></i>
+      </span>
+      <span class="post-meta-item-text">更新于</span>
+      <time title="修改时间：2022-09-03 11:28:56" itemprop="dateModified" datetime="2022-09-03T11:28:56+08:00">2022-09-03</time>
+    </span>
+
+  
+</div>
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+        <p>DHCP 是动态主机配置协议的英文缩写，从BOOTP（Bootstrap Protocol）协议发展而来，其作用向主机动态分配IP地址及其他相关信息。</p>
+<p>DHCP可以自动为局域网中主机完成TCP&#x2F;IP协议配置，使用DHCP自动配置避免了IP地址冲突的问题。</p>
+<p>在H3C模拟器上进行DHCP的配置，系统版本v7。</p>
+<span id="more"></span>
+
+<h1 id="原理"><a href="#原理" class="headerlink" title="原理"></a>原理</h1><p>DHCP采用客户端&#x2F;服务器模式，服务器负责集中管理，客户端向服务器提出配置申请，服务器根据策略返回相应配置信息。</p>
+<p>DHCP具有<strong>即插即用性</strong>、<strong>统一管理</strong>、<strong>使用效率高</strong>、<strong>可跨网段实现</strong>等特点。</p>
+<p>如下图，DHCP系统由三部分组成：</p>
+<ul>
+<li>DHCP服务器：能提供DHCP功能的服务器或具有DHCP功能的网络设备</li>
+<li>DHCP中继（可选）：一般为路由器或三层交换机等网络设备</li>
+<li>DHCP客户端：需要动态获得IP地址的主机</li>
+</ul>
+<p><img src="/1024/1.PNG"></p>
+<p>DHCP的地址分配方式有三种：</p>
+<ol>
+<li>手工分配</li>
+</ol>
+<ul>
+<li>根据需求，网络管理员为少数特定主机（如DNS服务器、打印机）绑定固定的IP地址，其地址不会过期。</li>
+</ul>
+<ol start="2">
+<li>自动分配</li>
+</ol>
+<ul>
+<li>为连接到网络的某些主机分配IP地址，该地址将长期由该主机使用。</li>
+</ul>
+<ol start="3">
+<li>动态分配</li>
+</ol>
+<ul>
+<li>主机申请IP地址最常用的方法。DHCP服务器为客户端指定一个IP地址，同时为此地址规定了一个租用期限，如果租用时间到期，客户端必须重新申请IP地址。</li>
+</ul>
+<h1 id="配置"><a href="#配置" class="headerlink" title="配置"></a>配置</h1><p>按照下图拓扑连接，配置基本配置，使拓扑网络互通，同时不配置PC机的IP地址：</p>
+<p><img src="/1024/2.PNG"></p>
+<p>在<strong>DHCP_Server</strong>上配置dhcp服务：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">[DHCP_Server]dhcp server ip-pool pool1</span><br><span class="line">[DHCP_Server-dhcp-pool-pool1]gateway-list 192.168.0.254 //网关地址</span><br><span class="line">[DHCP_Server-dhcp-pool-pool1]network 192.168.0.0 mask 255.255.255.0 //dhcp地址池</span><br><span class="line">[DHCP_Server-dhcp-pool-pool1]dns-list 192.168.0.200 //dns地址</span><br><span class="line">[DHCP_Server-dhcp-pool-pool1]forbidden-ip 192.168.0.2 //禁止下发地址</span><br><span class="line">[DHCP_Server-dhcp-pool-pool1]expired day 5 hour 12 //租约有效期</span><br><span class="line">[DHCP_Server-dhcp-pool-pool1]quit</span><br><span class="line"></span><br><span class="line">[DHCP_Server]dhcp enable</span><br></pre></td></tr></table></figure>
+
+<p>在<strong>DHCP_Relay</strong>上配置dhcp中继服务：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">[DHCP_Relay]dhcp enable</span><br><span class="line"></span><br><span class="line">[DHCP_Relay]int g0/1  //选择离client近的端口</span><br><span class="line">[DHCP_Relay-GigabitEthernet0/1]dhcp select relay</span><br><span class="line">[DHCP_Relay-GigabitEthernet0/1]dhcp relay server-address 10.0.0.2</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<h1 id="验证"><a href="#验证" class="headerlink" title="验证"></a>验证</h1><p>PC1、PC2配置IPv4为DHCP方式，可以看到PC2获取到了<strong>192.168.0.1&#x2F;24</strong>，PC1获取到了<strong>192.168.0.3&#x2F;24</strong>，而<strong>192.168.0.2&#x2F;24</strong>由于配置了禁止下发，因此dhcp的分配跳过了该ip。</p>
+<p><img src="/1024/3.PNG"></p>
+<p><img src="/1024/4.PNG"></p>
+<h1 id="DHCP相关显示维护命令"><a href="#DHCP相关显示维护命令" class="headerlink" title="DHCP相关显示维护命令"></a>DHCP相关显示维护命令</h1><table>
+<thead>
+<tr>
+<th><strong>操作</strong></th>
+<th><strong>命令</strong></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>显示DHCP地址池的可用地址信息</td>
+<td><strong>display dhcp server free-ip</strong></td>
+</tr>
+<tr>
+<td>显示DHCP服务器的统计信息</td>
+<td><strong>display dhcp server statistics</strong></td>
+</tr>
+<tr>
+<td>显示DHCP地址池中不参与自动分配的IP地址</td>
+<td><strong>display dhcp server forbidden-ip</strong></td>
+</tr>
+<tr>
+<td>显示DHCP中继的相关报文统计信息</td>
+<td><strong>display dhcp relay statistics [ server-group {</strong> <em>group-id</em> <strong>&#x2F; all } ]</strong></td>
+</tr>
+</tbody></table>
+<h1 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h1><ol>
+<li>H3C X00040005 第19章 DHCP</li>
+</ol>
+
+    </div>
+
+    
+    
+    
+
+    <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E4%BF%A1%E6%81%AF%E7%BD%91%E7%BB%9C/" rel="tag"># 信息网络</a>
+              <a href="/tags/H3C/" rel="tag"># H3C</a>
+              <a href="/tags/DHCP/" rel="tag"># DHCP</a>
+          </div>
+
+        
+
+          <div class="post-nav">
+            <div class="post-nav-item">
+                <a href="/1023/" rel="prev" title="【信息网络学习day9 H3C设备配置地址转换（NAT）】">
+                  <i class="fa fa-chevron-left"></i> 【信息网络学习day9 H3C设备配置地址转换（NAT）】
+                </a>
+            </div>
+            <div class="post-nav-item">
+                <a href="/1025/" rel="next" title="【信息网络学习day10 H3C设备配置DNS】">
+                  【信息网络学习day10 H3C设备配置DNS】 <i class="fa fa-chevron-right"></i>
+                </a>
+            </div>
+          </div>
+    </footer>
+  </article>
+</div>
+
+
+
+
+
+
+    <div class="comments gitalk-container"></div>
+</div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-inner">
+
+
+<div class="copyright">
+  &copy; 2017 – 
+  <span itemprop="copyrightYear">2022</span>
+  <span class="with-love">
+    <i class="fa-solid fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">gaoteng17</span>
+</div>
+
+    </div>
+  </footer>
+
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js" integrity="sha256-XL2inqUJaslATFnHdJOi9GfQ60on8Wx1C2H8DYiN1xY=" crossorigin="anonymous"></script>
+<script src="/js/comments.js"></script><script src="/js/utils.js"></script><script src="/js/motion.js"></script><script src="/js/schemes/muse.js"></script><script src="/js/next-boot.js"></script>
+
+  
+<script src="https://cdnjs.cloudflare.com/ajax/libs/hexo-generator-searchdb/1.4.0/search.js" integrity="sha256-vXZMYLEqsROAXkEw93GGIvaB2ab+QW6w3+1ahD9nXXA=" crossorigin="anonymous"></script>
+<script src="/js/third-party/search/local-search.js"></script>
+
+
+
+
+
+  
+
+
+
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.css" integrity="sha256-AJnUHL7dBv6PGaeyPQJcgQPDjt/Hn/PvYZde1iqfp8U=" crossorigin="anonymous">
+
+<script class="next-config" data-name="gitalk" type="application/json">{"enable":true,"client_id":"96531982aa814e82e033","client_secret":"9d64fd0a7523408d110bfc9839658aaa2a0ee62e","repo":"Blog_Comments","github_id":"gaoteng17","admin_user":"gaoteng17","distraction_free_mode":true,"proxy":"https://cors-anywhere.azm.workers.dev/https://github.com/login/oauth/access_token","language":null,"js":{"url":"https://cdnjs.cloudflare.com/ajax/libs/gitalk/1.8.0/gitalk.min.js","integrity":"sha256-MVK9MGD/XJaGyIghSVrONSnoXoGh3IFxLw0zfvzpxR4="},"path_md5":"50c1ebb28c073fef0d17d89ea36d5041"}</script>
+<script src="/js/third-party/comments/gitalk.js"></script>
+
+</body>
+</html>
